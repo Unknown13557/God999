@@ -44,6 +44,37 @@ icon.Image = "rbxassetid://3926305904"
 icon.ImageRectOffset = Vector2.new(4,204)  -- vẫn giữ icon mặc định
 icon.ImageRectSize = Vector2.new(36,36)
 
+-- PATCH: đảm bảo icon xuất hiện & luôn nằm trong màn hình
+icon.Visible = true
+icon.Active  = true
+icon.ZIndex  = 1000
+
+do
+    -- ép vị trí ban đầu hợp lệ
+    local function clampToScreen(x, y)
+        local cam = workspace.CurrentCamera
+        local v   = (cam and cam.ViewportSize) or Vector2.new(800,600)
+        local sz  = icon.AbsoluteSize
+        return math.clamp(x, 0, v.X - sz.X), math.clamp(y, 0, v.Y - sz.Y)
+    end
+
+    local function placeIconSafely()
+        local x, y = clampToScreen(icon.Position.X.Offset, icon.Position.Y.Offset)
+        icon.Position = UDim2.fromOffset(x, y)
+    end
+
+    -- gọi ngay & thêm 1 nhịp nhỏ để chắc camera đã sẵn sàng
+    placeIconSafely()
+    task.defer(placeIconSafely)
+    task.delay(0.1, placeIconSafely)
+
+    -- khi đổi kích thước màn hình (xoay máy, đổi UI size) thì kẹp lại
+    local cam = workspace.CurrentCamera
+    if cam then
+        cam:GetPropertyChangedSignal("ViewportSize"):Connect(placeIconSafely)
+    end
+end
+
 -- PATCH: drag icon mượt, không nhảy khi chạm lần đầu
 do
     local dragging = false
