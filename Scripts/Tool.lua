@@ -290,7 +290,7 @@ lp.CharacterAdded:Connect(function(c)
     bindCharacter(c)
 end)
 
--- PATCH SPEED + RAYCAST (chạy mượt, không bay, hạn chế xuyên tường bằng trượt tường)
+-- PATCH SPEED + RAYCAST (không hạ WalkSpeed gốc của game khi chưa bật)
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
@@ -306,7 +306,7 @@ local function bindChar(c)
 	hum  = c:WaitForChild("Humanoid", 8)
 	hrp  = c:WaitForChild("HumanoidRootPart", 8)
 	if hum then
-		BASE_WS = hum.WalkSpeed > 0 and hum.WalkSpeed or 16
+		BASE_WS = (hum.WalkSpeed and hum.WalkSpeed > 0) and hum.WalkSpeed or 16
 		hum.AutoRotate = true
 	end
 end
@@ -323,9 +323,13 @@ _G.__SLIM_SPEED_RUN = RunService.RenderStepped:Connect(function(dt)
 	if not hum or not hrp or not char or not char.Parent then return end
 	rayParams.FilterDescendantsInstances = {char}
 
-	-- giữ WalkSpeed mặc định
-	if hum.WalkSpeed ~= BASE_WS then hum.WalkSpeed = BASE_WS end
-	if not (S.WalkSpeedHack and S.WalkSpeedHack()) then return end
+	-- Nếu chưa bật hack: KHÔNG đụng vào WalkSpeed, đồng thời cập nhật BASE_WS theo game
+	if not (S.WalkSpeedHack and S.WalkSpeedHack()) then
+		if hum.WalkSpeed and hum.WalkSpeed > 0 then
+			BASE_WS = hum.WalkSpeed
+		end
+		return
+	end
 
 	local f = tonumber(S.WalkSpeedFactor and S.WalkSpeedFactor() or 1) or 1
 	if f <= 1 then return end
@@ -338,12 +342,11 @@ _G.__SLIM_SPEED_RUN = RunService.RenderStepped:Connect(function(dt)
 	local curVel = hrp.AssemblyLinearVelocity
 	local desired = dir * target
 
-	-- RAYCAST CHẶN TƯỜNG: dự đoán quãng đường khung này sẽ đi
-	local predictDist = math.max((target * dt) + 1.0, 2.0) -- buffer nhỏ
+	-- Raycast chống đâm tường -> chuyển sang trượt theo tường
+	local predictDist = math.max((target * dt) + 1.0, 2.0)
 	local hit = workspace:Raycast(hrp.Position, dir * predictDist, rayParams)
 	if hit then
 		local n = hit.Normal
-		-- nếu đâm gần vuông góc bề mặt thì loại bỏ thành phần lao vào tường (trượt theo tường)
 		if n:Dot(dir) < -0.2 then
 			local tangential = desired - n * desired:Dot(n)
 			if tangential.Magnitude > 0.05 then
@@ -354,12 +357,12 @@ _G.__SLIM_SPEED_RUN = RunService.RenderStepped:Connect(function(dt)
 		end
 	end
 
-	-- nội suy mượt velocity ngang
+	-- Nội suy mượt vận tốc ngang, giữ Y hiện tại để không bay
 	local accel = math.clamp(25 * f * dt, 0, 1)
 	local newHoriz = Vector3.new(curVel.X, 0, curVel.Z):Lerp(Vector3.new(desired.X, 0, desired.Z), accel)
 	hrp.AssemblyLinearVelocity = Vector3.new(newHoriz.X, curVel.Y, newHoriz.Z)
 
-	-- ANTI-LEAN
+	-- Anti-lean
 	hrp.AssemblyAngularVelocity = Vector3.new(0, hrp.AssemblyAngularVelocity.Y, 0)
 	local look = hrp.CFrame.LookVector
 	if math.abs(look.Y) > 1e-3 then
@@ -369,7 +372,7 @@ _G.__SLIM_SPEED_RUN = RunService.RenderStepped:Connect(function(dt)
 			hrp.CFrame = CFrame.lookAt(pos, pos + flat.Unit, Vector3.yAxis)
 		end
 	end
-end)        
+end)
 
 -- JUMPPOWER: cưỡng bức ổn định (không để game ghi đè), luôn UseJumpPower
 _G.__SLIM_JP_ENFORCE = RunService.Heartbeat:Connect(function()
