@@ -290,10 +290,9 @@ lp.CharacterAdded:Connect(function(c)
     bindCharacter(c)
 end)
 
--- PATCH SPEED + ANTI-LEAN (thay thế block speed hiện tại)
+-- PATCH SPEED + RAYCAST (chạy mượt, không bay, hạn chế xuyên tường bằng trượt tường)
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local Workspace = game:GetService("Workspace")
 
 while not _G.SlimMenuStates do task.wait() end
 local S = _G.SlimMenuStates
@@ -303,135 +302,74 @@ local char, hum, hrp
 local BASE_WS = 16
 
 local function bindChar(c)
-    char = c
-    hum  = c:WaitForChild("Humanoid", 8)
-    hrp  = c:WaitForChild("HumanoidRootPart", 8)
-    if hum then
-        BASE_WS = (hum.WalkSpeed > 0 and hum.WalkSpeed) or 16
-        hum.AutoRotate = true
-    end
+	char = c
+	hum  = c:WaitForChild("Humanoid", 8)
+	hrp  = c:WaitForChild("HumanoidRootPart", 8)
+	if hum then
+		BASE_WS = hum.WalkSpeed > 0 and hum.WalkSpeed or 16
+		hum.AutoRotate = true
+	end
 end
 
 if lp.Character then bindChar(lp.Character) end
 lp.CharacterAdded:Connect(bindChar)
 
--- cleanup cũ
-if _G.__SLIM_SPEED_LV then _G.__SLIM_SPEED_LV:Disconnect() _G.__SLIM_SPEED_LV=nil end
+if _G.__SLIM_SPEED_RUN then _G.__SLIM_SPEED_RUN:Disconnect() end
 
--- LinearVelocity helpers
-local attName = "__SLIM_LV_ATT"
-local lvName  = "__SLIM_LV_CON"
+local rayParams = RaycastParams.new()
+rayParams.FilterType = Enum.RaycastFilterType.Exclude
 
-local function ensureLV()
-    if not hrp then return end
-    local att = hrp:FindFirstChild(attName)
-    if not att then
-        att = Instance.new("Attachment")
-        att.Name = attName
-        att.Parent = hrp
-    end
-    local lv = hrp:FindFirstChild(lvName)
-    if not lv then
-        lv = Instance.new("LinearVelocity")
-        lv.Name = lvName
-        lv.Attachment0 = att
-        lv.RelativeTo = Enum.ActuatorRelativeTo.World
-        lv.MaxForce = math.huge
-        lv.Enabled = true
-        lv.Parent = hrp
-    end
-    return att, lv
-end
+_G.__SLIM_SPEED_RUN = RunService.RenderStepped:Connect(function(dt)
+	if not hum or not hrp or not char or not char.Parent then return end
+	rayParams.FilterDescendantsInstances = {char}
 
-local function clearLV()
-    if not hrp then return end
-    local lv = hrp:FindFirstChild(lvName)
-    if lv then lv:Destroy() end
-    local att = hrp:FindFirstChild(attName)
-    if att then att:Destroy() end
-end
+	-- giữ WalkSpeed mặc định
+	if hum.WalkSpeed ~= BASE_WS then hum.WalkSpeed = BASE_WS end
+	if not (S.WalkSpeedHack and S.WalkSpeedHack()) then return end
 
--- ray params
-local fwdParams = RaycastParams.new()
-fwdParams.FilterType = Enum.RaycastFilterType.Exclude
-fwdParams.IgnoreWater = true
+	local f = tonumber(S.WalkSpeedFactor and S.WalkSpeedFactor() or 1) or 1
+	if f <= 1 then return end
 
-_G.__SLIM_SPEED_LV = RunService.RenderStepped:Connect(function(dt)
-    if not hum or not hrp or not char or not char.Parent then return end
+	local dir = hum.MoveDirection
+	if dir.Magnitude < 0.05 then return end
+	dir = dir.Unit
 
-    -- giữ WalkSpeed base để không xung đột game
-    if hum.WalkSpeed ~= BASE_WS then hum.WalkSpeed = BASE_WS end
+	local target = math.clamp(BASE_WS * f, 0, 200)
+	local curVel = hrp.AssemblyLinearVelocity
+	local desired = dir * target
 
-    local enabled = S.WalkSpeedHack and S.WalkSpeedHack() or false
-    if not enabled then
-        clearLV()
-        return
-    end
+	-- RAYCAST CHẶN TƯỜNG: dự đoán quãng đường khung này sẽ đi
+	local predictDist = math.max((target * dt) + 1.0, 2.0) -- buffer nhỏ
+	local hit = workspace:Raycast(hrp.Position, dir * predictDist, rayParams)
+	if hit then
+		local n = hit.Normal
+		-- nếu đâm gần vuông góc bề mặt thì loại bỏ thành phần lao vào tường (trượt theo tường)
+		if n:Dot(dir) < -0.2 then
+			local tangential = desired - n * desired:Dot(n)
+			if tangential.Magnitude > 0.05 then
+				desired = tangential.Unit * math.min(tangential.Magnitude, target * 0.85)
+			else
+				desired = Vector3.zero
+			end
+		end
+	end
 
-    local f = tonumber(S.WalkSpeedFactor and S.WalkSpeedFactor() or 1) or 1
-    if f <= 1 then
-        clearLV()
-        return
-    end
+	-- nội suy mượt velocity ngang
+	local accel = math.clamp(25 * f * dt, 0, 1)
+	local newHoriz = Vector3.new(curVel.X, 0, curVel.Z):Lerp(Vector3.new(desired.X, 0, desired.Z), accel)
+	hrp.AssemblyLinearVelocity = Vector3.new(newHoriz.X, curVel.Y, newHoriz.Z)
 
-    local dir = hum.MoveDirection
-    if dir.Magnitude < 0.05 then
-        -- không di chuyển: giữ vel hiện tại
-        local _, lv = ensureLV()
-        if lv then
-            lv.VectorVelocity = hrp.AssemblyLinearVelocity
-        end
-        -- anti-lean: chặn roll/pitch
-        hrp.AssemblyAngularVelocity = Vector3.new(0, hrp.AssemblyAngularVelocity.Y, 0)
-        return
-    end
-    dir = dir.Unit
-
-    local target = math.clamp(BASE_WS * f, 0, 220)
-
-    -- ray trước mặt để tránh tường
-    fwdParams.FilterDescendantsInstances = {char}
-    local eye = hrp.Position + Vector3.new(0, 1.5, 0)
-    local lookAhead = math.max(6, target * 0.2)
-    local hit = Workspace:Raycast(eye, dir * lookAhead, fwdParams)
-
-    local desiredDir = dir
-    local speedScale = 1
-    if hit then
-        local n2 = hit.Normal
-        local slide = (dir - n2 * math.max(0, dir:Dot(n2)))
-        if slide.Magnitude > 0.05 then
-            desiredDir = slide.Unit
-        else
-            desiredDir = Vector3.zero
-        end
-        local dist = (hit.Position - eye).Magnitude
-        local buffer = 2
-        speedScale = math.clamp((dist - buffer) / math.max(1, (lookAhead - buffer)), 0, 1)
-    end
-
-    local cur = hrp.AssemblyLinearVelocity
-    local desiredHoriz = desiredDir * (target * speedScale)
-    local smooth = math.clamp(14 * f * dt, 0, 1)
-    local newHoriz = Vector3.new(cur.X, 0, cur.Z):Lerp(desiredHoriz, smooth)
-
-    local _, lv = ensureLV()
-    if lv then
-        lv.VectorVelocity = Vector3.new(newHoriz.X, cur.Y, newHoriz.Z)
-    end
-
-    -- ANTI-LEAN: loại bỏ nghiêng bằng cách nén roll/pitch
-    hrp.AssemblyAngularVelocity = Vector3.new(0, hrp.AssemblyAngularVelocity.Y, 0)
-    local look = hrp.CFrame.LookVector
-    if math.abs(look.Y) > 1e-3 then
-        local pos = hrp.Position
-        local flatLook = Vector3.new(look.X, 0, look.Z)
-        if flatLook.Magnitude > 1e-3 then
-            -- giữ hướng yaw hiện tại, loại pitch/roll
-            hrp.CFrame = CFrame.lookAt(pos, pos + flatLook.Unit, Vector3.yAxis)
-        end
-    end
-end)
+	-- ANTI-LEAN
+	hrp.AssemblyAngularVelocity = Vector3.new(0, hrp.AssemblyAngularVelocity.Y, 0)
+	local look = hrp.CFrame.LookVector
+	if math.abs(look.Y) > 1e-3 then
+		local pos = hrp.Position
+		local flat = Vector3.new(look.X, 0, look.Z)
+		if flat.Magnitude > 1e-3 then
+			hrp.CFrame = CFrame.lookAt(pos, pos + flat.Unit, Vector3.yAxis)
+		end
+	end
+end)        
 
 -- JUMPPOWER: cưỡng bức ổn định (không để game ghi đè), luôn UseJumpPower
 _G.__SLIM_JP_ENFORCE = RunService.Heartbeat:Connect(function()
