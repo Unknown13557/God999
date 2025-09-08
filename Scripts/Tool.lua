@@ -31,7 +31,6 @@ gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 gui.Parent = playerGui
 
 -- 🔘 ICON 48x48
-
 -- ICON TRÒN 48x48: luôn hiện, kẹp trong màn hình, kéo mượt, không "nhảy"
 local icon = Instance.new("ImageButton")
 icon.Name = "FloatingIcon"
@@ -52,70 +51,85 @@ icon.ImageRectSize = Vector2.new(36,36)
 icon.ImageRectOffset = Vector2.new(4,204)
 
 -- đặt vị trí an toàn theo Viewport (tránh off-screen ngay khi spawn)
--- ICON PATCH v2: kéo mượt, không giật, click không bị lệch
-local RunService = game:GetService("RunService")
+local function viewport()
+    local cam = workspace.CurrentCamera
+    if not cam then
+        repeat task.wait() until workspace.CurrentCamera
+        cam = workspace.CurrentCamera
+    end
+    return cam.ViewportSize
+end
 
+local function clampToScreen(x, y)
+    local v  = viewport()
+    local sz = icon.AbsoluteSize
+    return math.clamp(x, 0, v.X - sz.X), math.clamp(y, 0, v.Y - sz.Y)
+end
+
+local function placeIconSafely()
+    local v = viewport()
+    -- mặc định: mé trái, giữa màn hình
+    local x = 16
+    local y = (v.Y/2) - (icon.AbsoluteSize.Y/2)
+    x, y = clampToScreen(x, y)
+    icon.Position = UDim2.fromOffset(x, y)
+end
+
+-- gọi nhiều lần để chắc ăn khi camera/UI chưa “ấm”
+placeIconSafely()
+task.defer(placeIconSafely)
+task.delay(0.1, placeIconSafely)
+
+-- tự kẹp khi đổi kích thước/đổi hướng màn hình
+local cam = workspace.CurrentCamera
+if cam then
+    cam:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+        local x = icon.Position.X.Offset
+        local y = icon.Position.Y.Offset
+        x, y = clampToScreen(x, y)
+        icon.Position = UDim2.fromOffset(x, y)
+    end)
+end
+
+-- Kéo–thả icon (không giật)
 do
     local dragging = false
-    local grabOffset = Vector2.zero
-    local startMouse = Vector2.zero
-    local lastApplied = Vector2.zero
-    local stepConn, endConn
-    local hasMoved = false
-
-    local function viewport()
-        local cam = workspace.CurrentCamera
-        return (cam and cam.ViewportSize) or Vector2.new(1920,1080)
-    end
-    local function clampPos(x,y)
-        local v = viewport()
-        local sz = icon.AbsoluteSize
-        return math.clamp(x, 0, v.X - sz.X), math.clamp(y, 0, v.Y - sz.Y)
-    end
-    local function stopDrag()
-        dragging = false
-        if stepConn then stepConn:Disconnect() stepConn = nil end
-        if endConn then endConn:Disconnect() endConn = nil
-        -- Nếu gần như không di chuyển => xem như click toggle
-        if (startMouse - UIS:GetMouseLocation()).Magnitude < 3 then
-            window.Visible = not window.Visible
-        end
-    end
+    local grabOffset = Vector2.new(0,0)
 
     icon.InputBegan:Connect(function(i)
-        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+        if i.UserInputType == Enum.UserInputType.MouseButton1
+        or i.UserInputType == Enum.UserInputType.Touch then
             dragging = true
-            hasMoved = false
-            startMouse = UIS:GetMouseLocation()
+            local m   = UIS:GetMouseLocation()
             local abs = icon.AbsolutePosition
-            grabOffset = startMouse - Vector2.new(abs.X, abs.Y)
-            lastApplied = Vector2.new(abs.X, abs.Y)
-
-            -- cập nhật theo RenderStepped để mượt và tránh jitter
-            stepConn = RunService.RenderStepped:Connect(function()
-                if not dragging then return end
-                local m = UIS:GetMouseLocation()
-                local raw = m - grabOffset
-                local x, y = clampPos(raw.X, raw.Y)
-                local newPos = Vector2.new(x, y)
-                if (newPos - lastApplied).Magnitude > 0.5 then
-                    icon.Position = UDim2.fromOffset(x, y)
-                    lastApplied = newPos
-                    hasMoved = true
-                end
-            end)
-
-            endConn = i.Changed:Connect(function()
-                if i.UserInputState == Enum.UserInputState.End then
-                    stopDrag()
-                end
-            end)
+            grabOffset = Vector2.new(m.X - abs.X, m.Y - abs.Y)
         end
     end)
 
-    -- Ngăn tình trạng bắt 2 logic click trùng nhau:
-    -- (xoá/bỏ dùng icon.MouseButton1Click cũ nếu còn)
-	end
+    UIS.InputChanged:Connect(function(i)
+        if not dragging then return end
+        if i.UserInputType ~= Enum.UserInputType.MouseMovement
+        and i.UserInputType ~= Enum.UserInputType.Touch then return end
+        local m = UIS:GetMouseLocation()
+        local x, y = clampToScreen(m.X - grabOffset.X, m.Y - grabOffset.Y)
+        icon.Position = UDim2.fromOffset(x, y)
+    end)
+
+    UIS.InputEnded:Connect(function(i)
+        if i.UserInputType == Enum.UserInputType.MouseButton1
+        or i.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+            -- kẹp lần cuối
+            local x, y = clampToScreen(icon.Position.X.Offset, icon.Position.Y.Offset)
+            icon.Position = UDim2.fromOffset(x, y)
+        end
+    end)
+end
+
+-- toggle menu
+icon.MouseButton1Click:Connect(function()
+    window.Visible = not window.Visible
+end)
 
 local window = Instance.new("Frame")
 do
