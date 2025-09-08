@@ -31,69 +31,79 @@ gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 gui.Parent = playerGui
 
 -- 🔘 ICON 48x48
+
+-- ICON TRÒN 48x48: luôn hiện, kẹp trong màn hình, kéo mượt, không "nhảy"
 local icon = Instance.new("ImageButton")
 icon.Name = "FloatingIcon"
+icon.AutoButtonColor = false
 icon.BackgroundColor3 = THEME.Accent
 icon.BackgroundTransparency = 0.2
-icon.Size = UDim2.fromOffset(48,48) -- chỉnh to 48x48
-icon.Position = UDim2.new(0, 16, 0.5, -24)
-icon.ZIndex = 1000
+icon.Size = UDim2.fromOffset(48, 48)
+icon.ZIndex = 10000
 icon.Parent = gui
-Instance.new("UICorner", icon).CornerRadius = UDim.new(1,0) -- tròn hoàn toàn
-icon.Image = "rbxassetid://3926305904"
-icon.ImageRectOffset = Vector2.new(4,204)  -- vẫn giữ icon mặc định
-icon.ImageRectSize = Vector2.new(36,36)
-
--- PATCH: đảm bảo icon xuất hiện & luôn nằm trong màn hình
+gui.DisplayOrder = 10000
+gui.Enabled = true
 icon.Visible = true
-icon.Active  = true
-icon.ZIndex  = 1000
+Instance.new("UICorner", icon).CornerRadius = UDim.new(1, 0)
 
-do
-    -- ép vị trí ban đầu hợp lệ
-    local function clampToScreen(x, y)
-        local cam = workspace.CurrentCamera
-        local v   = (cam and cam.ViewportSize) or Vector2.new(800,600)
-        local sz  = icon.AbsoluteSize
-        return math.clamp(x, 0, v.X - sz.X), math.clamp(y, 0, v.Y - sz.Y)
-    end
+-- sprite default (3926305904) – nút bong bóng chat
+icon.Image = "rbxassetid://3926305904"
+icon.ImageRectSize = Vector2.new(36,36)
+icon.ImageRectOffset = Vector2.new(4,204)
 
-    local function placeIconSafely()
-        local x, y = clampToScreen(icon.Position.X.Offset, icon.Position.Y.Offset)
-        icon.Position = UDim2.fromOffset(x, y)
-    end
-
-    -- gọi ngay & thêm 1 nhịp nhỏ để chắc camera đã sẵn sàng
-    placeIconSafely()
-    task.defer(placeIconSafely)
-    task.delay(0.1, placeIconSafely)
-
-    -- khi đổi kích thước màn hình (xoay máy, đổi UI size) thì kẹp lại
+-- đặt vị trí an toàn theo Viewport (tránh off-screen ngay khi spawn)
+local function viewport()
     local cam = workspace.CurrentCamera
-    if cam then
-        cam:GetPropertyChangedSignal("ViewportSize"):Connect(placeIconSafely)
+    if not cam then
+        repeat task.wait() until workspace.CurrentCamera
+        cam = workspace.CurrentCamera
     end
+    return cam.ViewportSize
 end
 
--- PATCH: drag icon mượt, không nhảy khi chạm lần đầu
+local function clampToScreen(x, y)
+    local v  = viewport()
+    local sz = icon.AbsoluteSize
+    return math.clamp(x, 0, v.X - sz.X), math.clamp(y, 0, v.Y - sz.Y)
+end
+
+local function placeIconSafely()
+    local v = viewport()
+    -- mặc định: mé trái, giữa màn hình
+    local x = 16
+    local y = (v.Y/2) - (icon.AbsoluteSize.Y/2)
+    x, y = clampToScreen(x, y)
+    icon.Position = UDim2.fromOffset(x, y)
+end
+
+-- gọi nhiều lần để chắc ăn khi camera/UI chưa “ấm”
+placeIconSafely()
+task.defer(placeIconSafely)
+task.delay(0.1, placeIconSafely)
+
+-- tự kẹp khi đổi kích thước/đổi hướng màn hình
+local cam = workspace.CurrentCamera
+if cam then
+    cam:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+        local x = icon.Position.X.Offset
+        local y = icon.Position.Y.Offset
+        x, y = clampToScreen(x, y)
+        icon.Position = UDim2.fromOffset(x, y)
+    end)
+end
+
+-- Kéo–thả icon (không giật)
 do
     local dragging = false
     local grabOffset = Vector2.new(0,0)
-
-    local function clampToScreen(x, y)
-        local v = (workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize) or Vector2.new(1920,1080)
-        local sz = icon.AbsoluteSize
-        return math.clamp(x, 0, v.X - sz.X), math.clamp(y, 0, v.Y - sz.Y)
-    end
 
     icon.InputBegan:Connect(function(i)
         if i.UserInputType == Enum.UserInputType.MouseButton1
         or i.UserInputType == Enum.UserInputType.Touch then
             dragging = true
-            local mouse = UIS:GetMouseLocation()
-            local abs   = icon.AbsolutePosition
-            -- lưu khoảng lệch giữa điểm chạm và góc icon
-            grabOffset = Vector2.new(mouse.X - abs.X, mouse.Y - abs.Y)
+            local m   = UIS:GetMouseLocation()
+            local abs = icon.AbsolutePosition
+            grabOffset = Vector2.new(m.X - abs.X, m.Y - abs.Y)
         end
     end)
 
@@ -101,9 +111,8 @@ do
         if not dragging then return end
         if i.UserInputType ~= Enum.UserInputType.MouseMovement
         and i.UserInputType ~= Enum.UserInputType.Touch then return end
-
-        local mouse = UIS:GetMouseLocation()
-        local x, y  = clampToScreen(mouse.X - grabOffset.X, mouse.Y - grabOffset.Y)
+        local m = UIS:GetMouseLocation()
+        local x, y = clampToScreen(m.X - grabOffset.X, m.Y - grabOffset.Y)
         icon.Position = UDim2.fromOffset(x, y)
     end)
 
@@ -111,23 +120,17 @@ do
         if i.UserInputType == Enum.UserInputType.MouseButton1
         or i.UserInputType == Enum.UserInputType.Touch then
             dragging = false
+            -- kẹp lần cuối
+            local x, y = clampToScreen(icon.Position.X.Offset, icon.Position.Y.Offset)
+            icon.Position = UDim2.fromOffset(x, y)
         end
     end)
 end
-    UIS.InputChanged:Connect(function(i)
-        if not dragging then return end
-        if i.UserInputType~=Enum.UserInputType.MouseMovement and i.UserInputType~=Enum.UserInputType.Touch then return end
-        local d=i.Position-start
-        local v=workspace.CurrentCamera.ViewportSize
-        icon.Position = UDim2.fromOffset(
-            math.clamp(orig.X.Offset+d.X, 0, v.X-icon.AbsoluteSize.X),
-            math.clamp(orig.Y.Offset+d.Y, 0, v.Y-icon.AbsoluteSize.Y)
-        )
-    end)
-    UIS.InputEnded:Connect(function(i)
-        if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then dragging=false end
-    end)
-end
+
+-- toggle menu
+icon.MouseButton1Click:Connect(function()
+    window.Visible = not window.Visible
+end)
 
 local window = Instance.new("Frame")
 do
