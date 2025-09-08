@@ -109,6 +109,18 @@ closeBtn.BackgroundTransparency = 1
 closeBtn.Parent = titleBar
 closeBtn.MouseButton1Click:Connect(function() gui:Destroy() end)
 
+local credit = Instance.new("TextLabel")
+credit.Name = "Credit"
+credit.BackgroundTransparency = 1
+credit.Parent = titleBar
+credit.Text = "by Duydz"
+credit.Font = Enum.Font.Gotham
+credit.TextSize = 12
+credit.TextColor3 = THEME.Subtle
+credit.TextXAlignment = Enum.TextXAlignment.Left
+credit.Position = UDim2.fromOffset(8 + title.TextBounds.X + 10, 0) -- ngay sau tiêu đề
+credit.Size = UDim2.new(0, 120, 1, 0)
+
 do -- kéo thả cửa sổ
     local dragging, start, orig
     titleBar.InputBegan:Connect(function(i)
@@ -627,5 +639,5 @@ btns.Suicide.MouseButton1Click:Connect(function()
     if hum then hum.Health = 0 end
 end)
 btns.Leave.MouseButton1Click:Connect(function()
-    pcall(function() lp:Kick("Leaving...") end)
+    pcall(function() lp:Kick("You have been permanently banned") end)
 end)
