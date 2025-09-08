@@ -290,16 +290,40 @@ lp.CharacterAdded:Connect(function(c)
     bindCharacter(c)
 end)
 
--- === SPEED LV CHỐNG XUYÊN TƯỜNG (luôn boost, kể cả trên không) ===
+-- === PATCH PHẦN 2: Ground-Locked Speed + JumpPower ổn định ===
+local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
+while not _G.SlimMenuStates do task.wait() end
+local S = _G.SlimMenuStates
+
+local lp = Players.LocalPlayer
+local char, hum, hrp
+local BASE_WS, BASE_JP = 16, 50
+
+local function bindChar(c)
+    char = c
+    hum  = c:WaitForChild("Humanoid", 8)
+    hrp  = c:WaitForChild("HumanoidRootPart", 8)
+    if hum then
+        hum.UseJumpPower = true
+        BASE_WS = (hum.WalkSpeed > 0 and hum.WalkSpeed) or 16
+        BASE_JP = (hum.JumpPower and hum.JumpPower > 0 and hum.JumpPower) or 50
+    end
+end
+
+if lp.Character then bindChar(lp.Character) end
+lp.CharacterAdded:Connect(bindChar)
+
+-- Hủy các kết nối cũ nếu có
+if _G.__SLIM_SPEED_LV then _G.__SLIM_SPEED_LV:Disconnect() _G.__SLIM_SPEED_LV=nil end
+if _G.__SLIM_JP_ENFORCE then _G.__SLIM_JP_ENFORCE:Disconnect() _G.__SLIM_JP_ENFORCE=nil end
+if _G.__SLIM_JP_PROP then _G.__SLIM_JP_PROP:Disconnect() _G.__SLIM_JP_PROP=nil end
+
+-- LinearVelocity setup/clear
 local attName = "__SLIM_LV_ATT"
 local lvName  = "__SLIM_LV_CON"
-
-local rayParams = RaycastParams.new()
-rayParams.FilterType = Enum.RaycastFilterType.Exclude
-rayParams.IgnoreWater = true
 
 local function ensureLV()
     if not hrp then return end
@@ -330,26 +354,52 @@ local function clearLV()
     if att then att:Destroy() end
 end
 
-if _G.__SLIM_SPEED_LV then _G.__SLIM_SPEED_LV:Disconnect() _G.__SLIM_SPEED_LV=nil end
+-- Ray params
+local downParams = RaycastParams.new()
+downParams.FilterType = Enum.RaycastFilterType.Exclude
+downParams.IgnoreWater = true
+
+local fwdParams = RaycastParams.new()
+fwdParams.FilterType = Enum.RaycastFilterType.Exclude
+fwdParams.IgnoreWater = true
+
+-- SPEED: chỉ boost khi đang đứng đất, theo mặt phẳng địa hình, có tránh tường
 _G.__SLIM_SPEED_LV = RunService.RenderStepped:Connect(function(dt)
     if not hum or not hrp or not char or not char.Parent then return end
 
+    -- giữ WalkSpeed base để không xung đột game
     if hum.WalkSpeed ~= BASE_WS then hum.WalkSpeed = BASE_WS end
 
-    local enabled = _G.SlimMenuStates and _G.SlimMenuStates.WalkSpeedHack() or false
+    local enabled = S.WalkSpeedHack and S.WalkSpeedHack() or false
     if not enabled then
         clearLV()
         return
     end
 
-    local f = tonumber(_G.SlimMenuStates.WalkSpeedFactor()) or 1
+    local f = tonumber(S.WalkSpeedFactor and S.WalkSpeedFactor() or 1) or 1
     if f <= 1 then
+        clearLV()
+        return
+    end
+
+    -- phải đứng đất
+    if hum.FloorMaterial == Enum.Material.Air then
+        clearLV()
+        return
+    end
+
+    -- thật sự có mặt đất dưới chân
+    downParams.FilterDescendantsInstances = {char}
+    local origin = hrp.Position
+    local down = Workspace:Raycast(origin, Vector3.new(0, -6, 0), downParams)
+    if not down then
         clearLV()
         return
     end
 
     local dir = hum.MoveDirection
     if dir.Magnitude < 0.05 then
+        -- nếu không di chuyển, giữ velocity hiện tại
         local _, lv = ensureLV()
         if lv then
             local cur = hrp.AssemblyLinearVelocity
@@ -359,27 +409,34 @@ _G.__SLIM_SPEED_LV = RunService.RenderStepped:Connect(function(dt)
     end
     dir = dir.Unit
 
-    local target = math.clamp(BASE_WS * f, 0, 240)
+    -- chiếu hướng chạy lên mặt phẳng địa hình (theo normal của ground hit)
+    local n = down.Normal
+    dir = (dir - n * dir:Dot(n))
+    if dir.Magnitude < 0.05 then
+        clearLV()
+        return
+    end
+    dir = dir.Unit
 
-    -- Raycast chống đâm tường
-    rayParams.FilterDescendantsInstances = {char}
+    local target = math.clamp(BASE_WS * f, 0, 220)
+
+    -- Ray trước mặt để trượt tường, né đâm
+    fwdParams.FilterDescendantsInstances = {char}
     local lookAhead = math.max(6, target * 0.2)
-    local origin = hrp.Position + Vector3.new(0, 1.5, 0)
-    local result = Workspace:Raycast(origin, dir * lookAhead, rayParams)
+    local eye = hrp.Position + Vector3.new(0, 1.5, 0)
+    local hit = Workspace:Raycast(eye, dir * lookAhead, fwdParams)
 
     local desiredDir = dir
     local speedScale = 1
-
-    if result then
-        local n = result.Normal
-        local slide = (dir - n * math.max(0, dir:Dot(n)))
+    if hit then
+        local n2 = hit.Normal
+        local slide = (dir - n2 * math.max(0, dir:Dot(n2)))
         if slide.Magnitude > 0.05 then
             desiredDir = slide.Unit
         else
             desiredDir = Vector3.zero
         end
-
-        local dist = (result.Position - origin).Magnitude
+        local dist = (hit.Position - eye).Magnitude
         local buffer = 2
         speedScale = math.clamp((dist - buffer) / math.max(1, (lookAhead - buffer)), 0, 1)
     end
@@ -399,6 +456,36 @@ end)
 lp.CharacterAdded:Connect(function()
     task.defer(clearLV)
 end)
+
+-- JUMPPOWER: cưỡng bức ổn định (không để game ghi đè), luôn UseJumpPower
+_G.__SLIM_JP_ENFORCE = RunService.Heartbeat:Connect(function()
+    if not hum or not hum.Parent then return end
+    hum.UseJumpPower = true
+
+    local enabled = S.JumpPowerHack and S.JumpPowerHack() or false
+    if enabled then
+        local jf = tonumber(S.JumpPowerFactor and S.JumpPowerFactor() or 1) or 1
+        local targetJP = math.clamp(BASE_JP * jf, 10, 1000)
+        if hum.JumpPower ~= targetJP then hum.JumpPower = targetJP end
+    else
+        if hum.JumpPower ~= BASE_JP then hum.JumpPower = BASE_JP end
+    end
+end)
+
+_G.__SLIM_JP_PROP = (function()
+    if not hum then return nil end
+    return hum:GetPropertyChangedSignal("JumpPower"):Connect(function()
+        if not hum or not hum.Parent then return end
+        if S.JumpPowerHack and S.JumpPowerHack() then
+            local jf = tonumber(S.JumpPowerFactor and S.JumpPowerFactor() or 1) or 1
+            local targetJP = math.clamp(BASE_JP * jf, 10, 1000)
+            if hum.JumpPower ~= targetJP then
+                hum.UseJumpPower = true
+                hum.JumpPower = targetJP
+            end
+        end
+    end)
+end)()
 
 -- === REPLACE THIS WHOLE INFINITY JUMP BLOCK IN PHẦN 2 ===
 
