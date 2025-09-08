@@ -44,13 +44,45 @@ icon.Image = "rbxassetid://3926305904"
 icon.ImageRectOffset = Vector2.new(4,204)  -- vẫn giữ icon mặc định
 icon.ImageRectSize = Vector2.new(36,36)
 
-do -- kéo thả icon
-    local dragging, start, orig
+-- PATCH: drag icon mượt, không nhảy khi chạm lần đầu
+do
+    local dragging = false
+    local grabOffset = Vector2.new(0,0)
+
+    local function clampToScreen(x, y)
+        local v = (workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize) or Vector2.new(1920,1080)
+        local sz = icon.AbsoluteSize
+        return math.clamp(x, 0, v.X - sz.X), math.clamp(y, 0, v.Y - sz.Y)
+    end
+
     icon.InputBegan:Connect(function(i)
-        if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then
-            dragging=true; start=i.Position; orig=icon.Position
+        if i.UserInputType == Enum.UserInputType.MouseButton1
+        or i.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            local mouse = UIS:GetMouseLocation()
+            local abs   = icon.AbsolutePosition
+            -- lưu khoảng lệch giữa điểm chạm và góc icon
+            grabOffset = Vector2.new(mouse.X - abs.X, mouse.Y - abs.Y)
         end
     end)
+
+    UIS.InputChanged:Connect(function(i)
+        if not dragging then return end
+        if i.UserInputType ~= Enum.UserInputType.MouseMovement
+        and i.UserInputType ~= Enum.UserInputType.Touch then return end
+
+        local mouse = UIS:GetMouseLocation()
+        local x, y  = clampToScreen(mouse.X - grabOffset.X, mouse.Y - grabOffset.Y)
+        icon.Position = UDim2.fromOffset(x, y)
+    end)
+
+    UIS.InputEnded:Connect(function(i)
+        if i.UserInputType == Enum.UserInputType.MouseButton1
+        or i.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+        end
+    end)
+end
     UIS.InputChanged:Connect(function(i)
         if not dragging then return end
         if i.UserInputType~=Enum.UserInputType.MouseMovement and i.UserInputType~=Enum.UserInputType.Touch then return end
