@@ -280,7 +280,7 @@ credit.Font = Enum.Font.Gotham
 credit.TextSize = 12
 credit.TextColor3 = THEME.Subtle
 credit.TextXAlignment = Enum.TextXAlignment.Left
-credit.Position = UDim2.fromOffset(8 + title.TextBounds.X + 18, 0) -- ngay sau tiêu đề
+credit.Position = UDim2.fromOffset(8 + title.TextBounds.X + 17, 0) -- ngay sau tiêu đề
 credit.Size = UDim2.new(0, 120, 1, 0)
 
 do -- kéo thả cửa sổ
@@ -413,6 +413,7 @@ end
 local escSwitch  = mkSwitchRow("Fast Escape")
 local espSwitch  = mkSwitchRow("ESP")
 local infSwitch  = mkSwitchRow("Infinity Jump")
+local noclipSwitch = mkSwitchRow("NoClip")
 local wsInput    = mkInput("Input WalkSpeed")
 local jpInput    = mkInput("Input JumpPower")
 local wsSwitch   = mkSwitchRow("Changer WalkSpeed")
@@ -430,6 +431,7 @@ local leaveBtn   = mkClickBtn("Leave [Click]")
 _G.MagicMenuStates = {
     FastEscape = escSwitch.Get,
     ESP = espSwitch.Get,
+	NoClip = noclipSwitch.Get,
     WalkSpeedHack = wsSwitch.Get,
     JumpPowerHack = jpSwitch.Get,
     InfinityJump = infSwitch.Get,
@@ -550,6 +552,76 @@ _G.__MAGIC_SPEED_RUN = RunService.RenderStepped:Connect(function(dt)
 			hrp.CFrame = CFrame.lookAt(pos, pos + flat.Unit, Vector3.yAxis)
 		end
 	end
+end)
+
+-- ======== NoClip (toggle) – không độn thổ ==========
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+-- chờ GUI publish state
+while not _G.MagicMenuStates do task.wait() end
+local S  = _G.MagicMenuStates
+local lp = Players.LocalPlayer
+
+local char, hum
+local function bindChar(c)
+    char = c
+    hum  = c:WaitForChild("Humanoid", 8)
+end
+if lp.Character then bindChar(lp.Character) end
+lp.CharacterAdded:Connect(bindChar)
+
+-- lưu trạng thái CanCollide gốc để trả về khi OFF
+local OriginalCollide = {}  -- [BasePart] = bool
+local function remember(part)
+    if OriginalCollide[part] == nil then
+        OriginalCollide[part] = part.CanCollide
+    end
+end
+local function restoreAll()
+    for part,orig in pairs(OriginalCollide) do
+        if part and part.Parent then
+            part.CanCollide = orig
+        end
+    end
+end
+
+-- chọn “ground parts” để đứng đất, tránh độn thổ
+local function isGroundKeeper(name)
+    -- R15: giữ chân & hông để đứng đất
+    if name == "LeftFoot" or name == "RightFoot" or name == "LowerTorso" then
+        return true
+    end
+    -- R6 fallback: giữ 2 chân & Torso
+    if name == "Left Leg" or name == "Right Leg" or name == "Torso" then
+        return true
+    end
+    return false
+end
+
+-- vòng lặp chính NoClip
+if _G.__MAGIC_NOCLIP_LOOP then _G.__MAGIC_NOCLIP_LOOP:Disconnect() end
+_G.__MAGIC_NOCLIP_LOOP = RunService.Stepped:Connect(function()
+    if not char or not hum or hum.Health <= 0 then return end
+
+    if S.NoClip() then
+        -- duyệt tất cả BasePart trong nhân vật
+        for _,v in ipairs(char:GetDescendants()) do
+            if v:IsA("BasePart") then
+                remember(v)
+                if isGroundKeeper(v.Name) then
+                    -- giữ va chạm với mặt đất -> không bị tụt xuyên map
+                    if v.CanCollide ~= true then v.CanCollide = true end
+                else
+                    -- tắt va chạm cho phần thân/ tay… -> đi xuyên tường
+                    if v.CanCollide ~= false then v.CanCollide = false end
+                end
+            end
+        end
+    else
+        -- OFF -> trả CanCollide về trạng thái ban đầu
+        restoreAll()
+    end
 end)
 
 -- JUMPPOWER: cưỡng bức ổn định (không để game ghi đè), luôn UseJumpPower
