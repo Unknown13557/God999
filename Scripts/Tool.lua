@@ -313,6 +313,7 @@ local function mkInput(ph)
 end
 
 -- Các mục
+local escSwitch  = mkSwitchRow("Escape")
 local espSwitch  = mkSwitchRow("ESP")
 local infSwitch  = mkSwitchRow("Infinity Jump")
 local wsInput    = mkInput("Input WalkSpeed")
@@ -329,6 +330,7 @@ local leaveBtn   = mkClickBtn("Leave [Click]")
 
 -- API state cho phần 2/3 dùng
 _G.SlimMenuStates = {
+    Escape = escSwitch.Get,
     ESP = espSwitch.Get,
     WalkSpeedHack = wsSwitch.Get,
     JumpPowerHack = jpSwitch.Get,
@@ -521,6 +523,55 @@ _G.__SLIM_INFJUMP_CHAR = Players.LocalPlayer.CharacterAdded:Connect(function(c)
     task.wait(0.2)
     char = c
     hum = c:FindFirstChildOfClass("Humanoid")
+end)
+
+-- ========== ESCAPE LOGIC (ON = bay lên trời, OFF = rớt xuống) ==========
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+
+while not _G.SlimMenuStates do task.wait() end
+local S  = _G.SlimMenuStates
+local lp = Players.LocalPlayer
+
+local char, hum, hrp
+local function bindChar(c)
+    char = c
+    hum  = c:WaitForChild("Humanoid", 8)
+    hrp  = c:WaitForChild("HumanoidRootPart", 8)
+end
+if lp.Character then bindChar(lp.Character) end
+lp.CharacterAdded:Connect(bindChar)
+
+-- cleanup cũ
+if _G.__SLIM_ESCAPE_LOOP then _G.__SLIM_ESCAPE_LOOP:Disconnect() end
+
+local activeTween
+
+_G.__SLIM_ESCAPE_LOOP = RunService.RenderStepped:Connect(function()
+    if not hrp then return end
+    
+    if S.Escape() then
+        -- chỉ tween lên một lần khi bật
+        if not activeTween then
+            local pos = hrp.Position
+            local target = Vector3.new(pos.X, pos.Y + 50000, pos.Z)
+            local dist = (target - pos).Magnitude
+            local time = dist / 300 -- tốc độ 300
+            local tw = TweenService:Create(hrp, TweenInfo.new(time, Enum.EasingStyle.Linear), {CFrame = CFrame.new(target)})
+            activeTween = tw
+            tw:Play()
+            tw.Completed:Connect(function()
+                activeTween = nil
+            end)
+        end
+    else
+        -- OFF: dừng tween ngay (nếu có) để rớt xuống
+        if activeTween then
+            activeTween:Cancel()
+            activeTween = nil
+        end
+    end
 end)
 
 -- ===== Infinity Zoom =====
