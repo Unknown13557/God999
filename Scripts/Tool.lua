@@ -912,5 +912,5 @@ btns.Suicide.MouseButton1Click:Connect(function()
     if hum then hum.Health = 0 end
 end)
 btns.Leave.MouseButton1Click:Connect(function()
-    pcall(function() lp:Kick("You have been permanently banned") end)
+    pcall(function() lp:Kick("Leave") end)
 end)
