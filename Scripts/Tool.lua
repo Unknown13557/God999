@@ -590,8 +590,8 @@ _G.__SLIM_ESCAPE_LOOP = RunService.RenderStepped:Connect(function(dt)
                 local dist = origin.Y - r.Position.Y
                 if dist <= 100 then
                     local vel = hrp.AssemblyLinearVelocity
-                    if vel.Y < -150 then
-                        hrp.AssemblyLinearVelocity = Vector3.new(vel.X, -150, vel.Z)
+                    if vel.Y < -200 then
+                        hrp.AssemblyLinearVelocity = Vector3.new(vel.X, -200, vel.Z)
                     end
                 end
             end
