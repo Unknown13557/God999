@@ -7,7 +7,8 @@ _G.__MAGIC_CLEANUP = function()
         "__MAGIC_ESP_WATCH",
         "__MAGIC_SPEED_SAFE",
         "__MAGIC_ESCAPE_LOOP",
-        "__MAGIC_ZOOM_LOOP"
+        "__MAGIC_ZOOM_LOOP",
+	    "__MAGIC_CAM_FIX_LOOP"
     }) do
         if _G[id] and typeof(_G[id])=="RBXScriptConnection" then
             _G[id]:Disconnect()
@@ -422,6 +423,7 @@ local zoomBtn = mkClickBtn("Infinity Zoom [Click]")
 local suiBtn     = mkClickBtn("Suicide [Click]")
 local rejoinBtn  = mkClickBtn("Server Rejoin [Click]")
 local hopBtn     = mkClickBtn("Server Hop [Click]")
+local camFixBtn = mkClickBtn("Fix Camera [Click]")
 local leaveBtn   = mkClickBtn("Leave [Click]")
 
 -- API state cho phần 2/3 dùng
@@ -433,7 +435,7 @@ _G.MagicMenuStates = {
     InfinityJump = infSwitch.Get,
     WalkSpeedFactor = function() return tonumber(wsInput.Text) or 1 end,
     JumpPowerFactor = function() return tonumber(jpInput.Text) or 1 end,
-    Buttons = { Hop = hopBtn, Rejoin = rejoinBtn, Suicide = suiBtn, Leave = leaveBtn, Zoom = zoomBtn }
+    Buttons = { Hop = hopBtn, Rejoin = rejoinBtn, Suicide = suiBtn, Leave = leaveBtn, Zoom = zoomBtn, FixCamera = camFixBtn }
 }
 -- PHẦN 2 (SẠCH): Speed đơn giản (không xuyên tường) + JumpPower ổn định + Infinity Jump chuẩn
 -- + ESP luôn bám người chơi mới/reset + các nút click (Hop/Rejoin/Suicide/Leave)
@@ -694,6 +696,87 @@ _G.__MAGIC_ESCAPE_LOOP = RunService.RenderStepped:Connect(function(dt)
         end
     end
 end)
+
+---FixCamera (1-click), KHÔNG đụng HumanoidRootPart
+local Players = game:GetService("Players")
+local UIS     = game:GetService("UserInputService")
+local RS      = game:GetService("RunService")
+
+local lp = Players.LocalPlayer
+
+-- chờ GUI state
+while not _G.MagicMenuStates do task.wait() end
+local S = _G.MagicMenuStates
+local camBtn = S.Buttons and S.Buttons.FixCamera
+
+-- dọn loop cũ (nếu có)
+if _G.__MAGIC_CAM_FIX_LOOP then
+    _G.__MAGIC_CAM_FIX_LOOP:Disconnect()
+    _G.__MAGIC_CAM_FIX_LOOP = nil
+end
+
+-- hàm fix mềm, không phá script khác: chỉ ép CameraType/Subject trong thời gian ngắn, rồi thôi
+local function magicSoftFixCamera()
+    local cam = workspace.CurrentCamera
+    if not cam then return end
+
+    local char = lp.Character
+    local hum  = char and char:FindFirstChildOfClass("Humanoid")
+
+    -- switch nhanh Scriptable -> Custom để “đập” mấy state kẹt
+    cam.CameraType = Enum.CameraType.Scriptable
+    task.wait(0.02)
+
+    -- đặt Subject về Humanoid nếu có, nếu không thì để nguyên
+    if hum and hum.Parent then
+        cam.CameraSubject = hum
+    end
+
+    -- reset kiểu camera về Custom
+    cam.CameraType = Enum.CameraType.Custom
+
+    -- trả chuột về mặc định (hữu ích trên mobile khi camera lock)
+    pcall(function()
+        UIS.MouseBehavior = Enum.MouseBehavior.Default
+        UIS.MouseIconEnabled = true
+    end)
+
+    -- làm “neo” nhẹ trong 1.2s để camera không bị script khác set lại ngay lập tức
+    local t0 = os.clock()
+    if _G.__MAGIC_CAM_FIX_LOOP then
+        _G.__MAGIC_CAM_FIX_LOOP:Disconnect()
+        _G.__MAGIC_CAM_FIX_LOOP = nil
+    end
+    _G.__MAGIC_CAM_FIX_LOOP = RS.RenderStepped:Connect(function()
+        -- giữ kiểu Custom trong 1.2 giây
+        if (os.clock() - t0) > 1.2 then
+            _G.__MAGIC_CAM_FIX_LOOP:Disconnect()
+            _G.__MAGIC_CAM_FIX_LOOP = nil
+            return
+        end
+        if cam.CameraType ~= Enum.CameraType.Custom then
+            cam.CameraType = Enum.CameraType.Custom
+        end
+        if hum and hum.Parent and cam.CameraSubject ~= hum then
+            cam.CameraSubject = hum
+        end
+    end)
+end
+
+-- gán click vào nút
+if camBtn and not _G.__MAGIC_CAM_BTN_ONCE then
+    _G.__MAGIC_CAM_BTN_ONCE = camBtn.MouseButton1Click:Connect(magicSoftFixCamera)
+end
+
+-- auto rebind khi respawn, phòng khi camera lại bị lock sau khi chết/spawn
+local function bindChar(c)
+    local hum = c:WaitForChild("Humanoid", 8)
+    task.defer(function()
+        magicSoftFixCamera()
+    end)
+end
+if lp.Character then bindChar(lp.Character) end
+lp.CharacterAdded:Connect(bindChar)
 
 -- ===== Infinity Zoom =====
 local Players = game:GetService("Players")
