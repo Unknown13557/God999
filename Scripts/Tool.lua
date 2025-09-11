@@ -163,16 +163,60 @@ title.Position = UDim2.fromOffset(8,0)
 title.Parent = titleBar
 
 local closeBtn = Instance.new("TextButton")
-closeBtn.Size = UDim2.fromOffset(22, TITLE_H)
+closeBtn.Size = UDim2.fromOffset(32, TITLE_H)
 closeBtn.AnchorPoint = Vector2.new(1,0)
 closeBtn.Position = UDim2.new(1,0,0,0)
-closeBtn.Text = "×"
+closeBtn.Text = "X"
 closeBtn.Font = Enum.Font.GothamBold
-closeBtn.TextSize = 16
+closeBtn.TextSize = 20
 closeBtn.TextColor3 = THEME.Subtle
 closeBtn.BackgroundTransparency = 1
 closeBtn.Parent = titleBar
-closeBtn.MouseButton1Click:Connect(function() gui:Destroy() end)
+closeBtn.MouseButton1Click:Connect(function()
+    local confirm = Instance.new("TextLabel")
+    confirm.Size = UDim2.new(0, 200, 0, 60)
+    confirm.Position = UDim2.new(0.5, -100, 0.5, -30)
+    confirm.BackgroundColor3 = THEME.Background
+    confirm.BorderSizePixel = 0
+    confirm.TextColor3 = THEME.Text
+    confirm.Text = "Are you sure you want to close?"
+    confirm.Font = Enum.Font.GothamBold
+    confirm.TextSize = 14
+    confirm.ZIndex = 2000
+    confirm.Parent = gui
+    Instance.new("UICorner", confirm).CornerRadius = UDim.new(0, 8)
+
+    local yesBtn = Instance.new("TextButton")
+    yesBtn.Size = UDim2.new(0.5, -5, 0, 24)
+    yesBtn.Position = UDim2.new(0, 5, 1, -29)
+    yesBtn.BackgroundColor3 = THEME.Accent
+    yesBtn.Text = "Yes"
+    yesBtn.Font = Enum.Font.GothamBold
+    yesBtn.TextColor3 = THEME.Text
+    yesBtn.TextSize = 12
+    yesBtn.ZIndex = 2001
+    yesBtn.Parent = confirm
+    Instance.new("UICorner", yesBtn).CornerRadius = UDim.new(0, 5)
+
+    local noBtn = Instance.new("TextButton")
+    noBtn.Size = UDim2.new(0.5, -5, 0, 24)
+    noBtn.Position = UDim2.new(0.5, 0, 1, -29)
+    noBtn.BackgroundColor3 = THEME.Hover
+    noBtn.Text = "No"
+    noBtn.Font = Enum.Font.GothamBold
+    noBtn.TextColor3 = THEME.Text
+    noBtn.TextSize = 12
+    noBtn.ZIndex = 2001
+    noBtn.Parent = confirm
+    Instance.new("UICorner", noBtn).CornerRadius = UDim.new(0, 5)
+
+    yesBtn.MouseButton1Click:Connect(function()
+        gui:Destroy()
+    end)
+    noBtn.MouseButton1Click:Connect(function()
+        confirm:Destroy()
+    end)
+end)
 
 local credit = Instance.new("TextLabel")
 credit.Name = "Credit"
