@@ -314,14 +314,14 @@ end
 
 -- Các mục
 local espSwitch  = mkSwitchRow("ESP")
+local infSwitch  = mkSwitchRow("Infinity Jump")
 local wsInput    = mkInput("Input WalkSpeed")
 local jpInput    = mkInput("Input JumpPower")
 local wsSwitch   = mkSwitchRow("Changer WalkSpeed")
 local jpSwitch   = mkSwitchRow("Changer JumpPower")
-local infSwitch  = mkSwitchRow("Infinity Jump")
 
 -- Nút click
-local zoomBtn = mkClickBtn("Infinity Zoom [ Click]")
+local zoomBtn = mkClickBtn("Infinity Zoom [Click]")
 local suiBtn     = mkClickBtn("Suicide [Click]")
 local rejoinBtn  = mkClickBtn("Server Rejoin [Click]")
 local hopBtn     = mkClickBtn("Server Hop [Click]")
