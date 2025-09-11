@@ -314,7 +314,6 @@ end
 
 -- Các mục
 local espSwitch  = mkSwitchRow("ESP")
-local zoomSwitch = mkSwitchRow("Infinity Zoom")
 local wsInput    = mkInput("Input WalkSpeed")
 local jpInput    = mkInput("Input JumpPower")
 local wsSwitch   = mkSwitchRow("Changer WalkSpeed")
@@ -322,21 +321,21 @@ local jpSwitch   = mkSwitchRow("Changer JumpPower")
 local infSwitch  = mkSwitchRow("Infinity Jump")
 
 -- Nút click
-local hopBtn     = mkClickBtn("Server Hop [Click]")
-local rejoinBtn  = mkClickBtn("Server Rejoin [Click]")
+local zoomBtn = mkClickBtn("Infinity Zoom [ Click]")
 local suiBtn     = mkClickBtn("Suicide [Click]")
-local leaveBtn   = mkClickBtn("Leave [Click]") -- 🆕 thêm nút Leave
+local rejoinBtn  = mkClickBtn("Server Rejoin [Click]")
+local hopBtn     = mkClickBtn("Server Hop [Click]")
+local leaveBtn   = mkClickBtn("Leave [Click]")
 
 -- API state cho phần 2/3 dùng
 _G.SlimMenuStates = {
     ESP = espSwitch.Get,
-	InfinityZoom = zoomSwitch.Get,
     WalkSpeedHack = wsSwitch.Get,
     JumpPowerHack = jpSwitch.Get,
     InfinityJump = infSwitch.Get,
     WalkSpeedFactor = function() return tonumber(wsInput.Text) or 1 end,
     JumpPowerFactor = function() return tonumber(jpInput.Text) or 1 end,
-    Buttons = { Hop = hopBtn, Rejoin = rejoinBtn, Suicide = suiBtn, Leave = leaveBtn }
+    Buttons = { Hop = hopBtn, Rejoin = rejoinBtn, Suicide = suiBtn, Leave = leaveBtn, Zoom = zoomBtn }
 }
 -- PHẦN 2 (SẠCH): Speed đơn giản (không xuyên tường) + JumpPower ổn định + Infinity Jump chuẩn
 -- + ESP luôn bám người chơi mới/reset + các nút click (Hop/Rejoin/Suicide/Leave)
@@ -525,30 +524,57 @@ _G.__SLIM_INFJUMP_CHAR = Players.LocalPlayer.CharacterAdded:Connect(function(c)
 end)
 
 -- ===== Infinity Zoom =====
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+while not _G.SlimMenuStates do task.wait() end
+local S  = _G.SlimMenuStates
+local lp = Players.LocalPlayer
+
+local zoomBtn = S.Buttons and S.Buttons.Zoom
+
+-- Cờ toàn cục: đã kích hoạt vĩnh viễn trong phiên chơi hay chưa
+_G.__SLIM_ZOOM_FOREVER = (_G.__SLIM_ZOOM_FOREVER == true)
+
+-- cập nhật chữ & trạng thái nút (nếu có)
+local function refreshZoomButton()
+    if not zoomBtn then return end
+    if _G.__SLIM_ZOOM_FOREVER then
+        zoomBtn.Text = "Infinity Zoom: ON"
+        zoomBtn.AutoButtonColor = false
+        zoomBtn.Active = false
+        zoomBtn.Selectable = false
+        zoomBtn.BackgroundTransparency = 0  -- vẫn hiện nút nhưng vô hiệu
+    else
+        zoomBtn.Text = "Infinity Zoom [Click]"
+        zoomBtn.Active = true
+        zoomBtn.AutoButtonColor = true
+        zoomBtn.Selectable = true
+    end
+end
+refreshZoomButton()
+
+-- click 1 lần -> bật vĩnh viễn (trong phiên chơi)
+if zoomBtn and not _G.__SLIM_ZOOM_BTN_ONE then
+    _G.__SLIM_ZOOM_BTN_ONE = zoomBtn.MouseButton1Click:Connect(function()
+        if _G.__SLIM_ZOOM_FOREVER then return end
+        _G.__SLIM_ZOOM_FOREVER = true
+        refreshZoomButton()
+    end)
+end
+
+-- loop áp dụng zoom
 if _G.__SLIM_ZOOM_LOOP then _G.__SLIM_ZOOM_LOOP:Disconnect() end
-
-local baseMin = lp.CameraMinZoomDistance
-local baseMax = lp.CameraMaxZoomDistance
-
 _G.__SLIM_ZOOM_LOOP = RunService.RenderStepped:Connect(function()
     local cam = workspace.CurrentCamera
     if not cam then return end
 
-    if S.InfinityZoom() then
+    if _G.__SLIM_ZOOM_FOREVER then
         if lp.CameraMinZoomDistance ~= 0.5 then
             lp.CameraMinZoomDistance = 0.5
         end
         if lp.CameraMaxZoomDistance < 1e6 then
             lp.CameraMaxZoomDistance = 1e6
-        end
-    else
-        baseMin = lp.CameraMinZoomDistance
-        baseMax = lp.CameraMaxZoomDistance
-        if lp.CameraMinZoomDistance ~= baseMin then
-            lp.CameraMinZoomDistance = baseMin
-        end
-        if lp.CameraMaxZoomDistance ~= baseMax then
-            lp.CameraMaxZoomDistance = baseMax
         end
     end
 end)
