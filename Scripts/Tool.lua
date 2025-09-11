@@ -121,34 +121,33 @@ end
 
 do
     local dragging = false
-    local dragOffset
 
-    -- Bắt đầu kéo
+    -- Bắt đầu kéo -> icon nhảy ngay vào ngón tay
     icon.InputBegan:Connect(function(i)
-        if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then
+        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
             dragging = true
-            dragOffset = Vector2.new(i.Position.X, i.Position.Y) - Vector2.new(icon.AbsolutePosition.X, icon.AbsolutePosition.Y)
+            local v = workspace.CurrentCamera.ViewportSize
+            icon.Position = UDim2.fromOffset(
+                math.clamp(i.Position.X - icon.AbsoluteSize.X/2, 0, v.X - icon.AbsoluteSize.X),
+                math.clamp(i.Position.Y - icon.AbsoluteSize.Y/2, 0, v.Y - icon.AbsoluteSize.Y)
+            )
         end
     end)
 
-    -- Cập nhật vị trí khi kéo
+    -- Kéo -> icon luôn bám vào ngón tay
     _G.__MAGIC_ICON_DRAG = UIS.InputChanged:Connect(function(i)
         if not dragging then return end
-        if i.UserInputType~=Enum.UserInputType.MouseMovement and i.UserInputType~=Enum.UserInputType.Touch then return end
-
-        local finger = Vector2.new(i.Position.X, i.Position.Y)
-        local newPos = finger - dragOffset
+        if i.UserInputType ~= Enum.UserInputType.MouseMovement and i.UserInputType ~= Enum.UserInputType.Touch then return end
         local v = workspace.CurrentCamera.ViewportSize
-
         icon.Position = UDim2.fromOffset(
-            math.clamp(newPos.X, 0, v.X - icon.AbsoluteSize.X),
-            math.clamp(newPos.Y, 0, v.Y - icon.AbsoluteSize.Y)
+            math.clamp(i.Position.X - icon.AbsoluteSize.X/2, 0, v.X - icon.AbsoluteSize.X),
+            math.clamp(i.Position.Y - icon.AbsoluteSize.Y/2, 0, v.Y - icon.AbsoluteSize.Y)
         )
     end)
 
-    -- Kết thúc kéo
+    -- Thả ngón tay -> dừng
     UIS.InputEnded:Connect(function(i)
-        if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then
+        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
             dragging = false
         end
     end)
@@ -565,70 +564,49 @@ end)
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
--- chờ GUI publish state
 while not _G.MagicMenuStates do task.wait() end
-local S  = _G.MagicMenuStates
+local S = _G.MagicMenuStates
 local lp = Players.LocalPlayer
+local char
 
-local char, hum
-local function bindChar(c)
-    char = c
-    hum  = c:WaitForChild("Humanoid", 8)
-end
-if lp.Character then bindChar(lp.Character) end
-lp.CharacterAdded:Connect(bindChar)
+if _G.__MAGIC_NOCLIP_LOOP then _G.__MAGIC_NOCLIP_LOOP:Disconnect() end
 
--- lưu trạng thái CanCollide gốc để trả về khi OFF
-local OriginalCollide = {}  -- [BasePart] = bool
-local function remember(part)
-    if OriginalCollide[part] == nil then
-        OriginalCollide[part] = part.CanCollide
-    end
-end
-local function restoreAll()
-    for part,orig in pairs(OriginalCollide) do
-        if part and part.Parent then
-            part.CanCollide = orig
-        end
-    end
-end
+local originalCollide = {}  -- [BasePart] = bool
 
--- chọn “ground parts” để đứng đất, tránh độn thổ
 local function isGroundKeeper(name)
-    -- R15: giữ chân & hông để đứng đất
-    if name == "LeftFoot" or name == "RightFoot" or name == "LowerTorso" then
-        return true
-    end
-    -- R6 fallback: giữ 2 chân & Torso
-    if name == "Left Leg" or name == "Right Leg" or name == "Torso" then
-        return true
-    end
+    if name == "Left Leg" or name == "Right Leg" then return true end
+    if name == "LeftFoot" or name == "RightFoot" then return true end
+    if name == "LeftLowerLeg" or name == "RightLowerLeg" then return true end
     return false
 end
 
--- vòng lặp chính NoClip
-if _G.__MAGIC_NOCLIP_LOOP then _G.__MAGIC_NOCLIP_LOOP:Disconnect() end
-_G.__MAGIC_NOCLIP_LOOP = RunService.Stepped:Connect(function()
-    if not char or not hum or hum.Health <= 0 then return end
-
-    if S.NoClip() then
-        -- duyệt tất cả BasePart trong nhân vật
-        for _,v in ipairs(char:GetDescendants()) do
-            if v:IsA("BasePart") then
-                remember(v)
-                if isGroundKeeper(v.Name) then
-                    -- giữ va chạm với mặt đất -> không bị tụt xuyên map
-                    if v.CanCollide ~= true then v.CanCollide = true end
-                else
-                    -- tắt va chạm cho phần thân/ tay… -> đi xuyên tường
-                    if v.CanCollide ~= false then v.CanCollide = false end
-                end
+local function applyNoclip(enabled)
+    if not char or not char.Parent then return end
+    for _, d in ipairs(char:GetDescendants()) do
+        if d:IsA("BasePart") then
+            local keep = isGroundKeeper(d.Name)
+            local target = enabled and keep or (originalCollide[d] or true)
+            if originalCollide[d] == nil then
+                originalCollide[d] = d.CanCollide
+            end
+            if d.CanCollide ~= target then
+                d.CanCollide = target
             end
         end
-    else
-        -- OFF -> trả CanCollide về trạng thái ban đầu
-        restoreAll()
     end
+end
+
+local function bindCharacter(c)
+    char = c
+    originalCollide = {}
+    applyNoclip(S.Noclip and S.Noclip() or false)
+end
+
+if lp.Character then bindCharacter(lp.Character) end
+lp.CharacterAdded:Connect(bindCharacter)
+
+_G.__MAGIC_NOCLIP_LOOP = RunService.Heartbeat:Connect(function()
+    applyNoclip(S.Noclip and S.Noclip() or false)
 end)
 
 -- JUMPPOWER: cưỡng bức ổn định (không để game ghi đè), luôn UseJumpPower
