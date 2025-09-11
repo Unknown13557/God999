@@ -314,6 +314,7 @@ end
 
 -- Các mục
 local espSwitch  = mkSwitchRow("ESP")
+local zoomSwitch = mkSwitchRow("Infinity Zoom")
 local wsInput    = mkInput("Input WalkSpeed")
 local jpInput    = mkInput("Input JumpPower")
 local wsSwitch   = mkSwitchRow("Changer WalkSpeed")
@@ -329,6 +330,7 @@ local leaveBtn   = mkClickBtn("Leave [Click]") -- 🆕 thêm nút Leave
 -- API state cho phần 2/3 dùng
 _G.SlimMenuStates = {
     ESP = espSwitch.Get,
+	InfinityZoom = zoomSwitch.Get,
     WalkSpeedHack = wsSwitch.Get,
     JumpPowerHack = jpSwitch.Get,
     InfinityJump = infSwitch.Get,
@@ -522,8 +524,36 @@ _G.__SLIM_INFJUMP_CHAR = Players.LocalPlayer.CharacterAdded:Connect(function(c)
     hum = c:FindFirstChildOfClass("Humanoid")
 end)
 
+-- ===== Infinity Zoom =====
+if _G.__SLIM_ZOOM_LOOP then _G.__SLIM_ZOOM_LOOP:Disconnect() end
+
+local baseMin = lp.CameraMinZoomDistance
+local baseMax = lp.CameraMaxZoomDistance
+
+_G.__SLIM_ZOOM_LOOP = RunService.RenderStepped:Connect(function()
+    local cam = workspace.CurrentCamera
+    if not cam then return end
+
+    if S.InfinityZoom() then
+        if lp.CameraMinZoomDistance ~= 0.5 then
+            lp.CameraMinZoomDistance = 0.5
+        end
+        if lp.CameraMaxZoomDistance < 1e6 then
+            lp.CameraMaxZoomDistance = 1e6
+        end
+    else
+        baseMin = lp.CameraMinZoomDistance
+        baseMax = lp.CameraMaxZoomDistance
+        if lp.CameraMinZoomDistance ~= baseMin then
+            lp.CameraMinZoomDistance = baseMin
+        end
+        if lp.CameraMaxZoomDistance ~= baseMax then
+            lp.CameraMaxZoomDistance = baseMax
+        end
+    end
+end)
+
 -- ESP (BillboardGui: tên đỏ + khoảng cách trắng + HP xanh).
--- Bám người chơi mới vào và khi họ reset.
 local espEnabled = false
 local espLoopConn
 local espSignalConns = {}
