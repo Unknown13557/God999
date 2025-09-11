@@ -525,7 +525,7 @@ _G.__SLIM_INFJUMP_CHAR = Players.LocalPlayer.CharacterAdded:Connect(function(c)
     hum = c:FindFirstChildOfClass("Humanoid")
 end)
 
--- ========== ESCAPE LOGIC (ON = bay lên trời, OFF = rớt xuống an toàn) ==========
+-- ===== ESCAPE LOGIC (ON = bay lên trời, OFF = rơi xuống an toàn) =====
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -543,6 +543,16 @@ end
 if lp.Character then bindChar(lp.Character) end
 lp.CharacterAdded:Connect(bindChar)
 
+-- hàm đọc trạng thái toggle bất kể bạn đặt key là gì
+local function EscapeOn()
+    local f = S.FastEscape or S.ESC or S.Escape
+    if typeof(f) == "function" then
+        local ok, val = pcall(f)
+        return ok and (val == true)
+    end
+    return false
+end
+
 -- cleanup cũ
 if _G.__SLIM_ESCAPE_LOOP then _G.__SLIM_ESCAPE_LOOP:Disconnect() end
 
@@ -552,19 +562,14 @@ rayParams.FilterType = Enum.RaycastFilterType.Exclude
 
 _G.__SLIM_ESCAPE_LOOP = RunService.RenderStepped:Connect(function(dt)
     if not hrp then return end
-    
-    if S.Escape() then
-        -- chỉ tween lên một lần khi bật
+
+    if EscapeOn() then
         if not activeTween then
             local pos = hrp.Position
             local target = Vector3.new(pos.X, pos.Y + 50000, pos.Z)
             local dist = (target - pos).Magnitude
-            local time = dist / 300 -- tốc độ 300
-            local tw = TweenService:Create(
-                hrp,
-                TweenInfo.new(time, Enum.EasingStyle.Linear),
-                {CFrame = CFrame.new(target)}
-            )
+            local time = dist / 300
+            local tw = TweenService:Create(hrp, TweenInfo.new(time, Enum.EasingStyle.Linear), {CFrame = CFrame.new(target)})
             activeTween = tw
             tw:Play()
             tw.Completed:Connect(function()
@@ -572,24 +577,22 @@ _G.__SLIM_ESCAPE_LOOP = RunService.RenderStepped:Connect(function(dt)
             end)
         end
     else
-        -- OFF: dừng tween ngay (nếu có) để rớt xuống
         if activeTween then
             activeTween:Cancel()
             activeTween = nil
         end
-
-        -- Raycast xuống để check khoảng cách đến mặt đất
-        rayParams.FilterDescendantsInstances = {char}
-        local origin = hrp.Position
-        local result = workspace:Raycast(origin, Vector3.new(0, -1000, 0), rayParams)
-
-        if result then
-            local dist = (origin.Y - result.Position.Y)
-            if dist <= 100 then
-                -- nếu sắp chạm đất thì giảm tốc độ rơi
-                local vel = hrp.AssemblyLinearVelocity
-                if vel.Y < -150 then
-                    hrp.AssemblyLinearVelocity = Vector3.new(vel.X, -150, vel.Z)
+        -- hạ tốc rơi khi gần đất để tránh xuyên
+        if char then
+            rayParams.FilterDescendantsInstances = {char}
+            local origin = hrp.Position
+            local r = workspace:Raycast(origin, Vector3.new(0, -1000, 0), rayParams)
+            if r then
+                local dist = origin.Y - r.Position.Y
+                if dist <= 100 then
+                    local vel = hrp.AssemblyLinearVelocity
+                    if vel.Y < -150 then
+                        hrp.AssemblyLinearVelocity = Vector3.new(vel.X, -150, vel.Z)
+                    end
                 end
             end
         end
