@@ -1,3 +1,23 @@
+-- ====== CLEANUP PATCH ======
+if _G.__MAGIC_CLEANUP then _G.__MAGIC_CLEANUP() end
+_G.__MAGIC_CLEANUP = function()
+    for _,id in ipairs({
+        "__MAGIC_HB_APPLY",
+        "__MAGIC_INFJUMP",
+        "__MAGIC_ESP_WATCH",
+        "__MAGIC_SPEED_SAFE",
+        "__MAGIC_ESCAPE_LOOP",
+        "__MAGIC_ZOOM_LOOP"
+    }) do
+        if _G[id] and typeof(_G[id])=="RBXScriptConnection" then
+            _G[id]:Disconnect()
+        end
+        _G[id] = nil
+    end
+end
+-- ============================
+
+local Players = game:GetService("Players")
 -- PHẦN 1: GUI RỖNG (Icon 48x48 + thêm Leave)
 local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
