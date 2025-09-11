@@ -405,7 +405,7 @@ local hopBtn     = mkClickBtn("Server Hop [Click]")
 local leaveBtn   = mkClickBtn("Leave [Click]")
 
 -- API state cho phần 2/3 dùng
-_G.SlimMenuStates = {
+_G.MagicMenuStates = {
     FastEscape = escSwitch.Get,
     ESP = espSwitch.Get,
     WalkSpeedHack = wsSwitch.Get,
@@ -424,8 +424,8 @@ local TeleportService = game:GetService("TeleportService")
 
 local lp = Players.LocalPlayer
 
-while not _G.SlimMenuStates do task.wait() end
-local S = _G.SlimMenuStates
+while not _G.MagicMenuStates do task.wait() end
+local S = _G.MagicMenuStates
 
 local char, hum, hrp
 local BASE_WS, BASE_JP = 16, 50
@@ -450,8 +450,8 @@ end)
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
-while not _G.SlimMenuStates do task.wait() end
-local S = _G.SlimMenuStates
+while not _G.MagicMenuStates do task.wait() end
+local S = _G.MagicMenuStates
 
 local lp = Players.LocalPlayer
 local char, hum, hrp
@@ -470,12 +470,12 @@ end
 if lp.Character then bindChar(lp.Character) end
 lp.CharacterAdded:Connect(bindChar)
 
-if _G.__SLIM_SPEED_RUN then _G.__SLIM_SPEED_RUN:Disconnect() end
+if _G.__MAGIC_SPEED_RUN then _G.__MAGIC_SPEED_RUN:Disconnect() end
 
 local rayParams = RaycastParams.new()
 rayParams.FilterType = Enum.RaycastFilterType.Exclude
 
-_G.__SLIM_SPEED_RUN = RunService.RenderStepped:Connect(function(dt)
+_G.__MAGIC_SPEED_RUN = RunService.RenderStepped:Connect(function(dt)
 	if not hum or not hrp or not char or not char.Parent then return end
 	rayParams.FilterDescendantsInstances = {char}
 
@@ -531,7 +531,7 @@ _G.__SLIM_SPEED_RUN = RunService.RenderStepped:Connect(function(dt)
 end)
 
 -- JUMPPOWER: cưỡng bức ổn định (không để game ghi đè), luôn UseJumpPower
-_G.__SLIM_JP_ENFORCE = RunService.Heartbeat:Connect(function()
+_G.__MAGIC_JP_ENFORCE = RunService.Heartbeat:Connect(function()
     if not hum or not hum.Parent then return end
     hum.UseJumpPower = true
 
@@ -545,7 +545,7 @@ _G.__SLIM_JP_ENFORCE = RunService.Heartbeat:Connect(function()
     end
 end)
 
-_G.__SLIM_JP_PROP = (function()
+_G.__MAGIC_JP_PROP = (function()
     if not hum then return nil end
     return hum:GetPropertyChangedSignal("JumpPower"):Connect(function()
         if not hum or not hum.Parent then return end
@@ -563,9 +563,9 @@ end)()
 -- === REPLACE THIS WHOLE INFINITY JUMP BLOCK IN PHẦN 2 ===
 
 -- Clean old binds
-if _G.__SLIM_INFJUMP then _G.__SLIM_INFJUMP:Disconnect() end
-if _G.__SLIM_INFJUMP2 then _G.__SLIM_INFJUMP2:Disconnect() end
-if _G.__SLIM_INFJUMP_CHAR then _G.__SLIM_INFJUMP_CHAR:Disconnect() end
+if _G.__MAGIC_INFJUMP then _G.__MAGIC_INFJUMP:Disconnect() end
+if _G.__MAGIC_INFJUMP2 then _G.__MAGIC_INFJUMP2:Disconnect() end
+if _G.__MAGIC_INFJUMP_CHAR then _G.__MAGIC_INFJUMP_CHAR:Disconnect() end
 
 local function canJump()
     return S.InfinityJump and S.InfinityJump() and hum and hum.Parent and hum.Health > 0
@@ -586,16 +586,16 @@ local function doInfJump()
     end)
 end
 
-_G.__SLIM_INFJUMP = UIS.JumpRequest:Connect(doInfJump)
+_G.__MAGIC_INFJUMP = UIS.JumpRequest:Connect(doInfJump)
 
-_G.__SLIM_INFJUMP2 = UIS.InputBegan:Connect(function(input, gpe)
+_G.__MAGIC_INFJUMP2 = UIS.InputBegan:Connect(function(input, gpe)
     if gpe then return end
     if input.KeyCode == Enum.KeyCode.Space then
         doInfJump()
     end
 end)
 
-_G.__SLIM_INFJUMP_CHAR = Players.LocalPlayer.CharacterAdded:Connect(function(c)
+_G.__MAGIC_INFJUMP_CHAR = Players.LocalPlayer.CharacterAdded:Connect(function(c)
     task.wait(0.2)
     char = c
     hum = c:FindFirstChildOfClass("Humanoid")
@@ -606,8 +606,8 @@ local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
 
-while not _G.SlimMenuStates do task.wait() end
-local S  = _G.SlimMenuStates
+while not _G.MagicMenuStates do task.wait() end
+local S  = _G.MagicMenuStates
 local lp = Players.LocalPlayer
 
 local char, hum, hrp
@@ -630,13 +630,13 @@ local function EscapeOn()
 end
 
 -- cleanup cũ
-if _G.__SLIM_ESCAPE_LOOP then _G.__SLIM_ESCAPE_LOOP:Disconnect() end
+if _G.__MAGIC_ESCAPE_LOOP then _G.__MAGIC_ESCAPE_LOOP:Disconnect() end
 
 local activeTween
 local rayParams = RaycastParams.new()
 rayParams.FilterType = Enum.RaycastFilterType.Exclude
 
-_G.__SLIM_ESCAPE_LOOP = RunService.RenderStepped:Connect(function(dt)
+_G.__MAGIC_ESCAPE_LOOP = RunService.RenderStepped:Connect(function(dt)
     if not hrp then return end
 
     if EscapeOn() then
@@ -679,19 +679,19 @@ end)
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
-while not _G.SlimMenuStates do task.wait() end
-local S  = _G.SlimMenuStates
+while not _G.MagicMenuStates do task.wait() end
+local S  = _G.MagicMenuStates
 local lp = Players.LocalPlayer
 
 local zoomBtn = S.Buttons and S.Buttons.Zoom
 
 -- Cờ toàn cục: đã kích hoạt vĩnh viễn trong phiên chơi hay chưa
-_G.__SLIM_ZOOM_FOREVER = (_G.__SLIM_ZOOM_FOREVER == true)
+_G.__MAGIC_ZOOM_FOREVER = (_G.__MAGIC_ZOOM_FOREVER == true)
 
 -- cập nhật chữ & trạng thái nút (nếu có)
 local function refreshZoomButton()
     if not zoomBtn then return end
-    if _G.__SLIM_ZOOM_FOREVER then
+    if _G.__MAGIC_ZOOM_FOREVER then
         zoomBtn.Text = "Infinity Zoom: ON"
         zoomBtn.AutoButtonColor = false
         zoomBtn.Active = false
@@ -707,21 +707,21 @@ end
 refreshZoomButton()
 
 -- click 1 lần -> bật vĩnh viễn (trong phiên chơi)
-if zoomBtn and not _G.__SLIM_ZOOM_BTN_ONE then
-    _G.__SLIM_ZOOM_BTN_ONE = zoomBtn.MouseButton1Click:Connect(function()
-        if _G.__SLIM_ZOOM_FOREVER then return end
-        _G.__SLIM_ZOOM_FOREVER = true
+if zoomBtn and not _G.__MAGIC_ZOOM_BTN_ONE then
+    _G.__MAGIC_ZOOM_BTN_ONE = zoomBtn.MouseButton1Click:Connect(function()
+        if _G.__MAGIC_ZOOM_FOREVER then return end
+        _G.__MAGIC_ZOOM_FOREVER = true
         refreshZoomButton()
     end)
 end
 
 -- loop áp dụng zoom
-if _G.__SLIM_ZOOM_LOOP then _G.__SLIM_ZOOM_LOOP:Disconnect() end
-_G.__SLIM_ZOOM_LOOP = RunService.RenderStepped:Connect(function()
+if _G.__MAGIC_ZOOM_LOOP then _G.__MAGIC_ZOOM_LOOP:Disconnect() end
+_G.__MAGIC_ZOOM_LOOP = RunService.RenderStepped:Connect(function()
     local cam = workspace.CurrentCamera
     if not cam then return end
 
-    if _G.__SLIM_ZOOM_FOREVER then
+    if _G.__MAGIC_ZOOM_FOREVER then
         if lp.CameraMinZoomDistance ~= 0.5 then
             lp.CameraMinZoomDistance = 0.5
         end
@@ -891,8 +891,8 @@ local function stopESP()
     clearESPAll()
 end
 
-if _G.__SLIM_ESP_WATCH then _G.__SLIM_ESP_WATCH:Disconnect() end
-_G.__SLIM_ESP_WATCH = RunService.RenderStepped:Connect(function()
+if _G.__MAGIC_ESP_WATCH then _G.__MAGIC_ESP_WATCH:Disconnect() end
+_G.__MAGIC_ESP_WATCH = RunService.RenderStepped:Connect(function()
     if S.ESP() then
         if not espEnabled then startESP() end
     else
