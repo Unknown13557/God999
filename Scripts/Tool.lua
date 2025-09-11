@@ -173,48 +173,80 @@ closeBtn.TextColor3 = THEME.Subtle
 closeBtn.BackgroundTransparency = 1
 closeBtn.Parent = titleBar
 closeBtn.MouseButton1Click:Connect(function()
-    local confirm = Instance.new("TextLabel")
-    confirm.Size = UDim2.new(0, 200, 0, 60)
-    confirm.Position = UDim2.new(0.5, -100, 0.5, -30)
+    -- overlay full màn hình
+    local overlay = Instance.new("Frame")
+    overlay.Size = UDim2.fromScale(1,1)
+    overlay.Position = UDim2.fromOffset(0,0)
+    overlay.BackgroundColor3 = Color3.new(0,0,0)
+    overlay.BackgroundTransparency = 1
+    overlay.BorderSizePixel = 0
+    overlay.ZIndex = 1999
+    overlay.Active = true -- chặn click xuyên
+    overlay.Parent = gui
+
+    -- fade in overlay
+    TweenService:Create(overlay, TweenInfo.new(0.15), {BackgroundTransparency = 0.35}):Play()
+
+    -- khung confirm
+    local confirm = Instance.new("Frame")
+    confirm.Size = UDim2.new(0, 300, 0, 120)
+    confirm.Position = UDim2.new(0.5, -150, 0.5, -60)
     confirm.BackgroundColor3 = THEME.Background
     confirm.BorderSizePixel = 0
-    confirm.TextColor3 = THEME.Text
-    confirm.Text = "Are you sure you want to close?"
-    confirm.Font = Enum.Font.GothamBold
-    confirm.TextSize = 14
     confirm.ZIndex = 2000
     confirm.Parent = gui
-    Instance.new("UICorner", confirm).CornerRadius = UDim.new(0, 8)
+    Instance.new("UICorner", confirm).CornerRadius = UDim.new(0, 10)
+
+    local msg = Instance.new("TextLabel")
+    msg.Size = UDim2.new(1, -20, 0, 60)
+    msg.Position = UDim2.fromOffset(10, 10)
+    msg.BackgroundTransparency = 1
+    msg.TextColor3 = THEME.Text
+    msg.Text = "Are you sure you want to close?"
+    msg.Font = Enum.Font.GothamBold
+    msg.TextSize = 16
+    msg.TextWrapped = true
+    msg.ZIndex = 2001
+    msg.Parent = confirm
 
     local yesBtn = Instance.new("TextButton")
-    yesBtn.Size = UDim2.new(0.5, -5, 0, 24)
-    yesBtn.Position = UDim2.new(0, 5, 1, -29)
+    yesBtn.Size = UDim2.new(0.5, -15, 0, 32)
+    yesBtn.Position = UDim2.new(0, 10, 1, -42)
     yesBtn.BackgroundColor3 = THEME.Accent
     yesBtn.Text = "Yes"
     yesBtn.Font = Enum.Font.GothamBold
     yesBtn.TextColor3 = THEME.Text
-    yesBtn.TextSize = 12
+    yesBtn.TextSize = 14
     yesBtn.ZIndex = 2001
     yesBtn.Parent = confirm
-    Instance.new("UICorner", yesBtn).CornerRadius = UDim.new(0, 5)
+    Instance.new("UICorner", yesBtn).CornerRadius = UDim.new(0, 6)
 
     local noBtn = Instance.new("TextButton")
-    noBtn.Size = UDim2.new(0.5, -5, 0, 24)
-    noBtn.Position = UDim2.new(0.5, 0, 1, -29)
+    noBtn.Size = UDim2.new(0.5, -15, 0, 32)
+    noBtn.Position = UDim2.new(0.5, 5, 1, -42)
     noBtn.BackgroundColor3 = THEME.Hover
     noBtn.Text = "No"
     noBtn.Font = Enum.Font.GothamBold
     noBtn.TextColor3 = THEME.Text
-    noBtn.TextSize = 12
+    noBtn.TextSize = 14
     noBtn.ZIndex = 2001
     noBtn.Parent = confirm
-    Instance.new("UICorner", noBtn).CornerRadius = UDim.new(0, 5)
+    Instance.new("UICorner", noBtn).CornerRadius = UDim.new(0, 6)
+
+    local function cleanup()
+        TweenService:Create(overlay, TweenInfo.new(0.12), {BackgroundTransparency = 1}):Play()
+        task.delay(0.12, function()
+            overlay:Destroy()
+            confirm:Destroy()
+        end)
+    end
 
     yesBtn.MouseButton1Click:Connect(function()
+        cleanup()
         gui:Destroy()
     end)
     noBtn.MouseButton1Click:Connect(function()
-        confirm:Destroy()
+        cleanup()
     end)
 end)
 
@@ -227,7 +259,7 @@ credit.Font = Enum.Font.Gotham
 credit.TextSize = 12
 credit.TextColor3 = THEME.Subtle
 credit.TextXAlignment = Enum.TextXAlignment.Left
-credit.Position = UDim2.fromOffset(8 + title.TextBounds.X + 20, 0) -- ngay sau tiêu đề
+credit.Position = UDim2.fromOffset(8 + title.TextBounds.X + 14, 0) -- ngay sau tiêu đề
 credit.Size = UDim2.new(0, 120, 1, 0)
 
 do -- kéo thả cửa sổ
@@ -370,6 +402,7 @@ local zoomBtn = mkClickBtn("Infinity Zoom [Click]")
 local suiBtn     = mkClickBtn("Suicide [Click]")
 local rejoinBtn  = mkClickBtn("Server Rejoin [Click]")
 local hopBtn     = mkClickBtn("Server Hop [Click]")
+local fixCamBtn = mkClickBtn("Fix Camera [Click]")
 local leaveBtn   = mkClickBtn("Leave [Click]")
 
 -- API state cho phần 2/3 dùng
@@ -381,7 +414,7 @@ _G.SlimMenuStates = {
     InfinityJump = infSwitch.Get,
     WalkSpeedFactor = function() return tonumber(wsInput.Text) or 1 end,
     JumpPowerFactor = function() return tonumber(jpInput.Text) or 1 end,
-    Buttons = { Hop = hopBtn, Rejoin = rejoinBtn, Suicide = suiBtn, Leave = leaveBtn, Zoom = zoomBtn }
+    Buttons = { Hop = hopBtn, Rejoin = rejoinBtn, Suicide = suiBtn, Leave = leaveBtn, Zoom = zoomBtn, FixCam = fixCamBtn }
 }
 -- PHẦN 2 (SẠCH): Speed đơn giản (không xuyên tường) + JumpPower ổn định + Infinity Jump chuẩn
 -- + ESP luôn bám người chơi mới/reset + các nút click (Hop/Rejoin/Suicide/Leave)
@@ -642,6 +675,46 @@ _G.__SLIM_ESCAPE_LOOP = RunService.RenderStepped:Connect(function(dt)
         end
     end
 end)
+
+-- FIX CAMERA cho mobile (không HRP, không hotkey)
+local Players = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
+
+while not _G.SlimMenuStates do task.wait() end
+local S  = _G.SlimMenuStates
+local lp = Players.LocalPlayer
+
+local function unstuckCamera()
+    local cam = workspace.CurrentCamera
+    if not cam then
+        workspace:GetPropertyChangedSignal("CurrentCamera"):Wait()
+        cam = workspace.CurrentCamera
+        if not cam then return end
+    end
+
+    -- đảm bảo kiểu camera cho phép xoay
+    if cam.CameraType ~= Enum.CameraType.Custom then
+        cam.CameraType = Enum.CameraType.Custom
+    end
+
+    -- đặt lại subject về Humanoid (không đụng HRP)
+    if lp.Character then
+        local hum = lp.Character:FindFirstChildOfClass("Humanoid")
+        if hum and cam.CameraSubject ~= hum then
+            cam.CameraSubject = hum
+        end
+    end
+
+    -- “mở khóa” điều khiển cảm ứng/chuột
+    pcall(function() UIS.MouseBehavior = Enum.MouseBehavior.Default end)
+    pcall(function() UIS.MouseIconEnabled = true end)
+end
+
+local btns = S.Buttons
+if btns and btns.FixCam and not btns.FixCam.__Connected then
+    btns.FixCam.__Connected = true
+    btns.FixCam.MouseButton1Click:Connect(unstuckCamera)
+end
 
 -- ===== Infinity Zoom =====
 local Players = game:GetService("Players")
