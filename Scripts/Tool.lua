@@ -600,46 +600,6 @@ _G.__SLIM_ESCAPE_LOOP = RunService.RenderStepped:Connect(function(dt)
     end
 end)
 
--- FIX CAMERA cho mobile (không HRP, không hotkey)
-local Players = game:GetService("Players")
-local UIS = game:GetService("UserInputService")
-
-while not _G.SlimMenuStates do task.wait() end
-local S  = _G.SlimMenuStates
-local lp = Players.LocalPlayer
-
-local function unstuckCamera()
-    local cam = workspace.CurrentCamera
-    if not cam then
-        workspace:GetPropertyChangedSignal("CurrentCamera"):Wait()
-        cam = workspace.CurrentCamera
-        if not cam then return end
-    end
-
-    -- đảm bảo kiểu camera cho phép xoay
-    if cam.CameraType ~= Enum.CameraType.Custom then
-        cam.CameraType = Enum.CameraType.Custom
-    end
-
-    -- đặt lại subject về Humanoid (không đụng HRP)
-    if lp.Character then
-        local hum = lp.Character:FindFirstChildOfClass("Humanoid")
-        if hum and cam.CameraSubject ~= hum then
-            cam.CameraSubject = hum
-        end
-    end
-
-    -- “mở khóa” điều khiển cảm ứng/chuột
-    pcall(function() UIS.MouseBehavior = Enum.MouseBehavior.Default end)
-    pcall(function() UIS.MouseIconEnabled = true end)
-end
-
-local btns = S.Buttons
-if btns and btns.FixCam and not btns.FixCam.__Connected then
-    btns.FixCam.__Connected = true
-    btns.FixCam.MouseButton1Click:Connect(unstuckCamera)
-end
-
 -- ===== Infinity Zoom =====
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -695,6 +655,46 @@ _G.__SLIM_ZOOM_LOOP = RunService.RenderStepped:Connect(function()
         end
     end
 end)
+
+--- FIX CAMERA cho mobile (không HRP, không hotkey)
+local Players = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
+
+while not _G.SlimMenuStates do task.wait() end
+local S  = _G.SlimMenuStates
+local lp = Players.LocalPlayer
+
+local function unstuckCamera()
+    local cam = workspace.CurrentCamera
+    if not cam then
+        workspace:GetPropertyChangedSignal("CurrentCamera"):Wait()
+        cam = workspace.CurrentCamera
+        if not cam then return end
+    end
+
+    -- đảm bảo kiểu camera cho phép xoay
+    if cam.CameraType ~= Enum.CameraType.Custom then
+        cam.CameraType = Enum.CameraType.Custom
+    end
+
+    -- đặt lại subject về Humanoid (không đụng HRP)
+    if lp.Character then
+        local hum = lp.Character:FindFirstChildOfClass("Humanoid")
+        if hum and cam.CameraSubject ~= hum then
+            cam.CameraSubject = hum
+        end
+    end
+
+    -- “mở khóa” điều khiển cảm ứng/chuột
+    pcall(function() UIS.MouseBehavior = Enum.MouseBehavior.Default end)
+    pcall(function() UIS.MouseIconEnabled = true end)
+end
+
+local btns = S.Buttons
+if btns and btns.FixCam and not btns.FixCam.__Connected then
+    btns.FixCam.__Connected = true
+    btns.FixCam.MouseButton1Click:Connect(unstuckCamera)
+end
 
 -- ESP (BillboardGui: tên đỏ + khoảng cách trắng + HP xanh).
 local espEnabled = false
