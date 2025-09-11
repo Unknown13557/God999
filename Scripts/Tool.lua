@@ -313,7 +313,7 @@ local function mkInput(ph)
 end
 
 -- Các mục
-local escSwitch  = mkSwitchRow("Escape")
+local escSwitch  = mkSwitchRow("Fast Escape")
 local espSwitch  = mkSwitchRow("ESP")
 local infSwitch  = mkSwitchRow("Infinity Jump")
 local wsInput    = mkInput("Input WalkSpeed")
@@ -330,7 +330,7 @@ local leaveBtn   = mkClickBtn("Leave [Click]")
 
 -- API state cho phần 2/3 dùng
 _G.SlimMenuStates = {
-    Escape = escSwitch.Get,
+    FastEscape = escSwitch.Get,
     ESP = espSwitch.Get,
     WalkSpeedHack = wsSwitch.Get,
     JumpPowerHack = jpSwitch.Get,
@@ -525,7 +525,7 @@ _G.__SLIM_INFJUMP_CHAR = Players.LocalPlayer.CharacterAdded:Connect(function(c)
     hum = c:FindFirstChildOfClass("Humanoid")
 end)
 
--- ========== ESCAPE LOGIC (ON = bay lên trời, OFF = rớt xuống) ==========
+-- ========== ESCAPE LOGIC (ON = bay lên trời, OFF = rớt xuống an toàn) ==========
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -547,8 +547,10 @@ lp.CharacterAdded:Connect(bindChar)
 if _G.__SLIM_ESCAPE_LOOP then _G.__SLIM_ESCAPE_LOOP:Disconnect() end
 
 local activeTween
+local rayParams = RaycastParams.new()
+rayParams.FilterType = Enum.RaycastFilterType.Exclude
 
-_G.__SLIM_ESCAPE_LOOP = RunService.RenderStepped:Connect(function()
+_G.__SLIM_ESCAPE_LOOP = RunService.RenderStepped:Connect(function(dt)
     if not hrp then return end
     
     if S.Escape() then
@@ -558,7 +560,11 @@ _G.__SLIM_ESCAPE_LOOP = RunService.RenderStepped:Connect(function()
             local target = Vector3.new(pos.X, pos.Y + 50000, pos.Z)
             local dist = (target - pos).Magnitude
             local time = dist / 300 -- tốc độ 300
-            local tw = TweenService:Create(hrp, TweenInfo.new(time, Enum.EasingStyle.Linear), {CFrame = CFrame.new(target)})
+            local tw = TweenService:Create(
+                hrp,
+                TweenInfo.new(time, Enum.EasingStyle.Linear),
+                {CFrame = CFrame.new(target)}
+            )
             activeTween = tw
             tw:Play()
             tw.Completed:Connect(function()
@@ -570,6 +576,22 @@ _G.__SLIM_ESCAPE_LOOP = RunService.RenderStepped:Connect(function()
         if activeTween then
             activeTween:Cancel()
             activeTween = nil
+        end
+
+        -- Raycast xuống để check khoảng cách đến mặt đất
+        rayParams.FilterDescendantsInstances = {char}
+        local origin = hrp.Position
+        local result = workspace:Raycast(origin, Vector3.new(0, -1000, 0), rayParams)
+
+        if result then
+            local dist = (origin.Y - result.Position.Y)
+            if dist <= 100 then
+                -- nếu sắp chạm đất thì giảm tốc độ rơi
+                local vel = hrp.AssemblyLinearVelocity
+                if vel.Y < -150 then
+                    hrp.AssemblyLinearVelocity = Vector3.new(vel.X, -150, vel.Z)
+                end
+            end
         end
     end
 end)
