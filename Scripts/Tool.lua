@@ -8,7 +8,8 @@ _G.__MAGIC_CLEANUP = function()
         "__MAGIC_SPEED_SAFE",
         "__MAGIC_ESCAPE_LOOP",
         "__MAGIC_ZOOM_LOOP",
-	    "__MAGIC_CAM_FIX_LOOP"
+	    "__MAGIC_CAM_FIX_LOOP",
+		"__MAGIC_NOCLIP_LOOP"	
     }) do
         if _G[id] and typeof(_G[id])=="RBXScriptConnection" then
             _G[id]:Disconnect()
