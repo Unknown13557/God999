@@ -402,7 +402,6 @@ local zoomBtn = mkClickBtn("Infinity Zoom [Click]")
 local suiBtn     = mkClickBtn("Suicide [Click]")
 local rejoinBtn  = mkClickBtn("Server Rejoin [Click]")
 local hopBtn     = mkClickBtn("Server Hop [Click]")
-local fixCamBtn = mkClickBtn("Fix Camera [Click]")
 local leaveBtn   = mkClickBtn("Leave [Click]")
 
 -- API state cho phần 2/3 dùng
@@ -414,7 +413,7 @@ _G.SlimMenuStates = {
     InfinityJump = infSwitch.Get,
     WalkSpeedFactor = function() return tonumber(wsInput.Text) or 1 end,
     JumpPowerFactor = function() return tonumber(jpInput.Text) or 1 end,
-    Buttons = { Hop = hopBtn, Rejoin = rejoinBtn, Suicide = suiBtn, Leave = leaveBtn, Zoom = zoomBtn, FixCam = fixCamBtn }
+    Buttons = { Hop = hopBtn, Rejoin = rejoinBtn, Suicide = suiBtn, Leave = leaveBtn, Zoom = zoomBtn }
 }
 -- PHẦN 2 (SẠCH): Speed đơn giản (không xuyên tường) + JumpPower ổn định + Infinity Jump chuẩn
 -- + ESP luôn bám người chơi mới/reset + các nút click (Hop/Rejoin/Suicide/Leave)
@@ -731,44 +730,6 @@ _G.__SLIM_ZOOM_LOOP = RunService.RenderStepped:Connect(function()
         end
     end
 end)
-
--- === FIX CAMERA (Mobile-safe, không đụng HRP, không làm chết các phần khác) ===
-do
-    local btns = _G.SlimMenuStates and _G.SlimMenuStates.Buttons
-    local fixBtn = btns and btns.FixCam
-    if fixBtn and not fixBtn.__Bound then
-        fixBtn.__Bound = true
-
-        local function safeFixCam()
-            local ok, err = pcall(function()
-                local cam = workspace.CurrentCamera
-                if not cam then return end
-
-                -- đảm bảo kiểu camera cho phép xoay + focus về Humanoid
-                if cam.CameraType ~= Enum.CameraType.Custom then
-                    cam.CameraType = Enum.CameraType.Custom
-                end
-                local lp = Players.LocalPlayer
-                local ch = lp and lp.Character
-                if ch then
-                    local h = ch:FindFirstChildOfClass("Humanoid")
-                    if h and cam.CameraSubject ~= h then
-                        cam.CameraSubject = h
-                    end
-                end
-
-                -- mở lại điều khiển cảm ứng/chuột
-                pcall(function() UIS.MouseBehavior = Enum.MouseBehavior.Default end)
-                pcall(function() UIS.MouseIconEnabled = true end)
-            end)
-            if not ok then
-                warn("[FixCam] error: ", err)
-            end
-        end
-
-        fixBtn.MouseButton1Click:Connect(safeFixCam)
-    end
-end
 
 -- ESP (BillboardGui: tên đỏ + khoảng cách trắng + HP xanh).
 local espEnabled = false
