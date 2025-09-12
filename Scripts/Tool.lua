@@ -438,28 +438,87 @@ end
 
 -- Các mục
 local escSwitch  = mkSwitchRow("Fast Escape")
+-- === MAGIC BLOCK: PlayerList + Clear Target + Teleport Player (under Fast Escape) ===
+-- helpers: tạo nút local không dùng mkClickBtn/mkSwitchRow để không đổi parent
+local function MagicLocalClick(parent, text)
+    local b = Instance.new("TextButton")
+    b.Size = UDim2.new(1, -PAD, 0, 26)
+    b.Position = UDim2.fromOffset(PAD, 0)
+    b.BackgroundColor3 = THEME.Hover
+    b.Text = text
+    b.Font = Enum.Font.GothamBold
+    b.TextSize = 12
+    b.TextColor3 = THEME.Text
+    b.AutoButtonColor = false
+    b.Parent = parent
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0,5)
+    b.MouseEnter:Connect(function() TweenService:Create(b, TweenInfo.new(0.12), {BackgroundColor3 = THEME.Accent}):Play() end)
+    b.MouseLeave:Connect(function() TweenService:Create(b, TweenInfo.new(0.12), {BackgroundColor3 = THEME.Hover}):Play() end)
+    b.MouseButton1Down:Connect(function() TweenService:Create(b, TweenInfo.new(0.08), {BackgroundColor3 = THEME.Titlebar}):Play() end)
+    b.MouseButton1Up:Connect(function() TweenService:Create(b, TweenInfo.new(0.08), {BackgroundColor3 = THEME.Accent}):Play() end)
+    return b
+end
+local function MagicLocalSwitch(parent, labelText)
+    local row = Instance.new("Frame")
+    row.Size = UDim2.new(1, 0, 0, 24)
+    row.BackgroundTransparency = 1
+    row.Parent = parent
 
+    local lbl = Instance.new("TextLabel")
+    lbl.BackgroundTransparency = 1
+    lbl.Size = UDim2.new(1, -80, 1, 0)
+    lbl.Position = UDim2.fromOffset(PAD, 0)
+    lbl.Text = labelText
+    lbl.Font = Enum.Font.Gotham
+    lbl.TextSize = 12
+    lbl.TextColor3 = THEME.Text
+    lbl.TextXAlignment = Enum.TextXAlignment.Left
+    lbl.Parent = row
 
--- ========== PLAYER LIST MODULE (fix không return, không trùng, đúng thứ tự) ==========
+    local sw = Instance.new("TextButton")
+    sw.AnchorPoint = Vector2.new(1,0)
+    sw.Position = UDim2.new(1, -PAD, 0, 0)
+    sw.Size = UDim2.fromOffset(64, 24)
+    sw.BackgroundColor3 = THEME.Hover
+    sw.Text = "OFF"
+    sw.Font = Enum.Font.GothamBold
+    sw.TextSize = 12
+    sw.TextColor3 = THEME.Text
+    sw.AutoButtonColor = false
+    sw.Parent = row
+    Instance.new("UICorner", sw).CornerRadius = UDim.new(0,5)
+    sw.MouseEnter:Connect(function() TweenService:Create(sw, TweenInfo.new(0.12), {BackgroundColor3 = THEME.Accent}):Play() end)
+    sw.MouseLeave:Connect(function() TweenService:Create(sw, TweenInfo.new(0.12), {BackgroundColor3 = THEME.Hover}):Play() end)
+    sw.MouseButton1Down:Connect(function() TweenService:Create(sw, TweenInfo.new(0.08), {BackgroundColor3 = THEME.Titlebar}):Play() end)
+    sw.MouseButton1Up:Connect(function() TweenService:Create(sw, TweenInfo.new(0.08), {BackgroundColor3 = THEME.Accent}):Play() end)
 
--- Dọn tất cả bản cũ (nếu bạn dán patch nhiều lần)
-for _,c in ipairs(scroll:GetChildren()) do
-    if c.Name == "MagicPlayerToggle" or c.Name == "MagicPlayerList" or c.Name == "MagicResetPlayerList" then
-        c:Destroy()
-    end
+    local state=false
+    local api = {
+        Row=row, Switch=sw, Label=lbl,
+        Get=function() return state end,
+        Set=function(v) state = v and true or false; sw.Text = state and "ON" or "OFF" end
+    }
+    sw.MouseButton1Click:Connect(function() api.Set(not state) end)
+    return api
 end
 
--- Thứ tự ổn định trong scroll
-local ORDER_TOGGLE = 40
-local ORDER_LIST   = 41
-local ORDER_RESET  = 42
+-- group container (nằm ngay trong scroll)
+local magicGroup = Instance.new("Frame")
+magicGroup.Name = "MagicTargetGroup"
+magicGroup.Size = UDim2.new(1, 0, 0, 0)
+magicGroup.AutomaticSize = Enum.AutomaticSize.Y
+magicGroup.BackgroundTransparency = 1
+magicGroup.Parent = scroll
 
--- Nút toggle ẩn/hiện danh sách
-local plToggleBtn = mkClickBtn("PlayerList ⬇️")
-plToggleBtn.Name = "MagicPlayerToggle"
-plToggleBtn.LayoutOrder = ORDER_TOGGLE
+local groupList = Instance.new("UIListLayout", magicGroup)
+groupList.FillDirection = Enum.FillDirection.Vertical
+groupList.SortOrder = Enum.SortOrder.LayoutOrder
+groupList.Padding = UDim.new(0, 3)
 
--- Khung chứa danh sách (tự giãn chiều cao, đẩy các nút bên dưới)
+-- header: nút toggle PlayerList
+local plToggleBtn = MagicLocalClick(magicGroup, "PlayerList ⬇️")
+
+-- vùng danh sách (tự giãn)
 local listHolder = Instance.new("Frame")
 listHolder.Name = "MagicPlayerList"
 listHolder.Size = UDim2.new(1, -PAD, 0, 0)
@@ -468,36 +527,27 @@ listHolder.BackgroundTransparency = 1
 listHolder.Active = false
 listHolder.ClipsDescendants = true
 listHolder.ZIndex = 1
-listHolder.LayoutOrder = ORDER_LIST
-listHolder.Parent = scroll
+listHolder.Parent = magicGroup
 
-do
-    local pad = Instance.new("UIPadding")
-    pad.PaddingLeft  = UDim.new(0, PAD)
-    pad.PaddingRight = UDim.new(0, PAD)
-    pad.Parent = listHolder
+local lhPad = Instance.new("UIPadding", listHolder)
+lhPad.PaddingLeft  = UDim.new(0, PAD)
+lhPad.PaddingRight = UDim.new(0, PAD)
 
-    local lay = Instance.new("UIListLayout")
-    lay.FillDirection = Enum.FillDirection.Vertical
-    lay.SortOrder = Enum.SortOrder.LayoutOrder
-    lay.Padding = UDim.new(0, 3)
-    lay.Parent = listHolder
-end
+local lhLayout = Instance.new("UIListLayout", listHolder)
+lhLayout.FillDirection = Enum.FillDirection.Vertical
+lhLayout.SortOrder = Enum.SortOrder.LayoutOrder
+lhLayout.Padding = UDim.new(0, 3)
 
--- Nút reset danh sách (nằm dưới list)
-local resetPlayerBtn = mkClickBtn("Reset PlayerList [Click]")
-resetPlayerBtn.Name = "MagicResetPlayerList"
-resetPlayerBtn.LayoutOrder = ORDER_RESET
+-- nút Clear Target
+local clearTargetBtn = MagicLocalClick(magicGroup, "Clear Target [Click]")
 
--- Màu item
-local ITEM_BG       = Color3.fromRGB(55,55,55)
-local ITEM_HOVER    = Color3.fromRGB(30,30,30)
-local ITEM_SELECTED = Color3.fromRGB(0,0,0)
+-- switch Teleport Player
+local tpSwitch = MagicLocalSwitch(magicGroup, "Teleport Player")
 
--- Giữ target đã chọn
+-- state chọn target
 _G.Magic_SelectedTarget = _G.Magic_SelectedTarget
-
 local listVisible = false
+
 local function MagicUpdateListHeader()
     local sel = _G.Magic_SelectedTarget
     local valid = sel and sel.Parent == Players
@@ -505,7 +555,7 @@ local function MagicUpdateListHeader()
         plToggleBtn.Text = "PlayerList ⬆️"
     else
         if valid then
-            plToggleBtn.Text = ("PlayerList [%s] ⬇️"):format(sel.Name) -- tên gốc
+            plToggleBtn.Text = ("PlayerList [%s] ⬇️"):format(sel.Name)
         else
             plToggleBtn.Text = "PlayerList ⬇️"
             if not valid then _G.Magic_SelectedTarget = nil end
@@ -513,10 +563,11 @@ local function MagicUpdateListHeader()
     end
 end
 
+local SELECTED_COLOR = Color3.fromRGB(0,0,0) -- highlight đen
 local function mkListItem(text, plr)
     local b = Instance.new("TextButton")
     b.Size = UDim2.new(1, 0, 0, 24)
-    b.BackgroundColor3 = ITEM_BG
+    b.BackgroundColor3 = THEME.Hover
     b.AutoButtonColor = false
     b.Text = text
     b.Font = Enum.Font.Gotham
@@ -525,110 +576,106 @@ local function mkListItem(text, plr)
     b.Parent = listHolder
     Instance.new("UICorner", b).CornerRadius = UDim.new(0,5)
 
-    local function isSelected() return _G.Magic_SelectedTarget and plr == _G.Magic_SelectedTarget end
-    if isSelected() then b.BackgroundColor3 = ITEM_SELECTED end
+    local function isSelected() return _G.Magic_SelectedTarget == plr end
+    local function applyNormal()
+        if isSelected() then b.BackgroundColor3 = SELECTED_COLOR else b.BackgroundColor3 = THEME.Hover end
+    end
+    applyNormal()
 
     b.MouseEnter:Connect(function()
-        if not isSelected() then
-            TweenService:Create(b, TweenInfo.new(0.12), {BackgroundColor3 = ITEM_HOVER}):Play()
-        end
+        if not isSelected() then TweenService:Create(b, TweenInfo.new(0.12), {BackgroundColor3 = THEME.Accent}):Play() end
     end)
     b.MouseLeave:Connect(function()
-        if not isSelected() then
-            TweenService:Create(b, TweenInfo.new(0.12), {BackgroundColor3 = ITEM_BG}):Play()
-        end
-    end)
-    b.MouseButton1Click:Connect(function()
-        _G.Magic_SelectedTarget = plr
-        for _,c in ipairs(listHolder:GetChildren()) do
-            if c:IsA("TextButton") then c.BackgroundColor3 = ITEM_BG end
-        end
-        b.BackgroundColor3 = ITEM_SELECTED
-        MagicUpdateListHeader()
+        if not isSelected() then TweenService:Create(b, TweenInfo.new(0.12), {BackgroundColor3 = THEME.Hover}):Play() end
     end)
 
+    b.MouseButton1Click:Connect(function()
+        _G.Magic_SelectedTarget = plr
+        MagicUpdateListHeader()
+        for _,c in ipairs(listHolder:GetChildren()) do
+            if c:IsA("TextButton") then c.BackgroundColor3 = THEME.Hover end
+        end
+        b.BackgroundColor3 = SELECTED_COLOR
+    end)
     return b
 end
 
 local function MagicRenderPlayerList()
-    -- Xoá item cũ, giữ container để không phá layout
     for _,c in ipairs(listHolder:GetChildren()) do
         if c:IsA("TextButton") then c:Destroy() end
     end
     for _,p in ipairs(Players:GetPlayers()) do
-        if p ~= player then
-            mkListItem(p.Name, p) -- tên gốc (không dùng DisplayName)
-        end
+        if p ~= player then mkListItem(p.Name, p) end
     end
     MagicUpdateListHeader()
 end
 
--- Toggle show/hide (ẩn thì chỉ Visible=false, không xoá item -> giữ selection)
 plToggleBtn.MouseButton1Click:Connect(function()
     listVisible = not listVisible
     if listVisible then
-        if #listHolder:GetChildren() <= 2 then
-            MagicRenderPlayerList()
-        end
-        listHolder.Visible = true
+        MagicRenderPlayerList()
+        listHolder.Size = UDim2.new(1, -PAD, 0, 0)
     else
-        listHolder.Visible = false
+        for _,c in ipairs(listHolder:GetChildren()) do
+            if c:IsA("TextButton") then c:Destroy() end
+        end
+        listHolder.Size = UDim2.new(1, -PAD, 0, 0)
     end
     MagicUpdateListHeader()
 end)
 
--- Reset (nếu đang mở thì render lại)
-resetPlayerBtn.MouseButton1Click:Connect(function()
-    if listVisible then MagicRenderPlayerList() end
+clearTargetBtn.MouseButton1Click:Connect(function()
+    _G.Magic_SelectedTarget = nil
     MagicUpdateListHeader()
+    for _,c in ipairs(listHolder:GetChildren()) do
+        if c:IsA("TextButton") then c.BackgroundColor3 = THEME.Hover end
+    end
 end)
 
 Players.PlayerAdded:Connect(function()
     if listVisible then MagicRenderPlayerList() end
     MagicUpdateListHeader()
 end)
-Players.PlayerRemoving:Connect(function(p)
-    if _G.Magic_SelectedTarget == p then _G.Magic_SelectedTarget = nil end
+Players.PlayerRemoving:Connect(function(rem)
+    if _G.Magic_SelectedTarget == rem then _G.Magic_SelectedTarget = nil end
     if listVisible then MagicRenderPlayerList() end
     MagicUpdateListHeader()
 end)
 
--- Mặc định ẩn list + cập nhật header
-listHolder.Visible = false
-MagicUpdateListHeader()
+-- PATCH: hợp nhất API, không ghi đè
+_G.MagicMenuStates          = _G.MagicMenuStates or {}
+_G.MagicMenuStates.Buttons  = _G.MagicMenuStates.Buttons or {}
+-- === MAGIC API (HỢP NHẤT, KHÔNG ĐÈ LÊN NHAU) ===
+local api = _G.MagicMenuStates or {}
 
--- Toggle Teleport Player (nằm ngay dưới nút Reset)
-local tpSwitch = mkSwitchRow("Teleport Player")
-_G.Magic_SelectedTarget = _G.Magic_SelectedTarget
-local espSwitch  = mkSwitchRow("ESP")
-local infSwitch  = mkSwitchRow("Infinity Jump")
-local noclipSwitch = mkSwitchRow("NoClip")
-local wsInput    = mkInput("Input WalkSpeed")
-local jpInput    = mkInput("Input JumpPower")
-local wsSwitch   = mkSwitchRow("Changer WalkSpeed")
-local jpSwitch   = mkSwitchRow("Changer JumpPower")
+api.FastEscape      = escSwitch.Get
+api.TeleportPlayer  = tpSwitch.Get
+api.ESP             = espSwitch.Get
+api.NoClip          = noclipSwitch.Get
+api.InfinityJump    = infSwitch.Get
+api.WalkSpeedHack   = wsSwitch.Get
+api.JumpPowerHack   = jpSwitch.Get
+api.WalkSpeedFactor = function() return tonumber(wsInput.Text) or 1 end
+api.JumpPowerFactor = function() return tonumber(jpInput.Text) or 1 end
 
--- Nút click
-local zoomBtn = mkClickBtn("Infinity Zoom [Click]")
-local suiBtn     = mkClickBtn("Suicide [Click]")
-local rejoinBtn  = mkClickBtn("Server Rejoin [Click]")
-local hopBtn     = mkClickBtn("Server Hop [Click]")
-local camFixBtn = mkClickBtn("Fix Camera [Click]")
-local leaveBtn   = mkClickBtn("Leave [Click]")
+-- expose target đang chọn từ PlayerList
+api.SelectedTarget  = function() return _G.Magic_SelectedTarget end
 
--- API state cho phần 2/3 dùng
-_G.MagicMenuStates = {
-    FastEscape = escSwitch.Get,
-	TeleportPlayer = tpSwitch.Get,
-    ESP = espSwitch.Get,
-	NoClip = noclipSwitch.Get,
-    WalkSpeedHack = wsSwitch.Get,
-    JumpPowerHack = jpSwitch.Get,
-    InfinityJump = infSwitch.Get,
-    WalkSpeedFactor = function() return tonumber(wsInput.Text) or 1 end,
-    JumpPowerFactor = function() return tonumber(jpInput.Text) or 1 end,
-    Buttons = { Hop = hopBtn, Rejoin = rejoinBtn, Suicide = suiBtn, Leave = leaveBtn, Zoom = zoomBtn, FixCamera = camFixBtn, PlayerListToggle = plToggleBtn, ResetPlayerList = resetPlayerBtn }
+-- gói tất cả button vào một nơi
+api.Buttons = {
+    Hop             = hopBtn,
+    Rejoin          = rejoinBtn,
+    Suicide         = suiBtn,
+    Leave           = leaveBtn,
+    Zoom            = zoomBtn,
+    FixCamera       = camFixBtn,
+    PlayerListToggle= plToggleBtn,
+    ClearTarget     = clearTargetBtn,
 }
+
+_G.MagicMenuStates = api
+-- === END MAGIC API ===
+
 -- PHẦN 2 (SẠCH): Speed đơn giản (không xuyên tường) + JumpPower ổn định + Infinity Jump chuẩn
 -- + ESP luôn bám người chơi mới/reset + các nút click (Hop/Rejoin/Suicide/Leave)
 local Players = game:GetService("Players")
