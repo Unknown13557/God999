@@ -52,25 +52,22 @@ gui.IgnoreGuiInset = true
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 gui.Parent = playerGui
 
--- 🔘 ICON 48x48
--- ICON TRÒN 48x48: luôn hiện, kẹp trong màn hình, kéo mượt, không "nhảy"
+-- ICON TRÒN 48x48: luôn hiện, kẹp trong màn hình, kéo mượt, không "nhảy
 local icon = Instance.new("ImageButton")
-icon.Name = "FloatingIcon"
-icon.AutoButtonColor = false
+icon.Name = "MagicFloatingIcon"
 icon.BackgroundColor3 = THEME.Accent
 icon.BackgroundTransparency = 0.2
-icon.Size = UDim2.fromOffset(48, 48)
-icon.ZIndex = 10000
+icon.Size = UDim2.fromOffset(48,48)
+icon.ZIndex = 1000
 icon.Parent = gui
-gui.DisplayOrder = 10000
-gui.Enabled = true
-icon.Visible = true
-Instance.new("UICorner", icon).CornerRadius = UDim.new(1, 0)
-
--- sprite default (3926305904) – nút bong bóng chat
+Instance.new("UICorner", icon).CornerRadius = UDim.new(1,0)
 icon.Image = "rbxassetid://3926305904"
-icon.ImageRectSize = Vector2.new(36,36)
 icon.ImageRectOffset = Vector2.new(4,204)
+icon.ImageRectSize = Vector2.new(36,36)
+
+-- đặt vị trí bên phải ngay khi chạy
+local screenW = workspace.CurrentCamera.ViewportSize.X
+icon.Position = UDim2.new(0, screenW - 16 - 48, 0.5, -24)
 
 -- đặt vị trí an toàn theo Viewport (tránh off-screen ngay khi spawn)
 local function viewport()
