@@ -58,18 +58,14 @@ icon.Name = "MagicFloatingIcon"
 icon.BackgroundColor3 = THEME.Accent
 icon.BackgroundTransparency = 0.2
 icon.Size = UDim2.fromOffset(48,48)
-icon.AnchorPoint = Vector2.new(0.5, 0.5)              -- tâm icon
-icon.Position    = UDim2.new(1, -56, 0.5, 0)          -- spawn bên phải, giữa màn hình
+icon.AnchorPoint = Vector2.new(0, 0.5)
+icon.Position    = UDim2.new(1, 16, 0.5, -24)
 icon.ZIndex = 1000
 icon.Parent = gui
 Instance.new("UICorner", icon).CornerRadius = UDim.new(1,0)
 icon.Image = "rbxassetid://3926305904"
 icon.ImageRectOffset = Vector2.new(4,204)
 icon.ImageRectSize = Vector2.new(36,36)
-
--- đặt vị trí bên phải ngay khi chạy
-local screenW = workspace.CurrentCamera.ViewportSize.X
-icon.Position = UDim2.new(0, screenW - 16 - 48, 0.5, -24)
 
 -- đặt vị trí an toàn theo Viewport (tránh off-screen ngay khi spawn)
 local function viewport()
@@ -112,40 +108,62 @@ if cam then
     end)
 end
 
--- Kéo–thả icon (không giật)
+-- === Drag logic: bám sát ngón tay + tap để toggle ===
 do
+    local RunService = game:GetService("RunService")
     local dragging = false
+    local grabOffset = Vector2.zero
+    local startPos = Vector2.zero
+    local moved = false
+    local tapStart = 0
+    local rsConn
 
-    -- giới hạn vị trí trong màn hình (tính theo tâm vì AnchorPoint = 0.5,0.5)
-    local function clampToViewport(x, y)
-        local cam = workspace.CurrentCamera
-        local v = cam and cam.ViewportSize or Vector2.new(1920,1080)
-        local r = icon.AbsoluteSize * 0.5
-        return math.clamp(x, r.X, v.X - r.X), math.clamp(y, r.Y, v.Y - r.Y)
+    local function startDrag()
+        dragging = true
+        moved = false
+        tapStart = tick()
+        local m = UIS:GetMouseLocation()
+        local abs = icon.AbsolutePosition
+        grabOffset = Vector2.new(m.X - abs.X, m.Y - abs.Y)
+        startPos = Vector2.new(abs.X, abs.Y)
+
+        if rsConn then rsConn:Disconnect() end
+        rsConn = RunService.RenderStepped:Connect(function()
+            if not dragging then return end
+            local m2 = UIS:GetMouseLocation()
+            local x, y = clampToScreen(m2.X, m2.Y)
+            icon.Position = UDim2.fromOffset(x, y)
+            if (Vector2.new(x, y) - startPos).Magnitude > 4 then
+                moved = true
+            end
+        end)
+    end
+
+    local function endDrag()
+        dragging = false
+        if rsConn then rsConn:Disconnect() rsConn = nil end
+        -- chạm nhẹ (không kéo) => toggle menu
+        if not moved and (tick() - tapStart) < 0.25 then
+            window.Visible = not window.Visible
+        end
     end
 
     icon.InputBegan:Connect(function(i)
         if i.UserInputType == Enum.UserInputType.MouseButton1
         or i.UserInputType == Enum.UserInputType.Touch then
-            dragging = true
+            startDrag()
         end
-    end)
-
-    UIS.InputChanged:Connect(function(i)
-        if not dragging then return end
-        if i.UserInputType ~= Enum.UserInputType.MouseMovement
-        and i.UserInputType ~= Enum.UserInputType.Touch then return end
-
-        local m = UIS:GetMouseLocation()               -- toạ độ màn hình (đã bỏ inset)
-        local x, y = clampToViewport(m.X, m.Y)
-        icon.Position = UDim2.fromOffset(x, y)         -- bám đúng vị trí ngón tay/chuột
     end)
 
     UIS.InputEnded:Connect(function(i)
         if i.UserInputType == Enum.UserInputType.MouseButton1
         or i.UserInputType == Enum.UserInputType.Touch then
-            dragging = false
+            endDrag()
         end
+    end)
+
+    UIS.InputChanged:Connect(function(i)
+        -- đã có loop RenderStepped, không cần xử lý ở đây
     end)
 end
 
