@@ -1,22 +1,3 @@
--- ====== CLEANUP PATCH ======
-if _G.__MAGIC_CLEANUP then _G.__MAGIC_CLEANUP() end
-_G.__MAGIC_CLEANUP = function()
-    for _,id in ipairs({
-        "__MAGIC_HB_APPLY",
-        "__MAGIC_INFJUMP",
-        "__MAGIC_ESP_WATCH",
-        "__MAGIC_SPEED_SAFE",
-        "__MAGIC_ESCAPE_LOOP",
-        "__MAGIC_ZOOM_LOOP",
-	    "__MAGIC_CAM_FIX_LOOP",
-		"__MAGIC_NOCLIP_LOOP"	
-    }) do
-        if _G[id] and typeof(_G[id])=="RBXScriptConnection" then
-            _G[id]:Disconnect()
-        end
-        _G[id] = nil
-    end
-end
 --=================== MAGIC TOOL (CLEAN GUI) ===================
 
 local Players      = game:GetService("Players")
@@ -1119,7 +1100,7 @@ local RunService   = game:GetService("RunService")
 local activeTp        -- tween hiện tại
 local currentTarget   -- player đang bám
 local retimer = 0
-local RETARGET_DT = 0.05          -- retarget 20Hz
+local RETARGET_DT = 0.1         -- retarget 20Hz
 local OFFSET     = CFrame.new(0,0,-3) -- đứng sau lưng 3 studs (đổi nếu bạn muốn vị trí khác)
 local MIN_TIME   = 1/240          -- tween tối thiểu, tránh time=0 gây giật
 
