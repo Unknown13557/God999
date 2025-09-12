@@ -1108,6 +1108,85 @@ _G.__MAGIC_ESP_WATCH = RunService.RenderStepped:Connect(function()
     end
 end)
 
+-- ===== TELEPORT PLAYER (FOLLOW 300, AUTO STOP & RE-TARGET) =====
+if _G.__MAGIC_TP_FOLLOW then _G.__MAGIC_TP_FOLLOW:Disconnect() end
+if _G.__MAGIC_TP_PR then _G.__MAGIC_TP_PR:Disconnect() end
+
+local TweenService = game:GetService("TweenService")
+local Players      = game:GetService("Players")
+local RunService   = game:GetService("RunService")
+
+local activeTp        -- tween hiện tại
+local currentTarget   -- player đang bám
+local retimer = 0
+local RETARGET_DT = 0.05          -- retarget 20Hz
+local OFFSET     = CFrame.new(0,0,-3) -- đứng sau lưng 3 studs (đổi nếu bạn muốn vị trí khác)
+local MIN_TIME   = 1/240          -- tween tối thiểu, tránh time=0 gây giật
+
+local function cancelTp()
+    if activeTp then activeTp:Cancel() activeTp = nil end
+end
+
+local function goalPosFrom(thrp)
+    -- bám theo hướng quay của target
+    return (thrp.CFrame * OFFSET).Position
+end
+
+local function startTween(goal)
+    if not hrp then return end
+    local dist = (goal - hrp.Position).Magnitude
+    local t    = math.max(dist / 300, MIN_TIME) -- tốc độ 300 studs/s
+    cancelTp()
+    local tw = TweenService:Create(hrp, TweenInfo.new(t, Enum.EasingStyle.Linear), {CFrame = CFrame.new(goal)})
+    activeTp = tw
+    tw:Play()
+    tw.Completed:Connect(function()
+        if activeTp == tw then activeTp = nil end
+    end)
+end
+
+-- Loop bám liên tục (retarget định kỳ & đổi target giữa chừng)
+_G.__MAGIC_TP_FOLLOW = RunService.RenderStepped:Connect(function(dt)
+    -- OFF -> dừng ngay
+    if not (S and S.TeleportPlayer and S.TeleportPlayer()) then
+        cancelTp(); currentTarget = nil; retimer = 0
+        return
+    end
+    if not hrp then return end
+
+    -- Lấy target hiện tại từ GUI
+    local tgt  = S.SelectedTarget and S.SelectedTarget()
+    local thrp = tgt and tgt.Character and tgt.Character:FindFirstChild("HumanoidRootPart")
+
+    -- Target không hợp lệ hoặc đã rời Players -> dừng ngay
+    if not (tgt and tgt.Parent == Players and thrp) then
+        cancelTp(); currentTarget = nil; retimer = 0
+        return
+    end
+
+    -- Đổi target giữa chừng -> hủy tween cũ, chuyển sang target mới
+    if currentTarget ~= tgt then
+        cancelTp()
+        currentTarget = tgt
+    end
+
+    -- Retarget theo chu kỳ để luôn áp sát (kể cả target đứng yên/đổi hướng)
+    retimer += dt
+    if retimer < RETARGET_DT then return end
+    retimer = 0
+
+    local goal = goalPosFrom(thrp)
+    startTween(goal)
+end)
+
+-- Nếu người chơi đang bám rời server -> cancel tween ngay và reset
+_G.__MAGIC_TP_PR = Players.PlayerRemoving:Connect(function(p)
+    if currentTarget == p then
+        cancelTp()
+        currentTarget = nil
+    end
+end)
+
 -- Nút click
 local btns = S.Buttons
 btns.Hop.MouseButton1Click:Connect(function()
