@@ -53,64 +53,64 @@ gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 gui.Parent = playerGui
 
 -- ICON TRÒN 48x48: luôn hiện, kẹp trong màn hình, kéo mượt, không "nhảy
-local icon = Instance.new("ImageButton")
-icon.Name = "MagicFloatingIcon"
-icon.BackgroundColor3 = THEME.Accent
-icon.BackgroundTransparency = 0.2
-icon.Size = UDim2.fromOffset(48,48)
-icon.AnchorPoint = Vector2.new(0, 0.5)
-icon.Position    = UDim2.new(1, 16, 0.5, -24)
-icon.ZIndex = 1000
-icon.Parent = gui
-Instance.new("UICorner", icon).CornerRadius = UDim.new(1,0)
-icon.Image = "rbxassetid://3926305904"
-icon.ImageRectOffset = Vector2.new(4,204)
-icon.ImageRectSize = Vector2.new(36,36)
+-- === ICON 48x48 + DRAG MƯỢT (từ local icon đến trước toggle menu) ===
+local RS  = game:GetService("RunService")
+local UIS = game:GetService("UserInputService")
 
--- đặt vị trí an toàn theo Viewport (tránh off-screen ngay khi spawn)
-local function viewport()
+-- helper
+local function getCam()
     local cam = workspace.CurrentCamera
-    if not cam then
-        repeat task.wait() until workspace.CurrentCamera
-        cam = workspace.CurrentCamera
-    end
-    return cam.ViewportSize
+    while not cam do RS.RenderStepped:Wait(); cam = workspace.CurrentCamera end
+    return cam
 end
-
--- clamp icon vào trong màn hình, tôn trọng AnchorPoint
+local function viewport() return getCam().ViewportSize end
 local function clampToScreen(x, y)
     local v  = viewport()
     local sz = icon.AbsoluteSize
     return math.clamp(x, 0, v.X - sz.X), math.clamp(y, 0, v.Y - sz.Y)
 end
+local function placeIconSafely()
+    local v = viewport()
+    local x = 16
+    local y = (v.Y * 0.5) - (icon.AbsoluteSize.Y * 0.5)
+    x, y = clampToScreen(x, y)
+    icon.Position = UDim2.fromOffset(x, y)
+end
 
--- đặt icon an toàn lúc khởi tạo
-placeIconSafely()
-task.defer(placeIconSafely)
-task.delay(0.1, placeIconSafely)
+-- icon
+local icon = Instance.new("ImageButton")
+icon.Name = "MagicFloatingIcon"
+icon.BackgroundColor3 = THEME.Accent
+icon.BackgroundTransparency = 0.2
+icon.Size = UDim2.fromOffset(48, 48)
+icon.AnchorPoint = Vector2.new(0, 0.5)              -- tâm theo cạnh trái
+icon.Position = UDim2.new(0, 16, 0.5, -24)          -- mặc định mé trái
+icon.ZIndex = 1000
+icon.AutoButtonColor = false
+icon.Active = true
+icon.Parent = gui
+Instance.new("UICorner", icon).CornerRadius = UDim.new(1, 0)
+icon.Image = "rbxassetid://3926305904"
+icon.ImageRectOffset = Vector2.new(4, 204)
+icon.ImageRectSize   = Vector2.new(36, 36)
 
--- KHỐI KÉO-THẢ MƯỢT (không giật, bám sát tay/chuột)
+-- đảm bảo lúc spawn không off-screen
+placeIconSafely(); task.defer(placeIconSafely); task.delay(0.1, placeIconSafely)
+
+-- kéo/thả bám sát ngón tay/chuột (không giật)
 do
-    local UIS = game:GetService("UserInputService")
-    local RS  = game:GetService("RunService")
-
-    icon.Active = true
-    icon.AutoButtonColor = false
-    icon.Draggable = false
-
     local dragging   = false
-    local dragInput  = nil
+    local dragTouch  = nil
     local followConn = nil
 
     local function stopDrag()
         dragging = false
         icon.Modal = false
-        dragInput = nil
-        if followConn then followConn:Disconnect() followConn = nil end
+        dragTouch = nil
+        if followConn then followConn:Disconnect(); followConn = nil end
     end
-
     local function setPosFromPoint(px, py)
-        local halfW, halfH = icon.AbsoluteSize.X*0.5, icon.AbsoluteSize.Y*0.5
+        local halfW, halfH = icon.AbsoluteSize.X * 0.5, icon.AbsoluteSize.Y * 0.5
         local nx, ny = clampToScreen(px - halfW, py - halfH)
         icon.Position = UDim2.fromOffset(nx, ny)
     end
@@ -129,19 +129,20 @@ do
                     setPosFromPoint(m.X, m.Y)
                 end)
             else
-                dragInput = input
+                dragTouch = input
+                setPosFromPoint(input.Position.X, input.Position.Y)
             end
         end
     end)
 
-    UIS.TouchMoved:Connect(function(touch)
-        if dragging and dragInput == touch then
-            setPosFromPoint(touch.Position.X, touch.Position.Y)
+    UIS.TouchMoved:Connect(function(t)
+        if dragging and dragTouch == t then
+            setPosFromPoint(t.Position.X, t.Position.Y)
         end
     end)
 
     local function onEnd(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input == dragInput then
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input == dragTouch then
             stopDrag()
         end
     end
