@@ -77,10 +77,23 @@ local function viewport()
     return cam.ViewportSize
 end
 
-local function clampToScreen(x, y)
-    local v  = viewport()
+-- clamp icon vào trong màn hình, tôn trọng AnchorPoint
+local function clampToScreen(px, py)
+    local v  = workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize or Vector2.new(1920,1080)
     local sz = icon.AbsoluteSize
-    return math.clamp(x, 0, v.X - sz.X), math.clamp(y, 0, v.Y - sz.Y)
+    local ap = icon.AnchorPoint
+    local pad = 6 -- mép an toàn
+
+    -- với AnchorPoint bất kỳ:
+    -- min = pad - sz * ap
+    -- max = v - pad - sz * (1 - ap)
+    local minX = pad - sz.X * ap.X
+    local maxX = v.X - pad - sz.X * (1 - ap.X)
+
+    local minY = pad - sz.Y * ap.Y
+    local maxY = v.Y - pad - sz.Y * (1 - ap.Y)
+
+    return math.clamp(px, minX, maxX), math.clamp(py, minY, maxY)
 end
 
 local function placeIconSafely()
@@ -109,40 +122,56 @@ if cam then
 end
 
 -- === Drag logic: bám sát ngón tay + tap để toggle ===
+-- === Drag icon: bám sát NGÓN TAY BẮT ĐẦU, không hút về joystick ===
 do
     local RunService = game:GetService("RunService")
+
     local dragging = false
-    local grabOffset = Vector2.zero
-    local startPos = Vector2.zero
     local moved = false
     local tapStart = 0
-    local rsConn
+    local rsConn : RBXScriptConnection? = nil
+    local activeInput : InputObject? = nil
+    local grabOffset = Vector2.zero
+    local startPos = Vector2.zero
 
-    local function startDrag()
+    local function startDrag(i: InputObject)
+        -- chỉ nhận input bắt đầu ngay trên icon để tránh lẫn với joystick
+        local abs = icon.AbsolutePosition
+        local size = icon.AbsoluteSize
+        local center = abs + size/2
+        if (Vector2.new(i.Position.X, i.Position.Y) - center).Magnitude > math.max(size.X, size.Y) then
+            return
+        end
+
         dragging = true
         moved = false
         tapStart = tick()
-        local m = UIS:GetMouseLocation()
-        local abs = icon.AbsolutePosition
-        grabOffset = Vector2.new(m.X - abs.X, m.Y - abs.Y)
+        activeInput = i
+
+        grabOffset = Vector2.new(i.Position.X - abs.X, i.Position.Y - abs.Y)
         startPos = Vector2.new(abs.X, abs.Y)
 
         if rsConn then rsConn:Disconnect() end
         rsConn = RunService.RenderStepped:Connect(function()
-            if not dragging then return end
-            local m2 = UIS:GetMouseLocation()
-            local x, y = clampToScreen(m2.X, m2.Y)
-            icon.Position = UDim2.fromOffset(x, y)
-            if (Vector2.new(x, y) - startPos).Magnitude > 4 then
+            if not dragging or not activeInput then return end
+            -- nếu touch này đã end thì kết thúc kéo
+            if activeInput.UserInputState == Enum.UserInputState.End then
+                dragging = false
+                return
+            end
+            local px, py = clampToScreen(activeInput.Position.X - grabOffset.X, activeInput.Position.Y - grabOffset.Y)
+            icon.Position = UDim2.fromOffset(px, py)
+            if (Vector2.new(px, py) - startPos).Magnitude > 4 then
                 moved = true
             end
         end)
     end
 
     local function endDrag()
-        dragging = false
         if rsConn then rsConn:Disconnect() rsConn = nil end
-        -- chạm nhẹ (không kéo) => toggle menu
+        dragging = false
+        activeInput = nil
+        -- tap ngắn không kéo => toggle
         if not moved and (tick() - tapStart) < 0.25 then
             window.Visible = not window.Visible
         end
@@ -151,19 +180,14 @@ do
     icon.InputBegan:Connect(function(i)
         if i.UserInputType == Enum.UserInputType.MouseButton1
         or i.UserInputType == Enum.UserInputType.Touch then
-            startDrag()
+            startDrag(i)
         end
     end)
 
     UIS.InputEnded:Connect(function(i)
-        if i.UserInputType == Enum.UserInputType.MouseButton1
-        or i.UserInputType == Enum.UserInputType.Touch then
+        if i == activeInput then
             endDrag()
         end
-    end)
-
-    UIS.InputChanged:Connect(function(i)
-        -- đã có loop RenderStepped, không cần xử lý ở đây
     end)
 end
 
