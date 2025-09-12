@@ -17,20 +17,22 @@ _G.__MAGIC_CLEANUP = function()
         _G[id] = nil
     end
 end
--- ============================
+--=================== MAGIC TOOL (CLEAN GUI) ===================
 
-local Players = game:GetService("Players")
--- PHẦN 1: GUI RỖNG (Icon 48x48 + thêm Leave)
-local Players = game:GetService("Players")
-local UIS = game:GetService("UserInputService")
+local Players      = game:GetService("Players")
+local UIS          = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
-local old = playerGui:FindFirstChild("FloatingMenuGUI")
-if old then old:Destroy() end
+-- cleanup GUI cũ
+do
+    local old = playerGui:FindFirstChild("FloatingMenuGUI")
+    if old then old:Destroy() end
+end
 
+-- THEME
 local THEME = {
     Background = Color3.fromRGB(35,38,50),
     Titlebar   = Color3.fromRGB(65,50,90),
@@ -39,12 +41,14 @@ local THEME = {
     Subtle     = Color3.fromRGB(210,180,255),
     Hover      = Color3.fromRGB(90,60,130),
     Accent     = Color3.fromRGB(150,90,200),
+    ListIdle   = Color3.fromRGB(20,20,20),   -- nền item PlayerList (đen)
 }
 
 local WINDOW_W, WINDOW_H = 300, 250
 local TITLE_H = 28
 local PAD = 6
 
+-- ========== ScreenGui ==========
 local gui = Instance.new("ScreenGui")
 gui.Name = "FloatingMenuGUI"
 gui.ResetOnSpawn = false
@@ -52,136 +56,74 @@ gui.IgnoreGuiInset = true
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 gui.Parent = playerGui
 
--- ICON TRÒN 48x48: luôn hiện, kẹp trong màn hình, kéo mượt, không "nhảy
--- ICON 48x48 (tròn) + KÉO MƯỢT + CLICK/DRAG PHÂN BIỆT
-local function waitForCamera()
+-- util viewport
+local function viewport()
     local cam = workspace.CurrentCamera
-    while not cam do
-        task.wait()
-        cam = workspace.CurrentCamera
-    end
-    return cam
+    return (cam and cam.ViewportSize) or Vector2.new(1920,1080)
+end
+local function clampToScreen(x, y, w, h)
+    local v = viewport()
+    return math.clamp(x, 0, v.X - w), math.clamp(y, 0, v.Y - h)
 end
 
--- clamp theo màn hình (dựa trên AnchorPoint hiện tại)
-local function clampToScreen(x, y)
-    local cam = waitForCamera()
-    local v = cam.ViewportSize
-    local sz = icon and icon.AbsoluteSize or Vector2.new(48,48)
-    return math.clamp(x, 0, v.X - sz.X), math.clamp(y, 0, v.Y - sz.Y)
-end
-
--- tạo icon
+-- ========== Icon 48x48 (kéo mượt, bám ngón tay) ==========
 local icon = Instance.new("ImageButton")
-icon.Name = "FloatingIcon"
+icon.Name = "MagicFloatingIcon"
 icon.Size = UDim2.fromOffset(48,48)
-icon.AnchorPoint = Vector2.new(0, 0.5)
+icon.Position = UDim2.fromOffset(16, math.floor(viewport().Y*0.5) - 24)
 icon.BackgroundColor3 = THEME.Accent
 icon.BackgroundTransparency = 0.2
-icon.AutoButtonColor = false
+icon.ZIndex = 1000
 icon.Active = true
-icon.Selectable = false
-icon.Modal = false
-icon.ZIndex = 10000
+icon.AutoButtonColor = true
 icon.Parent = gui
-
--- visual
 Instance.new("UICorner", icon).CornerRadius = UDim.new(1,0)
-local stroke = Instance.new("UIStroke")
-stroke.Thickness = 1.5
-stroke.Color = Color3.fromRGB(255,255,255)
-stroke.Transparency = 0.15
-stroke.Parent = icon
 
 icon.Image = "rbxassetid://3926305904"
-icon.ImageRectOffset = Vector2.new(4,204)
+icon.ImageRectOffset = Vector2.new(4,204)  -- mặc định
 icon.ImageRectSize   = Vector2.new(36,36)
 
--- đặt vị trí an toàn (mé trái, giữa)
-do
-    waitForCamera()
-    local v = workspace.CurrentCamera.ViewportSize
-    local x = 16
-    local y = v.Y/2 - (icon.AbsoluteSize.Y/2)
-    x, y = clampToScreen(x,y)
-    icon.Position = UDim2.fromOffset(x,y)
-    -- đặt 2 lần sau 1 frame để tránh AbsoluteSize chưa cập nhật kịp
-    task.defer(function()
-        local x2, y2 = clampToScreen(icon.Position.X.Offset, icon.Position.Y.Offset)
-        icon.Position = UDim2.fromOffset(x2,y2)
-    end)
-end
-
--- ===== KÉO/THẢ MƯỢT (bám sát ngón tay) =====
+-- DRAG (bám ngón tay)
 do
     local dragging = false
-    local activeInput = nil
-    local grabOffset = Vector2.new(0,0)
-    local startPos = Vector2.new(0,0)
-    local moved = 0
-    local DRAG_THRESHOLD = 6
+    local grab = Vector2.new()
+    local startAbs = Vector2.new()
+    local iconSize = Vector2.new(48,48)
 
-    local function getMouse()
+    local function updateToPointer()
         local m = UIS:GetMouseLocation()
-        return Vector2.new(m.X, m.Y)
-    end
-
-    local function beginDrag(input)
-        dragging = true
-        activeInput = input
-        icon.Modal = true
-        local m = getMouse()
-        local abs = icon.AbsolutePosition
-        grabOffset = Vector2.new(m.X - abs.X, m.Y - abs.Y)
-        startPos = Vector2.new(icon.Position.X.Offset, icon.Position.Y.Offset)
-        moved = 0
-    end
-
-    local function updateDrag()
-        if not dragging then return end
-        local m = getMouse()
-        local x = m.X - grabOffset.X
-        local y = m.Y - grabOffset.Y
-        local cx, cy = clampToScreen(x, y)
-        moved = math.max(moved, math.abs(cx - startPos.X) + math.abs(cy - startPos.Y))
-        icon.Position = UDim2.fromOffset(cx, cy)
+        local off = m - grab
+        local x,y = clampToScreen(off.X, off.Y, iconSize.X, iconSize.Y)
+        icon.Position = UDim2.fromOffset(x, y)
     end
 
     icon.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.Touch
-        or input.UserInputType == Enum.UserInputType.MouseButton1 then
-            beginDrag(input)
+        if input.UserInputType==Enum.UserInputType.MouseButton1 or input.UserInputType==Enum.UserInputType.Touch then
+            dragging = true
+            startAbs = icon.AbsolutePosition
+            local m = UIS:GetMouseLocation()
+            grab = m - startAbs
+            updateToPointer()
         end
     end)
 
-    UIS.InputChanged:Connect(function(input)
-        if dragging and input == activeInput then
-            updateDrag()
-        end
+    UIS.InputChanged:Connect(function(i)
+        if not dragging then return end
+        if i.UserInputType ~= Enum.UserInputType.MouseMovement and i.UserInputType ~= Enum.UserInputType.Touch then return end
+        updateToPointer()
     end)
 
-    UIS.InputEnded:Connect(function(input)
-        if input == activeInput then
-            local wasDrag = moved >= DRAG_THRESHOLD
+    UIS.InputEnded:Connect(function(i)
+        if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then
             dragging = false
-            activeInput = nil
-            icon.Modal = false
-            if not wasDrag then
-                -- tap: toggle cửa sổ
-                pcall(function() window.Visible = not window.Visible end)
-            end
         end
     end)
 end
 
--- toggle menu
-icon.MouseButton1Click:Connect(function()
-    window.Visible = not window.Visible
-end)
-
+-- ========== Cửa sổ ==========
 local window = Instance.new("Frame")
 do
-    local v=(workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize) or Vector2.new(800,600)
+    local v = viewport()
     window.Position = UDim2.fromOffset((v.X-WINDOW_W)/2, math.max(12,(v.Y-WINDOW_H)/2))
 end
 window.Size = UDim2.fromOffset(WINDOW_W, WINDOW_H)
@@ -211,121 +153,36 @@ title.Position = UDim2.fromOffset(8,0)
 title.Parent = titleBar
 
 local closeBtn = Instance.new("TextButton")
-closeBtn.Size = UDim2.fromOffset(32, TITLE_H)
+closeBtn.Size = UDim2.fromOffset(22, TITLE_H)
 closeBtn.AnchorPoint = Vector2.new(1,0)
 closeBtn.Position = UDim2.new(1,0,0,0)
-closeBtn.Text = "X"
+closeBtn.Text = "×"
 closeBtn.Font = Enum.Font.GothamBold
-closeBtn.TextSize = 20
+closeBtn.TextSize = 16
 closeBtn.TextColor3 = THEME.Subtle
 closeBtn.BackgroundTransparency = 1
 closeBtn.Parent = titleBar
-closeBtn.MouseButton1Click:Connect(function()
-    -- overlay full màn hình
-    local overlay = Instance.new("Frame")
-    overlay.Size = UDim2.fromScale(1,1)
-    overlay.Position = UDim2.fromOffset(0,0)
-    overlay.BackgroundColor3 = Color3.new(0,0,0)
-    overlay.BackgroundTransparency = 1
-    overlay.BorderSizePixel = 0
-    overlay.ZIndex = 1999
-    overlay.Active = true -- chặn click xuyên
-    overlay.Parent = gui
+closeBtn.MouseButton1Click:Connect(function() gui:Destroy() end)
 
-    -- fade in overlay
-    TweenService:Create(overlay, TweenInfo.new(0.15), {BackgroundTransparency = 0.35}):Play()
-
-    -- khung confirm
-    local confirm = Instance.new("Frame")
-    confirm.Size = UDim2.new(0, 300, 0, 120)
-    confirm.Position = UDim2.new(0.5, -150, 0.5, -60)
-    confirm.BackgroundColor3 = THEME.Background
-    confirm.BorderSizePixel = 0
-    confirm.ZIndex = 2000
-    confirm.Parent = gui
-    Instance.new("UICorner", confirm).CornerRadius = UDim.new(0, 10)
-
-    local msg = Instance.new("TextLabel")
-    msg.Size = UDim2.new(1, -20, 0, 60)
-    msg.Position = UDim2.fromOffset(10, 10)
-    msg.BackgroundTransparency = 1
-    msg.TextColor3 = THEME.Text
-    msg.Text = "Are you sure you want to close?"
-    msg.Font = Enum.Font.GothamBold
-    msg.TextSize = 16
-    msg.TextWrapped = true
-    msg.ZIndex = 2001
-    msg.Parent = confirm
-
-    local yesBtn = Instance.new("TextButton")
-    yesBtn.Size = UDim2.new(0.5, -15, 0, 32)
-    yesBtn.Position = UDim2.new(0, 10, 1, -42)
-    yesBtn.BackgroundColor3 = THEME.Accent
-    yesBtn.Text = "Yes"
-    yesBtn.Font = Enum.Font.GothamBold
-    yesBtn.TextColor3 = THEME.Text
-    yesBtn.TextSize = 14
-    yesBtn.ZIndex = 2001
-    yesBtn.Parent = confirm
-    Instance.new("UICorner", yesBtn).CornerRadius = UDim.new(0, 6)
-
-    local noBtn = Instance.new("TextButton")
-    noBtn.Size = UDim2.new(0.5, -15, 0, 32)
-    noBtn.Position = UDim2.new(0.5, 5, 1, -42)
-    noBtn.BackgroundColor3 = THEME.Hover
-    noBtn.Text = "No"
-    noBtn.Font = Enum.Font.GothamBold
-    noBtn.TextColor3 = THEME.Text
-    noBtn.TextSize = 14
-    noBtn.ZIndex = 2001
-    noBtn.Parent = confirm
-    Instance.new("UICorner", noBtn).CornerRadius = UDim.new(0, 6)
-
-    local function cleanup()
-        TweenService:Create(overlay, TweenInfo.new(0.12), {BackgroundTransparency = 1}):Play()
-        task.delay(0.12, function()
-            overlay:Destroy()
-            confirm:Destroy()
-        end)
-    end
-
-    yesBtn.MouseButton1Click:Connect(function()
-        cleanup()
-        gui:Destroy()
-    end)
-    noBtn.MouseButton1Click:Connect(function()
-        cleanup()
-    end)
-end)
-
-local credit = Instance.new("TextLabel")
-credit.Name = "Credit"
-credit.BackgroundTransparency = 1
-credit.Parent = titleBar
-credit.Text = "by Magic"
-credit.Font = Enum.Font.Gotham
-credit.TextSize = 12
-credit.TextColor3 = THEME.Subtle
-credit.TextXAlignment = Enum.TextXAlignment.Left
-credit.Position = UDim2.fromOffset(8 + title.TextBounds.X + 18, 0) -- ngay sau tiêu đề
-credit.Size = UDim2.new(0, 120, 1, 0)
-
-do -- kéo thả cửa sổ
-    local dragging, start, orig
+-- Drag window
+do
+    local dragging=false
+    local start=Vector2.new()
+    local orig=UDim2.new()
     titleBar.InputBegan:Connect(function(i)
         if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then
-            dragging=true; start=i.Position; orig=window.Position
+            dragging=true; start=UIS:GetMouseLocation(); orig=window.Position
         end
     end)
     UIS.InputChanged:Connect(function(i)
         if not dragging then return end
         if i.UserInputType~=Enum.UserInputType.MouseMovement and i.UserInputType~=Enum.UserInputType.Touch then return end
-        local d=i.Position-start
-        local v=workspace.CurrentCamera.ViewportSize
-        window.Position = UDim2.fromOffset(
-            math.clamp(orig.X.Offset+d.X, 0, v.X-window.AbsoluteSize.X),
-            math.clamp(orig.Y.Offset+d.Y, 0, v.Y-TITLE_H)
-        )
+        local d=UIS:GetMouseLocation()-start
+        local nx = orig.X.Offset + d.X
+        local ny = orig.Y.Offset + d.Y
+        local v = viewport()
+        nx, ny = clampToScreen(nx, ny, window.AbsoluteSize.X, TITLE_H) -- kẹp top
+        window.Position = UDim2.fromOffset(nx, ny)
     end)
     UIS.InputEnded:Connect(function(i)
         if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then dragging=false end
@@ -334,6 +191,7 @@ end
 
 icon.MouseButton1Click:Connect(function() window.Visible = not window.Visible end)
 
+-- ========== Scroll ==========
 local scroll = Instance.new("ScrollingFrame")
 scroll.Size = UDim2.new(1, -(PAD*2), 1, -(TITLE_H + PAD*2))
 scroll.Position = UDim2.fromOffset(PAD, TITLE_H + PAD)
@@ -350,8 +208,9 @@ vlist.SortOrder = Enum.SortOrder.LayoutOrder
 vlist.Padding = UDim.new(0,3)
 vlist.Parent = scroll
 
-local function tweenColor(btn, c, t)
-    TweenService:Create(btn, TweenInfo.new(t or 0.12), {BackgroundColor3 = c}):Play()
+-- ========== Helpers ==========
+local function tweenColor(inst, c, t)
+    TweenService:Create(inst, TweenInfo.new(t or 0.12), {BackgroundColor3 = c}):Play()
 end
 
 local function mkClickBtn(text)
@@ -436,42 +295,45 @@ local function mkInput(ph)
     return tb
 end
 
--- Các mục
-local escSwitch  = mkSwitchRow("Fast Escape")
- -- ========== PLAYER LIST (Toggle + Clear Target + Chọn player) ==========
--- KHÔNG dùng return sớm để khỏi chặn các phần sau
-_G.__MAGIC_PL_INSTALLED = true
+-- ========== Hàng đầu: Fast Escape ==========
+local escSwitch = mkSwitchRow("Fast Escape")
 
--- Holder tự giãn trong scroll (đẩy các nút phía dưới xuống)
+-- ========== PLAYER LIST MODULE (ngay dưới Fast Escape) ==========
+-- Toggle header
+local plToggleBtn = mkClickBtn("PlayerList ⬇️")
+
+-- container list
 local listHolder = Instance.new("Frame")
 listHolder.Name = "MagicPlayerList"
 listHolder.Size = UDim2.new(1, -PAD, 0, 0)
 listHolder.AutomaticSize = Enum.AutomaticSize.Y
 listHolder.BackgroundTransparency = 1
+listHolder.Active = false
 listHolder.ClipsDescendants = true
+listHolder.ZIndex = 1
 listHolder.Parent = scroll
 
-local lhPad = Instance.new("UIPadding", listHolder)
-lhPad.PaddingLeft, lhPad.PaddingRight = UDim.new(0, PAD), UDim.new(0, PAD)
+local lhPadding = Instance.new("UIPadding", listHolder)
+lhPadding.PaddingLeft  = UDim.new(0, PAD)
+lhPadding.PaddingRight = UDim.new(0, PAD)
 
 local lhLayout = Instance.new("UIListLayout", listHolder)
 lhLayout.FillDirection = Enum.FillDirection.Vertical
 lhLayout.SortOrder = Enum.SortOrder.LayoutOrder
 lhLayout.Padding = UDim.new(0, 3)
 
--- Nút toggle danh sách (⬇️ mở / ⬆️ đóng)
-local plToggleBtn   = mkClickBtn("PlayerList ⬇️")
-plToggleBtn.LayoutOrder = (listHolder.LayoutOrder or 0) - 1  -- xuất hiện ngay trên list
-
--- Nút Clear Target (thay cho Reset)
+-- clear target
 local clearTargetBtn = mkClickBtn("Clear Target [Click]")
 
--- Target đang chọn (tên gốc, không biệt danh)
+-- teleport switch
+local tpSwitch = mkSwitchRow("Teleport Player")
+
+-- target global
 _G.Magic_SelectedTarget = _G.Magic_SelectedTarget
 
+-- cập nhật header
 local listVisible = false
-
-local function updateHeader()
+local function MagicUpdateListHeader()
     local sel = _G.Magic_SelectedTarget
     local valid = sel and sel.Parent == Players
     if listVisible then
@@ -486,116 +348,150 @@ local function updateHeader()
     end
 end
 
-local function renderList()
-    -- xoá item cũ
+-- tạo 1 item
+local function mkListItem(text, plr)
+    local b = Instance.new("TextButton")
+    b.Size = UDim2.new(1, 0, 0, 24)
+    b.BackgroundColor3 = THEME.ListIdle
+    b.AutoButtonColor = false
+    b.Text = text
+    b.Font = Enum.Font.Gotham
+    b.TextSize = 12
+    b.TextColor3 = THEME.Text
+    b.Parent = listHolder
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0,5)
+
+    -- highlight nếu đang chọn
+    if _G.Magic_SelectedTarget and plr == _G.Magic_SelectedTarget then
+        b.BackgroundColor3 = THEME.Accent
+    end
+
+    b.MouseEnter:Connect(function()
+        if not (_G.Magic_SelectedTarget and plr == _G.Magic_SelectedTarget) then
+            tweenColor(b, THEME.Hover)
+        end
+    end)
+    b.MouseLeave:Connect(function()
+        if not (_G.Magic_SelectedTarget and plr == _G.Magic_SelectedTarget) then
+            tweenColor(b, THEME.ListIdle)
+        end
+    end)
+
+    if plr then
+        b.MouseButton1Click:Connect(function()
+            _G.Magic_SelectedTarget = plr
+            MagicUpdateListHeader()
+            -- render lại highlight
+            for _,c in ipairs(listHolder:GetChildren()) do
+                if c:IsA("TextButton") then
+                    c.BackgroundColor3 = THEME.ListIdle
+                end
+            end
+            b.BackgroundColor3 = THEME.Accent
+        end)
+    end
+    return b
+end
+
+-- render list
+local function MagicRenderPlayerList()
     for _,c in ipairs(listHolder:GetChildren()) do
         if c:IsA("TextButton") then c:Destroy() end
     end
-    -- đổ danh sách
     for _,p in ipairs(Players:GetPlayers()) do
         if p ~= player then
-            local b = Instance.new("TextButton")
-            b.Size = UDim2.new(1, 0, 0, 24)
-            b.BackgroundColor3 = (_G.Magic_SelectedTarget == p) and THEME.Accent or THEME.Hover
-            b.AutoButtonColor = false
-            b.Text = p.Name
-            b.Font = Enum.Font.Gotham
-            b.TextSize = 12
-            b.TextColor3 = THEME.Text
-            b.Parent = listHolder
-            Instance.new("UICorner", b).CornerRadius = UDim.new(0,5)
-
-            b.MouseEnter:Connect(function()
-                if _G.Magic_SelectedTarget ~= p then
-                    TweenService:Create(b, TweenInfo.new(0.12), {BackgroundColor3 = THEME.Accent}):Play()
-                end
-            end)
-            b.MouseLeave:Connect(function()
-                if _G.Magic_SelectedTarget ~= p then
-                    TweenService:Create(b, TweenInfo.new(0.12), {BackgroundColor3 = THEME.Hover}):Play()
-                end
-            end)
-            b.MouseButton1Click:Connect(function()
-                _G.Magic_SelectedTarget = p
-                -- highlight lại toàn bộ
-                for _,c in ipairs(listHolder:GetChildren()) do
-                    if c:IsA("TextButton") then
-                        c.BackgroundColor3 = (c.Text == p.Name) and THEME.Accent or THEME.Hover
-                    end
-                end
-                updateHeader()
-            end)
+            mkListItem(p.Name, p) -- tên gốc
         end
     end
-    updateHeader()
+    MagicUpdateListHeader()
 end
 
--- Toggle list
+-- toggle show/hide list
 plToggleBtn.MouseButton1Click:Connect(function()
     listVisible = not listVisible
     if listVisible then
-        listHolder.Size = UDim2.new(1, -PAD, 0, 0) -- để AutomaticSize tự giãn
-        renderList()
+        MagicRenderPlayerList()
+        listHolder.Size = UDim2.new(1, -PAD, 0, 0)
     else
-        -- thu gọn nhưng GIỮ target
         for _,c in ipairs(listHolder:GetChildren()) do
             if c:IsA("TextButton") then c:Destroy() end
         end
         listHolder.Size = UDim2.new(1, -PAD, 0, 0)
-        updateHeader()
+    end
+    MagicUpdateListHeader()
+end)
+
+-- clear target
+clearTargetBtn.MouseButton1Click:Connect(function()
+    _G.Magic_SelectedTarget = nil
+    MagicUpdateListHeader()
+    -- reset highlight
+    for _,c in ipairs(listHolder:GetChildren()) do
+        if c:IsA("TextButton") then
+            c.BackgroundColor3 = THEME.ListIdle
+        end
     end
 end)
 
--- Clear Target
-clearTargetBtn.MouseButton1Click:Connect(function()
-    _G.Magic_SelectedTarget = nil
-    renderList()
-end)
-
--- Auto cập nhật khi người chơi ra/vào
+-- auto update khi player ra/vào
 Players.PlayerAdded:Connect(function()
-    if listVisible then renderList() end
-    updateHeader()
+    if listVisible then MagicRenderPlayerList() end
+    MagicUpdateListHeader()
 end)
-Players.PlayerRemoving:Connect(function(rem)
-    if _G.Magic_SelectedTarget == rem then _G.Magic_SelectedTarget = nil end
-    if listVisible then renderList() end
-    updateHeader()
+Players.PlayerRemoving:Connect(function(p)
+    if _G.Magic_SelectedTarget == p then
+        _G.Magic_SelectedTarget = nil
+    end
+    if listVisible then MagicRenderPlayerList() end
+    MagicUpdateListHeader()
 end)
 
--- PATCH: hợp nhất API, không ghi đè
-_G.MagicMenuStates          = _G.MagicMenuStates or {}
-_G.MagicMenuStates.Buttons  = _G.MagicMenuStates.Buttons or {}
--- === MAGIC API (HỢP NHẤT, KHÔNG ĐÈ LÊN NHAU) ===
-local api = _G.MagicMenuStates or {}
+-- ========== Các mục khác ==========
+local espSwitch    = mkSwitchRow("ESP")
+local infSwitch    = mkSwitchRow("Infinity Jump")
+local noclipSwitch = mkSwitchRow("NoClip")
+local wsInput      = mkInput("Input WalkSpeed")
+local jpInput      = mkInput("Input JumpPower")
+local wsSwitch     = mkSwitchRow("Changer WalkSpeed")
+local jpSwitch     = mkSwitchRow("Changer JumpPower")
 
-api.FastEscape      = escSwitch.Get
-api.TeleportPlayer  = tpSwitch.Get
-api.ESP             = espSwitch.Get
-api.NoClip          = noclipSwitch.Get
-api.InfinityJump    = infSwitch.Get
-api.WalkSpeedHack   = wsSwitch.Get
-api.JumpPowerHack   = jpSwitch.Get
-api.WalkSpeedFactor = function() return tonumber(wsInput.Text) or 1 end
-api.JumpPowerFactor = function() return tonumber(jpInput.Text) or 1 end
+-- Buttons
+local zoomBtn   = mkClickBtn("Infinity Zoom [Click]")
+local suiBtn    = mkClickBtn("Suicide [Click]")
+local rejoinBtn = mkClickBtn("Server Rejoin [Click]")
+local hopBtn    = mkClickBtn("Server Hop [Click]")
+local camFixBtn = mkClickBtn("Fix Camera [Click]")
+local leaveBtn  = mkClickBtn("Leave [Click]")
 
--- expose target đang chọn từ PlayerList
-api.SelectedTarget  = function() return _G.Magic_SelectedTarget end
+-- ========== API HỢP NHẤT (KHÔNG GHI ĐÈ) ==========
+_G.MagicMenuStates         = _G.MagicMenuStates or {}
+_G.MagicMenuStates.Buttons = _G.MagicMenuStates.Buttons or {}
 
--- gói tất cả button vào một nơi
-api.Buttons = {
-    Hop             = hopBtn,
-    Rejoin          = rejoinBtn,
-    Suicide         = suiBtn,
-    Leave           = leaveBtn,
-    Zoom            = zoomBtn,
-    FixCamera       = camFixBtn,
-    PlayerListToggle= plToggleBtn,
-    ClearTarget     = clearTargetBtn,
-}
+-- states/switches
+_G.MagicMenuStates.FastEscape     = escSwitch.Get
+_G.MagicMenuStates.TeleportPlayer = tpSwitch.Get
+_G.MagicMenuStates.ESP            = espSwitch.Get
+_G.MagicMenuStates.NoClip         = noclipSwitch.Get
+_G.MagicMenuStates.WalkSpeedHack  = wsSwitch.Get
+_G.MagicMenuStates.JumpPowerHack  = jpSwitch.Get
+_G.MagicMenuStates.InfinityJump   = infSwitch.Get
 
-_G.MagicMenuStates = api
--- === END MAGIC API ===
+_G.MagicMenuStates.WalkSpeedFactor = function() return tonumber(wsInput.Text) or 1 end
+_G.MagicMenuStates.JumpPowerFactor = function() return tonumber(jpInput.Text) or 1 end
+
+-- buttons expose
+_G.MagicMenuStates.Buttons.Hop        = hopBtn
+_G.MagicMenuStates.Buttons.Rejoin     = rejoinBtn
+_G.MagicMenuStates.Buttons.Suicide    = suiBtn
+_G.MagicMenuStates.Buttons.Leave      = leaveBtn
+_G.MagicMenuStates.Buttons.Zoom       = zoomBtn
+_G.MagicMenuStates.Buttons.FixCamera  = camFixBtn
+_G.MagicMenuStates.Buttons.PlayerListToggle = plToggleBtn
+_G.MagicMenuStates.Buttons.ClearTarget      = clearTargetBtn
+
+-- selected target getter
+_G.MagicMenuStates.SelectedTarget = function() return _G.Magic_SelectedTarget end
+-- ================================================================
 
 -- PHẦN 2 (SẠCH): Speed đơn giản (không xuyên tường) + JumpPower ổn định + Infinity Jump chuẩn
 -- + ESP luôn bám người chơi mới/reset + các nút click (Hop/Rejoin/Suicide/Leave)
