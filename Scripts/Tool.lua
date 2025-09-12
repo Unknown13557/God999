@@ -438,28 +438,28 @@ end
 
 -- Các mục
 local escSwitch  = mkSwitchRow("Fast Escape")
--- ========== PLAYER LIST MODULE (fix trùng + vị trí + giữ chọn) =========
-if _G.__MAGIC_PL_INSTALLED then return end
-_G.__MAGIC_PL_INSTALLED = true
 
--- dọn các bản cũ (nếu coder dán patch nhiều lần)
+
+-- ========== PLAYER LIST MODULE (fix không return, không trùng, đúng thứ tự) ==========
+
+-- Dọn tất cả bản cũ (nếu bạn dán patch nhiều lần)
 for _,c in ipairs(scroll:GetChildren()) do
     if c.Name == "MagicPlayerToggle" or c.Name == "MagicPlayerList" or c.Name == "MagicResetPlayerList" then
         c:Destroy()
     end
 end
 
--- layout order cố định để nó đứng đúng chỗ trong scroll
+-- Thứ tự ổn định trong scroll
 local ORDER_TOGGLE = 40
 local ORDER_LIST   = 41
 local ORDER_RESET  = 42
 
--- toggle button (ở TRÊN)
+-- Nút toggle ẩn/hiện danh sách
 local plToggleBtn = mkClickBtn("PlayerList ⬇️")
 plToggleBtn.Name = "MagicPlayerToggle"
 plToggleBtn.LayoutOrder = ORDER_TOGGLE
 
--- container list (ở DƯỚI toggle)
+-- Khung chứa danh sách (tự giãn chiều cao, đẩy các nút bên dưới)
 local listHolder = Instance.new("Frame")
 listHolder.Name = "MagicPlayerList"
 listHolder.Size = UDim2.new(1, -PAD, 0, 0)
@@ -471,28 +471,33 @@ listHolder.ZIndex = 1
 listHolder.LayoutOrder = ORDER_LIST
 listHolder.Parent = scroll
 
-local lhPadding = Instance.new("UIPadding", listHolder)
-lhPadding.PaddingLeft  = UDim.new(0, PAD)
-lhPadding.PaddingRight = UDim.new(0, PAD)
+do
+    local pad = Instance.new("UIPadding")
+    pad.PaddingLeft  = UDim.new(0, PAD)
+    pad.PaddingRight = UDim.new(0, PAD)
+    pad.Parent = listHolder
 
-local lhLayout = Instance.new("UIListLayout", listHolder)
-lhLayout.FillDirection = Enum.FillDirection.Vertical
-lhLayout.SortOrder = Enum.SortOrder.LayoutOrder
-lhLayout.Padding = UDim.new(0, 3)
+    local lay = Instance.new("UIListLayout")
+    lay.FillDirection = Enum.FillDirection.Vertical
+    lay.SortOrder = Enum.SortOrder.LayoutOrder
+    lay.Padding = UDim.new(0, 3)
+    lay.Parent = listHolder
+end
 
--- reset (ở DƯỚI list)
+-- Nút reset danh sách (nằm dưới list)
 local resetPlayerBtn = mkClickBtn("Reset PlayerList [Click]")
 resetPlayerBtn.Name = "MagicResetPlayerList"
 resetPlayerBtn.LayoutOrder = ORDER_RESET
 
--- màu item
+-- Màu item
 local ITEM_BG       = Color3.fromRGB(55,55,55)
 local ITEM_HOVER    = Color3.fromRGB(30,30,30)
 local ITEM_SELECTED = Color3.fromRGB(0,0,0)
 
+-- Giữ target đã chọn
 _G.Magic_SelectedTarget = _G.Magic_SelectedTarget
-local listVisible = false
 
+local listVisible = false
 local function MagicUpdateListHeader()
     local sel = _G.Magic_SelectedTarget
     local valid = sel and sel.Parent == Players
@@ -520,9 +525,7 @@ local function mkListItem(text, plr)
     b.Parent = listHolder
     Instance.new("UICorner", b).CornerRadius = UDim.new(0,5)
 
-    local function isSelected()
-        return _G.Magic_SelectedTarget and plr == _G.Magic_SelectedTarget
-    end
+    local function isSelected() return _G.Magic_SelectedTarget and plr == _G.Magic_SelectedTarget end
     if isSelected() then b.BackgroundColor3 = ITEM_SELECTED end
 
     b.MouseEnter:Connect(function()
@@ -535,16 +538,11 @@ local function mkListItem(text, plr)
             TweenService:Create(b, TweenInfo.new(0.12), {BackgroundColor3 = ITEM_BG}):Play()
         end
     end)
-
     b.MouseButton1Click:Connect(function()
         _G.Magic_SelectedTarget = plr
-        -- clear highlight cũ
         for _,c in ipairs(listHolder:GetChildren()) do
-            if c:IsA("TextButton") then
-                c.BackgroundColor3 = ITEM_BG
-            end
+            if c:IsA("TextButton") then c.BackgroundColor3 = ITEM_BG end
         end
-        -- set highlight mới
         b.BackgroundColor3 = ITEM_SELECTED
         MagicUpdateListHeader()
     end)
@@ -553,23 +551,23 @@ local function mkListItem(text, plr)
 end
 
 local function MagicRenderPlayerList()
-    -- KHÔNG xoá container, chỉ xoá item cũ để giữ vị trí & kết nối
+    -- Xoá item cũ, giữ container để không phá layout
     for _,c in ipairs(listHolder:GetChildren()) do
         if c:IsA("TextButton") then c:Destroy() end
     end
     for _,p in ipairs(Players:GetPlayers()) do
         if p ~= player then
-            mkListItem(p.Name, p) -- tên gốc
+            mkListItem(p.Name, p) -- tên gốc (không dùng DisplayName)
         end
     end
     MagicUpdateListHeader()
 end
 
--- toggle show/hide: KHÔNG xoá item khi ẩn; chỉ Visible=false để giữ chọn
+-- Toggle show/hide (ẩn thì chỉ Visible=false, không xoá item -> giữ selection)
 plToggleBtn.MouseButton1Click:Connect(function()
     listVisible = not listVisible
     if listVisible then
-        if #listHolder:GetChildren() == 2 then -- chỉ có UIPadding + UIListLayout
+        if #listHolder:GetChildren() <= 2 then
             MagicRenderPlayerList()
         end
         listHolder.Visible = true
@@ -579,11 +577,9 @@ plToggleBtn.MouseButton1Click:Connect(function()
     MagicUpdateListHeader()
 end)
 
--- reset danh sách (giữ selection nếu player còn trong game)
+-- Reset (nếu đang mở thì render lại)
 resetPlayerBtn.MouseButton1Click:Connect(function()
-    if listVisible then
-        MagicRenderPlayerList()
-    end
+    if listVisible then MagicRenderPlayerList() end
     MagicUpdateListHeader()
 end)
 
@@ -591,23 +587,16 @@ Players.PlayerAdded:Connect(function()
     if listVisible then MagicRenderPlayerList() end
     MagicUpdateListHeader()
 end)
-
 Players.PlayerRemoving:Connect(function(p)
-    if _G.Magic_SelectedTarget == p then
-        _G.Magic_SelectedTarget = nil
-    end
+    if _G.Magic_SelectedTarget == p then _G.Magic_SelectedTarget = nil end
     if listVisible then MagicRenderPlayerList() end
     MagicUpdateListHeader()
 end)
 
--- mặc định ẩn list
+-- Mặc định ẩn list + cập nhật header
 listHolder.Visible = false
 MagicUpdateListHeader()
--- ===============================================================
-local resetPlayerBtn = mkClickBtn("Reset PlayerList [Click]")
-resetPlayerBtn.MouseButton1Click:Connect(function()
-    if listVisible then MagicRenderPlayerList() end
-end)
+
 -- Toggle Teleport Player (nằm ngay dưới nút Reset)
 local tpSwitch = mkSwitchRow("Teleport Player")
 _G.Magic_SelectedTarget = _G.Magic_SelectedTarget
