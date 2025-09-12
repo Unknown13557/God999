@@ -110,43 +110,46 @@ if cam then
 end
 
 -- === Drag logic: bám sát ngón tay + tap để toggle ===
--- logic kéo thả icon
+-- logic kéo thả icon (snap đúng ngón tay, không trôi sang joystick)
 do
+    local RunService = game:GetService("RunService")
     local dragging = false
-    local activeInput
     local grabOffset = Vector2.zero
+    local dragConn
 
-    local function viewport()
-        local cam = workspace.CurrentCamera
-        return (cam and cam.ViewportSize) or Vector2.new(800,600)
-    end
-
-    local function clampToScreen(x, y)
-        local v  = viewport()
-        local sz = icon.AbsoluteSize
-        return math.clamp(x, 0, v.X - sz.X), math.clamp(y, 0, v.Y - sz.Y)
+    local function stopDrag()
+        dragging = false
+        icon.Modal = false
+        if dragConn then dragConn:Disconnect() dragConn = nil end
     end
 
     icon.InputBegan:Connect(function(i)
         if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
             dragging = true
-            activeInput = i
-            local absPos = Vector2.new(icon.AbsolutePosition.X, icon.AbsolutePosition.Y)
-            grabOffset = Vector2.new(i.Position.X, i.Position.Y) - absPos
+            icon.Modal = true
+            -- bám tâm icon vào ngón tay luôn
+            grabOffset = Vector2.new(icon.AbsoluteSize.X/2, icon.AbsoluteSize.Y/2)
+
+            if dragConn then dragConn:Disconnect() end
+            dragConn = RunService.RenderStepped:Connect(function()
+                if not dragging then return end
+                local m = game:GetService("UserInputService"):GetMouseLocation()
+                local newX, newY = clampToScreen(m.X - grabOffset.X, m.Y - grabOffset.Y)
+                icon.Position = UDim2.fromOffset(newX, newY)
+            end)
         end
     end)
 
-    UIS.InputChanged:Connect(function(i)
-        if dragging and i == activeInput then
-            local newX, newY = clampToScreen(i.Position.X - grabOffset.X, i.Position.Y - grabOffset.Y)
-            icon.Position = UDim2.fromOffset(newX, newY)
+    icon.InputEnded:Connect(function(i)
+        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+            stopDrag()
         end
     end)
 
-    UIS.InputEnded:Connect(function(i)
-        if i == activeInput then
-            dragging = false
-            activeInput = nil
+    -- phòng hờ: nếu người chơi mất focus hay thả ở ngoài
+    game:GetService("UserInputService").InputEnded:Connect(function(i)
+        if dragging and (i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch) then
+            stopDrag()
         end
     end)
 end
