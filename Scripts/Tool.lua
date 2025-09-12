@@ -84,33 +84,12 @@ local function clampToScreen(x, y)
     return math.clamp(x, 0, v.X - sz.X), math.clamp(y, 0, v.Y - sz.Y)
 end
 
-local function placeIconSafely()
-    local v = viewport()
-    -- mặc định: mé trái, giữa màn hình
-    local x = 16
-    local y = (v.Y/2) - (icon.AbsoluteSize.Y/2)
-    x, y = clampToScreen(x, y)
-    icon.Position = UDim2.fromOffset(x, y)
-end
-
--- gọi nhiều lần để chắc ăn khi camera/UI chưa “ấm”
+-- đặt icon an toàn lúc khởi tạo
 placeIconSafely()
 task.defer(placeIconSafely)
 task.delay(0.1, placeIconSafely)
 
--- tự kẹp khi đổi kích thước/đổi hướng màn hình
-local cam = workspace.CurrentCamera
-if cam then
-    cam:GetPropertyChangedSignal("ViewportSize"):Connect(function()
-        local x = icon.Position.X.Offset
-        local y = icon.Position.Y.Offset
-        x, y = clampToScreen(x, y)
-        icon.Position = UDim2.fromOffset(x, y)
-    end)
-end
-
--- === Drag logic: bám sát ngón tay + tap để toggle ===
--- PATCH: Smooth drag for icon (mouse + touch), follow even outside, no jitter
+-- KHỐI KÉO-THẢ MƯỢT (không giật, bám sát tay/chuột)
 do
     local UIS = game:GetService("UserInputService")
     local RS  = game:GetService("RunService")
@@ -119,19 +98,18 @@ do
     icon.AutoButtonColor = false
     icon.Draggable = false
 
-    local dragging = false
-    local dragInput = nil   -- touch input object (if touch)
-    local followConn = nil  -- RenderStepped for mouse
+    local dragging   = false
+    local dragInput  = nil
+    local followConn = nil
 
     local function stopDrag()
         dragging = false
         icon.Modal = false
         dragInput = nil
-        if followConn then followConn:Disconnect(); followConn = nil end
+        if followConn then followConn:Disconnect() followConn = nil end
     end
 
     local function setPosFromPoint(px, py)
-        -- “nam châm” bám tâm icon vào ngón tay/chuột
         local halfW, halfH = icon.AbsoluteSize.X*0.5, icon.AbsoluteSize.Y*0.5
         local nx, ny = clampToScreen(px - halfW, py - halfH)
         icon.Position = UDim2.fromOffset(nx, ny)
@@ -141,42 +119,34 @@ do
         if input.UserInputType == Enum.UserInputType.MouseButton1
         or input.UserInputType == Enum.UserInputType.Touch then
             dragging = true
-            icon.Modal = true  -- giữ focus, tránh bị “lọt” về joystick
+            icon.Modal = true
 
             if input.UserInputType == Enum.UserInputType.MouseButton1 then
                 if followConn then followConn:Disconnect() end
-                -- Chuột: bám theo tọa độ con trỏ mỗi frame
                 followConn = RS.RenderStepped:Connect(function()
                     if not dragging then return end
                     local m = UIS:GetMouseLocation()
                     setPosFromPoint(m.X, m.Y)
                 end)
             else
-                -- Touch: khóa theo đúng touch id, kéo ra ngoài icon vẫn theo
                 dragInput = input
             end
         end
     end)
 
-    -- Touch: cập nhật theo touch đang giữ
     UIS.TouchMoved:Connect(function(touch)
-        if not dragging or dragInput ~= touch then return end
-        setPosFromPoint(touch.Position.X, touch.Position.Y)
+        if dragging and dragInput == touch then
+            setPosFromPoint(touch.Position.X, touch.Position.Y)
+        end
     end)
 
-    -- Kết thúc kéo
-    icon.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1
-        or input == dragInput then
+    local function onEnd(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input == dragInput then
             stopDrag()
         end
-    end)
-    UIS.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1
-        or input == dragInput then
-            stopDrag()
-        end
-    end)
+    end
+    icon.InputEnded:Connect(onEnd)
+    UIS.InputEnded:Connect(onEnd)
 end
 
 -- toggle menu
