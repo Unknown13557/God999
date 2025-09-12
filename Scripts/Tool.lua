@@ -58,6 +58,8 @@ icon.Name = "MagicFloatingIcon"
 icon.BackgroundColor3 = THEME.Accent
 icon.BackgroundTransparency = 0.2
 icon.Size = UDim2.fromOffset(48,48)
+icon.AnchorPoint = Vector2.new(0.5, 0.5)              -- tâm icon
+icon.Position    = UDim2.new(1, -56, 0.5, 0)          -- spawn bên phải, giữa màn hình
 icon.ZIndex = 1000
 icon.Parent = gui
 Instance.new("UICorner", icon).CornerRadius = UDim.new(1,0)
@@ -111,12 +113,19 @@ if cam then
 end
 
 -- Kéo–thả icon (không giật)
--- Kéo thả icon (bám sát ngón tay/cursor)
 do
     local dragging = false
 
+    -- giới hạn vị trí trong màn hình (tính theo tâm vì AnchorPoint = 0.5,0.5)
+    local function clampToViewport(x, y)
+        local cam = workspace.CurrentCamera
+        local v = cam and cam.ViewportSize or Vector2.new(1920,1080)
+        local r = icon.AbsoluteSize * 0.5
+        return math.clamp(x, r.X, v.X - r.X), math.clamp(y, r.Y, v.Y - r.Y)
+    end
+
     icon.InputBegan:Connect(function(i)
-        if i.UserInputType == Enum.UserInputType.MouseButton1 
+        if i.UserInputType == Enum.UserInputType.MouseButton1
         or i.UserInputType == Enum.UserInputType.Touch then
             dragging = true
         end
@@ -124,20 +133,16 @@ do
 
     UIS.InputChanged:Connect(function(i)
         if not dragging then return end
-        if i.UserInputType == Enum.UserInputType.MouseMovement 
-        or i.UserInputType == Enum.UserInputType.Touch then
-            -- dính sát vào ngón tay (lấy vị trí cursor/ngón tay làm gốc)
-            local pos = i.Position
-            local v = workspace.CurrentCamera.ViewportSize
-            icon.Position = UDim2.fromOffset(
-                math.clamp(pos.X - icon.AbsoluteSize.X/2, 0, v.X - icon.AbsoluteSize.X),
-                math.clamp(pos.Y - icon.AbsoluteSize.Y/2, 0, v.Y - icon.AbsoluteSize.Y)
-            )
-        end
+        if i.UserInputType ~= Enum.UserInputType.MouseMovement
+        and i.UserInputType ~= Enum.UserInputType.Touch then return end
+
+        local m = UIS:GetMouseLocation()               -- toạ độ màn hình (đã bỏ inset)
+        local x, y = clampToViewport(m.X, m.Y)
+        icon.Position = UDim2.fromOffset(x, y)         -- bám đúng vị trí ngón tay/chuột
     end)
 
     UIS.InputEnded:Connect(function(i)
-        if i.UserInputType == Enum.UserInputType.MouseButton1 
+        if i.UserInputType == Enum.UserInputType.MouseButton1
         or i.UserInputType == Enum.UserInputType.Touch then
             dragging = false
         end
