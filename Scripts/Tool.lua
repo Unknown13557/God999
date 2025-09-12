@@ -438,23 +438,105 @@ end
 
 -- Các mục
 local escSwitch  = mkSwitchRow("Fast Escape")
--- Toggle nút mở/đóng PlayerList
-local playerListToggle = mkClickBtn("⬇️ Show PlayerList")
+-- ===== PlayerList (hiện/ẩn trong scroll, không đè UI khác) =====
+local plToggleBtn   = mkClickBtn("⬇️ Show PlayerList")
+local listHolder = Instance.new("Frame")
+listHolder.Name = "MagicPlayerList"
+listHolder.Size = UDim2.new(1, -PAD, 0, 0)
+listHolder.AutomaticSize = Enum.AutomaticSize.Y
+listHolder.BackgroundTransparency = 1
+listHolder.Active = false
+listHolder.ClipsDescendants = true
+listHolder.ZIndex = 1
+listHolder.Parent = scroll
 
--- Khung chứa danh sách player (ban đầu rỗng + thu nhỏ)
-local playerListFrame = Instance.new("Frame")
-playerListFrame.Size = UDim2.new(1, -PAD*2, 0, 0) -- chiều cao = 0 khi ẩn
-playerListFrame.BackgroundTransparency = 1
-playerListFrame.ClipsDescendants = true
-playerListFrame.Parent = scroll
+local lhPadding = Instance.new("UIPadding", listHolder)
+lhPadding.PaddingLeft  = UDim.new(0, PAD)
+lhPadding.PaddingRight = UDim.new(0, PAD)
 
-local listLayout = Instance.new("UIListLayout")
-listLayout.Parent = playerListFrame
-listLayout.SortOrder = Enum.SortOrder.LayoutOrder
-listLayout.Padding = UDim.new(0,2)
+local lhLayout = Instance.new("UIListLayout", listHolder)
+lhLayout.FillDirection = Enum.FillDirection.Vertical
+lhLayout.SortOrder = Enum.SortOrder.LayoutOrder
+lhLayout.Padding = UDim.new(0, 3)
 
+-- Nút show/hide đã có: plToggleBtn (đặt ở trên)
+-- Nút Reset nằm NGAY DƯỚI listHolder
 local resetPlayerBtn = mkClickBtn("Reset PlayerList [Click]")
+
+-- Item trong list (không dùng mkClickBtn để parent vào listHolder)
+local function mkListItem(text, plr)
+    local b = Instance.new("TextButton")
+    b.Size = UDim2.new(1, 0, 0, 24)
+    b.BackgroundColor3 = THEME.Hover
+    b.AutoButtonColor = false
+    b.Text = text
+    b.Font = Enum.Font.Gotham
+    b.TextSize = 12
+    b.TextColor3 = THEME.Text
+    b.Parent = listHolder
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0,5)
+    b.MouseEnter:Connect(function() tweenColor(b, THEME.Accent) end)
+    b.MouseLeave:Connect(function() tweenColor(b, THEME.Hover) end)
+    if plr then
+        b.MouseButton1Click:Connect(function()
+            _G.Magic_SelectedTarget = plr
+        end)
+    end
+    return b
+end
+
+-- Render/Reset danh sách
+local function MagicRenderPlayerList()
+    for _,c in ipairs(listHolder:GetChildren()) do
+        if c:IsA("TextButton") then c:Destroy() end
+    end
+    for _,p in ipairs(Players:GetPlayers()) do
+        if p ~= player then
+            mkListItem(p.DisplayName or p.Name, p)
+        end
+    end
+end
+
+-- Toggle show/hide list
+local listVisible = false
+plToggleBtn.MouseButton1Click:Connect(function()
+    listVisible = not listVisible
+    plToggleBtn.Text = listVisible and "⬆️ Hide PlayerList" or "⬇️ Show PlayerList"
+    if listVisible then
+        MagicRenderPlayerList()
+    else
+        -- thu gọn: xóa item để AutoSize trở về 0
+        for _,c in ipairs(listHolder:GetChildren()) do
+            if c:IsA("TextButton") then c:Destroy() end
+        end
+    end
+end)
+
+-- Reset list thủ công
+resetPlayerBtn.MouseButton1Click:Connect(function()
+    if listVisible then
+        MagicRenderPlayerList()
+    end
+end)
+
+-- Tự cập nhật khi có người vào/ra
+Players.PlayerAdded:Connect(function(p)
+    if listVisible then
+        task.defer(MagicRenderPlayerList)
+    end
+end)
+Players.PlayerRemoving:Connect(function(p)
+    if _G.Magic_SelectedTarget == p then
+        _G.Magic_SelectedTarget = nil
+    end
+    if listVisible then
+        task.defer(MagicRenderPlayerList)
+    end
+end)
+
+-- Toggle Teleport Player (nằm ngay dưới nút Reset)
 local tpSwitch = mkSwitchRow("Teleport Player")
+_G.Magic_SelectedTarget = _G.Magic_SelectedTarget
 local espSwitch  = mkSwitchRow("ESP")
 local infSwitch  = mkSwitchRow("Infinity Jump")
 local noclipSwitch = mkSwitchRow("NoClip")
@@ -482,7 +564,7 @@ _G.MagicMenuStates = {
     InfinityJump = infSwitch.Get,
     WalkSpeedFactor = function() return tonumber(wsInput.Text) or 1 end,
     JumpPowerFactor = function() return tonumber(jpInput.Text) or 1 end,
-    Buttons = { Hop = hopBtn, Rejoin = rejoinBtn, Suicide = suiBtn, Leave = leaveBtn, Zoom = zoomBtn, FixCamera = camFixBtn, ResetPlayerList = resetPlayerBtn }
+    Buttons = { Hop = hopBtn, Rejoin = rejoinBtn, Suicide = suiBtn, Leave = leaveBtn, Zoom = zoomBtn, FixCamera = camFixBtn, PlayerListToggle = plToggleBtn, ResetPlayerList = resetPlayerBtn }
 }
 -- PHẦN 2 (SẠCH): Speed đơn giản (không xuyên tường) + JumpPower ổn định + Infinity Jump chuẩn
 -- + ESP luôn bám người chơi mới/reset + các nút click (Hop/Rejoin/Suicide/Leave)
