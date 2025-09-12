@@ -471,10 +471,10 @@ local wsSwitch     = mkSwitchRow("Changer WalkSpeed")
 local jpSwitch     = mkSwitchRow("Changer JumpPower")
 
 -- Buttons
-local zoomBtn   = mkClickBtn("Infinity Zoom [Click]")
 local suiBtn    = mkClickBtn("Suicide [Click]")
 local rejoinBtn = mkClickBtn("Server Rejoin [Click]")
 local hopBtn    = mkClickBtn("Server Hop [Click]")
+local zoomBtn   = mkClickBtn("Infinity Zoom [Click]")
 local camFixBtn = mkClickBtn("Fix Camera [Click]")
 local leaveBtn  = mkClickBtn("Leave [Click]")
 
