@@ -114,7 +114,8 @@ if cam then
 end
 
 -- Kéo–thả icon (không giật)
-do -- kéo thả icon (nam châm sát ngón tay)
+-- Kéo thả icon (bám sát ngón tay/cursor)
+do
     local dragging = false
 
     icon.InputBegan:Connect(function(i)
@@ -126,14 +127,16 @@ do -- kéo thả icon (nam châm sát ngón tay)
 
     UIS.InputChanged:Connect(function(i)
         if not dragging then return end
-        if i.UserInputType ~= Enum.UserInputType.MouseMovement 
-        and i.UserInputType ~= Enum.UserInputType.Touch then return end
-
-        -- đặt icon đúng chỗ con trỏ/ngón tay, căn giữa icon
-        local v = workspace.CurrentCamera.ViewportSize
-        local x = math.clamp(i.Position.X - icon.AbsoluteSize.X/2, 0, v.X - icon.AbsoluteSize.X)
-        local y = math.clamp(i.Position.Y - icon.AbsoluteSize.Y/2, 0, v.Y - icon.AbsoluteSize.Y)
-        icon.Position = UDim2.fromOffset(x, y)
+        if i.UserInputType == Enum.UserInputType.MouseMovement 
+        or i.UserInputType == Enum.UserInputType.Touch then
+            -- dính sát vào ngón tay (lấy vị trí cursor/ngón tay làm gốc)
+            local pos = i.Position
+            local v = workspace.CurrentCamera.ViewportSize
+            icon.Position = UDim2.fromOffset(
+                math.clamp(pos.X - icon.AbsoluteSize.X/2, 0, v.X - icon.AbsoluteSize.X),
+                math.clamp(pos.Y - icon.AbsoluteSize.Y/2, 0, v.Y - icon.AbsoluteSize.Y)
+            )
+        end
     end)
 
     UIS.InputEnded:Connect(function(i)
@@ -551,76 +554,40 @@ _G.__MAGIC_SPEED_RUN = RunService.RenderStepped:Connect(function(dt)
 	end
 end)
 
--- ======== NoClip (toggle) – không độn thổ ==========
--- ========== MAGIC NOCLIP (Always On when toggle = ON) ==========
+-- ==================== NOCLIP TOGGLE ====================
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
-while not _G.MagicMenuStates do task.wait() end
-local S  = _G.MagicMenuStates
 local lp = Players.LocalPlayer
-
 local char, hum
+
 local function bindChar(c)
     char = c
-    hum  = c:WaitForChild("Humanoid", 8)
+    hum = c:WaitForChild("Humanoid", 8)
 end
 if lp.Character then bindChar(lp.Character) end
 lp.CharacterAdded:Connect(bindChar)
 
--- Tên part chân giữ va chạm để không rơi xuyên sàn
-local FOOT_NAMES_R15 = {
-    ["LeftFoot"]=true, ["RightFoot"]=true,
-    ["LeftLowerLeg"]=true, ["RightLowerLeg"]=true,
-    ["LeftUpperLeg"]=true, ["RightUpperLeg"]=true
-}
-local FOOT_NAMES_R6 = { ["Left Leg"]=true, ["Right Leg"]=true }
+-- clear loop cũ nếu có
+if _G.__MAGIC_NOCLIP then _G.__MAGIC_NOCLIP:Disconnect() end
 
-local function isFoot(part)
-    if not part or not part:IsA("BasePart") then return false end
-    local n = part.Name
-    if hum and hum.RigType == Enum.HumanoidRigType.R6 then
-        return FOOT_NAMES_R6[n] == true
-    else
-        return FOOT_NAMES_R15[n] == true
-    end
-end
-
-local function iterParts()
-    if not char then return function() end end
-    local arr = {}
-    for _,d in ipairs(char:GetDescendants()) do
-        if d:IsA("BasePart") then table.insert(arr, d) end
-    end
-    local i = 0
-    return function()
-        i += 1
-        return arr[i]
-    end
-end
-
--- cleanup cũ
-if _G.__MAGIC_NOCLIP_LOOP then _G.__MAGIC_NOCLIP_LOOP:Disconnect() end
-
-_G.__MAGIC_NOCLIP_LOOP = RunService.RenderStepped:Connect(function()
-    if not char or not hum then return end
-
-    if S.NoClip and S.NoClip() then
-        -- NOCLIP ON: luôn tắt va chạm mọi part trừ chân (để không rơi)
-        for p in iterParts() do
-            if isFoot(p) then
-                if p.CanCollide ~= true then p.CanCollide = true end
-            else
-                if p.CanCollide ~= false then p.CanCollide = false end
+_G.__MAGIC_NOCLIP = RunService.Stepped:Connect(function()
+    if not char or not _G.MagicMenuStates then return end
+    if _G.MagicMenuStates.NoClip and _G.MagicMenuStates.NoClip() then
+        for _, v in ipairs(char:GetDescendants()) do
+            if v:IsA("BasePart") and v.CanCollide then
+                v.CanCollide = false
             end
         end
     else
-        -- NOCLIP OFF: trả tất cả về va chạm bình thường
-        for p in iterParts() do
-            if p.CanCollide ~= true then p.CanCollide = true end
+        for _, v in ipairs(char:GetDescendants()) do
+            if v:IsA("BasePart") and not v.CanCollide then
+                v.CanCollide = true
+            end
         end
     end
 end)
+-- =======================================================
 
 -- JUMPPOWER: cưỡng bức ổn định (không để game ghi đè), luôn UseJumpPower
 _G.__MAGIC_JP_ENFORCE = RunService.Heartbeat:Connect(function()
