@@ -84,38 +84,53 @@ icon.ImageRectOffset = Vector2.new(4,204)  -- mặc định
 icon.ImageRectSize   = Vector2.new(36,36)
 
 -- DRAG (bám ngón tay)
+
 do
     local dragging = false
-    local grab = Vector2.new()
-    local startAbs = Vector2.new()
-    local iconSize = Vector2.new(48,48)
+    local moved    = false
+    local dragStartPos = Vector2.new()
+    local iconStartPos = UDim2.new()
 
-    local function updateToPointer()
-        local m = UIS:GetMouseLocation()
-        local off = m - grab
-        local x,y = clampToScreen(off.X, off.Y, iconSize.X, iconSize.Y)
-        icon.Position = UDim2.fromOffset(x, y)
+    local function clampToScreen(x, y)
+        local v  = viewport()
+        local sz = icon.AbsoluteSize
+        return math.clamp(x, 0, v.X - sz.X), math.clamp(y, 0, v.Y - sz.Y)
     end
 
     icon.InputBegan:Connect(function(input)
-        if input.UserInputType==Enum.UserInputType.MouseButton1 or input.UserInputType==Enum.UserInputType.Touch then
-            dragging = true
-            startAbs = icon.AbsolutePosition
-            local m = UIS:GetMouseLocation()
-            grab = m - startAbs
-            updateToPointer()
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch then
+            dragging      = true
+            moved         = false
+            dragStartPos  = UIS:GetMouseLocation()
+            iconStartPos  = icon.Position
         end
     end)
 
-    UIS.InputChanged:Connect(function(i)
+    UIS.InputChanged:Connect(function(input)
         if not dragging then return end
-        if i.UserInputType ~= Enum.UserInputType.MouseMovement and i.UserInputType ~= Enum.UserInputType.Touch then return end
-        updateToPointer()
+        if input.UserInputType ~= Enum.UserInputType.MouseMovement
+        and input.UserInputType ~= Enum.UserInputType.Touch then return end
+
+        local m = UIS:GetMouseLocation()
+        local delta = m - dragStartPos
+        if not moved and delta.Magnitude > 6 then
+            moved = true
+        end
+
+        local newX = iconStartPos.X.Offset + delta.X
+        local newY = iconStartPos.Y.Offset + delta.Y
+        newX, newY = clampToScreen(newX, newY)
+        icon.Position = UDim2.fromOffset(newX, newY)
     end)
 
-    UIS.InputEnded:Connect(function(i)
-        if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then
+    UIS.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch then
             dragging = false
+            if not moved then
+                window.Visible = not window.Visible
+            end
         end
     end)
 end
