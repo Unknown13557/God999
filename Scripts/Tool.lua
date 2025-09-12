@@ -438,6 +438,23 @@ end
 
 -- Các mục
 local escSwitch  = mkSwitchRow("Fast Escape")
+-- Toggle nút mở/đóng PlayerList
+local playerListToggle = mkClickBtn("⬇️ Show PlayerList")
+
+-- Khung chứa danh sách player (ban đầu rỗng + thu nhỏ)
+local playerListFrame = Instance.new("Frame")
+playerListFrame.Size = UDim2.new(1, -PAD*2, 0, 0) -- chiều cao = 0 khi ẩn
+playerListFrame.BackgroundTransparency = 1
+playerListFrame.ClipsDescendants = true
+playerListFrame.Parent = scroll
+
+local listLayout = Instance.new("UIListLayout")
+listLayout.Parent = playerListFrame
+listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+listLayout.Padding = UDim.new(0,2)
+
+local resetPlayerBtn = mkClickBtn("Reset PlayerList [Click]")
+local tpSwitch = mkSwitchRow("Teleport Player")
 local espSwitch  = mkSwitchRow("ESP")
 local infSwitch  = mkSwitchRow("Infinity Jump")
 local noclipSwitch = mkSwitchRow("NoClip")
@@ -457,6 +474,7 @@ local leaveBtn   = mkClickBtn("Leave [Click]")
 -- API state cho phần 2/3 dùng
 _G.MagicMenuStates = {
     FastEscape = escSwitch.Get,
+	TeleportPlayer = teleportSwitch.Get,
     ESP = espSwitch.Get,
 	NoClip = noclipSwitch.Get,
     WalkSpeedHack = wsSwitch.Get,
@@ -464,7 +482,7 @@ _G.MagicMenuStates = {
     InfinityJump = infSwitch.Get,
     WalkSpeedFactor = function() return tonumber(wsInput.Text) or 1 end,
     JumpPowerFactor = function() return tonumber(jpInput.Text) or 1 end,
-    Buttons = { Hop = hopBtn, Rejoin = rejoinBtn, Suicide = suiBtn, Leave = leaveBtn, Zoom = zoomBtn, FixCamera = camFixBtn }
+    Buttons = { Hop = hopBtn, Rejoin = rejoinBtn, Suicide = suiBtn, Leave = leaveBtn, Zoom = zoomBtn, FixCamera = camFixBtn, ResetPlayerList = resetPlayerBtn }
 }
 -- PHẦN 2 (SẠCH): Speed đơn giản (không xuyên tường) + JumpPower ổn định + Infinity Jump chuẩn
 -- + ESP luôn bám người chơi mới/reset + các nút click (Hop/Rejoin/Suicide/Leave)
