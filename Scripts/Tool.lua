@@ -438,13 +438,15 @@ end
 
 -- Các mục
 local escSwitch  = mkSwitchRow("Fast Escape")
--- === PlayerList container (trong scroll, auto đẩy các nút dưới) ===
+-- Nút bật/tắt danh sách người chơi (đặt trên listHolder)
+local plToggleBtn = mkClickBtn("PlayerList ⬇️")
+-- container giữ danh sách (nằm trong scroll, auto đẩy các nút dưới)
 local listHolder = Instance.new("Frame")
 listHolder.Name = "MagicPlayerList"
 listHolder.Size = UDim2.new(1, -PAD, 0, 0)
 listHolder.AutomaticSize = Enum.AutomaticSize.Y
 listHolder.BackgroundTransparency = 1
-listHolder.Active = false
+listHolder.Active = false            -- KHÔNG chặn input các nút khác
 listHolder.ClipsDescendants = true
 listHolder.ZIndex = 1
 listHolder.Parent = scroll
@@ -458,11 +460,7 @@ lhLayout.FillDirection = Enum.FillDirection.Vertical
 lhLayout.SortOrder = Enum.SortOrder.LayoutOrder
 lhLayout.Padding = UDim.new(0, 3)
 
--- Nút show/hide đã có: plToggleBtn (đặt ở trên)
--- Nút Reset nằm NGAY DƯỚI listHolder
-local resetPlayerBtn = mkClickBtn("Reset PlayerList [Click]")
-
--- Item trong list (không dùng mkClickBtn để parent vào listHolder)
+-- helper: tạo 1 item trong list
 local function mkListItem(text, plr)
     local b = Instance.new("TextButton")
     b.Size = UDim2.new(1, 0, 0, 24)
@@ -479,60 +477,54 @@ local function mkListItem(text, plr)
     if plr then
         b.MouseButton1Click:Connect(function()
             _G.Magic_SelectedTarget = plr
+            -- đổi chữ tiêu đề nút cho gọn: PlayerList [TênGốc]
+            plToggleBtn.Text = ("PlayerList [%s]"):format(plr.Name)
         end)
     end
     return b
 end
 
--- Render/Reset danh sách
+-- render/reset danh sách
 local function MagicRenderPlayerList()
     for _,c in ipairs(listHolder:GetChildren()) do
         if c:IsA("TextButton") then c:Destroy() end
     end
     for _,p in ipairs(Players:GetPlayers()) do
         if p ~= player then
-            mkListItem(p.DisplayName or p.Name, p)
+            -- dùng tên gốc (Name), không dùng DisplayName
+            mkListItem(p.Name, p)
         end
     end
 end
 
--- Toggle show/hide list
+-- toggle show/hide
 local listVisible = false
 plToggleBtn.MouseButton1Click:Connect(function()
     listVisible = not listVisible
-    plToggleBtn.Text = listVisible and "⬆️ Hide PlayerList" or "⬇️ Show PlayerList"
     if listVisible then
-        MagicRenderPlayerList()
+        plToggleBtn.Text = "PlayerList ⬆️"
+        MagicRenderPlayerList()  -- mở: dựng list, scroll tự giãn và đẩy nút dưới
     else
-        -- thu gọn: xóa item để AutoSize trở về 0
+        plToggleBtn.Text = "PlayerList ⬇️"
         for _,c in ipairs(listHolder:GetChildren()) do
             if c:IsA("TextButton") then c:Destroy() end
         end
+        listHolder.Size = UDim2.new(1, -PAD, 0, 0) -- thu về 0 (AutoSize)
     end
 end)
 
--- Reset list thủ công
-resetPlayerBtn.MouseButton1Click:Connect(function()
-    if listVisible then
-        MagicRenderPlayerList()
-    end
-end)
-
--- Tự cập nhật khi có người vào/ra
-Players.PlayerAdded:Connect(function(p)
-    if listVisible then
-        task.defer(MagicRenderPlayerList)
-    end
+-- cập nhật khi người vào/ra (chỉ khi đang mở)
+Players.PlayerAdded:Connect(function()
+    if listVisible then task.defer(MagicRenderPlayerList) end
 end)
 Players.PlayerRemoving:Connect(function(p)
-    if _G.Magic_SelectedTarget == p then
-        _G.Magic_SelectedTarget = nil
-    end
-    if listVisible then
-        task.defer(MagicRenderPlayerList)
-    end
+    if _G.Magic_SelectedTarget == p then _G.Magic_SelectedTarget = nil end
+    if listVisible then task.defer(MagicRenderPlayerList) end
 end)
-
+local resetPlayerBtn = mkClickBtn("Reset PlayerList [Click]")
+resetPlayerBtn.MouseButton1Click:Connect(function()
+    if listVisible then MagicRenderPlayerList() end
+end)
 -- Toggle Teleport Player (nằm ngay dưới nút Reset)
 local tpSwitch = mkSwitchRow("Teleport Player")
 _G.Magic_SelectedTarget = _G.Magic_SelectedTarget
@@ -555,7 +547,7 @@ local leaveBtn   = mkClickBtn("Leave [Click]")
 -- API state cho phần 2/3 dùng
 _G.MagicMenuStates = {
     FastEscape = escSwitch.Get,
-	TeleportPlayer = teleportSwitch.Get,
+	TeleportPlayer = tpSwitch.Get,
     ESP = espSwitch.Get,
 	NoClip = noclipSwitch.Get,
     WalkSpeedHack = wsSwitch.Get,
