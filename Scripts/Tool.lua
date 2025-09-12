@@ -110,82 +110,70 @@ if cam then
 end
 
 -- === Drag logic: bám sát ngón tay + tap để toggle ===
--- Kéo icon mượt: bám sát ngón tay/chuột, không rớt khi ra khỏi icon, không giật
+-- PATCH: Smooth drag for icon (mouse + touch), follow even outside, no jitter
 do
     local UIS = game:GetService("UserInputService")
-    local RunService = game:GetService("RunService")
+    local RS  = game:GetService("RunService")
 
     icon.Active = true
     icon.AutoButtonColor = false
     icon.Draggable = false
 
     local dragging = false
-    local dragInput -- input touch đang theo dõi (nếu là touch)
-    local grabOffset = Vector2.zero
-    local mouseConn, touchConn
+    local dragInput = nil   -- touch input object (if touch)
+    local followConn = nil  -- RenderStepped for mouse
 
     local function stopDrag()
         dragging = false
         icon.Modal = false
         dragInput = nil
-        if mouseConn then mouseConn:Disconnect(); mouseConn = nil end
-        if touchConn then touchConn:Disconnect(); touchConn = nil end
+        if followConn then followConn:Disconnect(); followConn = nil end
     end
 
     local function setPosFromPoint(px, py)
-        local nx, ny = clampToScreen(px - grabOffset.X, py - grabOffset.Y)
+        -- “nam châm” bám tâm icon vào ngón tay/chuột
+        local halfW, halfH = icon.AbsoluteSize.X*0.5, icon.AbsoluteSize.Y*0.5
+        local nx, ny = clampToScreen(px - halfW, py - halfH)
         icon.Position = UDim2.fromOffset(nx, ny)
     end
 
     icon.InputBegan:Connect(function(input)
-        if input.UserInputType ~= Enum.UserInputType.MouseButton1
-        and input.UserInputType ~= Enum.UserInputType.Touch then
-            return
-        end
-
-        dragging = true
-        icon.Modal = true
-        -- Bám tâm icon vào ngón tay/chuột (nam châm)
-        grabOffset = Vector2.new(icon.AbsoluteSize.X/2, icon.AbsoluteSize.Y/2)
-
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            -- Chuột: theo dõi liên tục bằng RenderStepped + GetMouseLocation
-            if mouseConn then mouseConn:Disconnect() end
-            mouseConn = RunService.RenderStepped:Connect(function()
-                if not dragging then return end
-                local m = UIS:GetMouseLocation()
-                setPosFromPoint(m.X, m.Y)
-            end)
-        else
-            -- Touch: khóa theo đúng touch id, không rớt khi rời khỏi icon
-            dragInput = input
-            if touchConn then touchConn:Disconnect() end
-            touchConn = dragInput.Changed:Connect(function(prop)
-                if not dragging then return end
-                if prop == "Position" then
-                    local p = dragInput.Position
-                    setPosFromPoint(p.X, p.Y)
-                elseif prop == "UserInputState" and dragInput.UserInputState == Enum.UserInputState.End then
-                    stopDrag()
-                end
-            end)
-        end
-    end)
-
-    -- Kết thúc kéo khi thả
-    icon.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1
         or input.UserInputType == Enum.UserInputType.Touch then
-            stopDrag()
+            dragging = true
+            icon.Modal = true  -- giữ focus, tránh bị “lọt” về joystick
+
+            if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                if followConn then followConn:Disconnect() end
+                -- Chuột: bám theo tọa độ con trỏ mỗi frame
+                followConn = RS.RenderStepped:Connect(function()
+                    if not dragging then return end
+                    local m = UIS:GetMouseLocation()
+                    setPosFromPoint(m.X, m.Y)
+                end)
+            else
+                -- Touch: khóa theo đúng touch id, kéo ra ngoài icon vẫn theo
+                dragInput = input
+            end
         end
     end)
 
-    -- Phòng hờ: nếu hệ thống báo thả chung
-    UIS.InputEnded:Connect(function(input)
-        if not dragging then return end
-        if input == dragInput then
+    -- Touch: cập nhật theo touch đang giữ
+    UIS.TouchMoved:Connect(function(touch)
+        if not dragging or dragInput ~= touch then return end
+        setPosFromPoint(touch.Position.X, touch.Position.Y)
+    end)
+
+    -- Kết thúc kéo
+    icon.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input == dragInput then
             stopDrag()
-        elseif input.UserInputType == Enum.UserInputType.MouseButton1 then
+        end
+    end)
+    UIS.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input == dragInput then
             stopDrag()
         end
     end)
