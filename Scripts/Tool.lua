@@ -53,54 +53,67 @@ gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 gui.Parent = playerGui
 
 -- ICON TRÒN 48x48: luôn hiện, kẹp trong màn hình, kéo mượt, không "nhảy
--- === ICON 48x48 + DRAG MƯỢT (từ local icon đến trước toggle menu) ===
-local RS  = game:GetService("RunService")
-local UIS = game:GetService("UserInputService")
-
--- helper
-local function getCam()
+-- ICON 48x48 (tròn) + KÉO MƯỢT + CLICK/DRAG PHÂN BIỆT
+local function waitForCamera()
     local cam = workspace.CurrentCamera
-    while not cam do RS.RenderStepped:Wait(); cam = workspace.CurrentCamera end
+    while not cam do
+        task.wait()
+        cam = workspace.CurrentCamera
+    end
     return cam
 end
-local function viewport() return getCam().ViewportSize end
+
+-- clamp theo màn hình (dựa trên AnchorPoint hiện tại)
 local function clampToScreen(x, y)
-    local v  = viewport()
-    local sz = icon.AbsoluteSize
+    local cam = waitForCamera()
+    local v = cam.ViewportSize
+    local sz = icon and icon.AbsoluteSize or Vector2.new(48,48)
     return math.clamp(x, 0, v.X - sz.X), math.clamp(y, 0, v.Y - sz.Y)
 end
-local function placeIconSafely()
-    local v = viewport()
-    local x = 16
-    local y = (v.Y * 0.5) - (icon.AbsoluteSize.Y * 0.5)
-    x, y = clampToScreen(x, y)
-    icon.Position = UDim2.fromOffset(x, y)
-end
 
--- ICON 48x48 (tròn) + KÉO MƯỢT + CLICK/DRAG PHÂN BIỆT
-kéo mượt, không chạm window ở đây
+-- tạo icon
 local icon = Instance.new("ImageButton")
 icon.Name = "FloatingIcon"
-icon.Size = UDim2.fromOffset(48, 48)
+icon.Size = UDim2.fromOffset(48,48)
+icon.AnchorPoint = Vector2.new(0, 0.5)
 icon.BackgroundColor3 = THEME.Accent
 icon.BackgroundTransparency = 0.2
 icon.AutoButtonColor = false
 icon.Active = true
 icon.Selectable = false
 icon.Modal = false
-icon.ZIndex = 9999
-icon.Position = UDim2.new(0, 16, 0.5, -24)
+icon.ZIndex = 10000
 icon.Parent = gui
 
+-- visual
+Instance.new("UICorner", icon).CornerRadius = UDim.new(1,0)
+local stroke = Instance.new("UIStroke")
+stroke.Thickness = 1.5
+stroke.Color = Color3.fromRGB(255,255,255)
+stroke.Transparency = 0.15
+stroke.Parent = icon
+
+icon.Image = "rbxassetid://3926305904"
+icon.ImageRectOffset = Vector2.new(4,204)
+icon.ImageRectSize   = Vector2.new(36,36)
+
+-- đặt vị trí an toàn (mé trái, giữa)
 do
-    gui.DisplayOrder = 9999
-    local corner = Instance.new("UICorner"); corner.CornerRadius = UDim.new(1,0); corner.Parent = icon
-    local stroke = Instance.new("UIStroke"); stroke.Thickness = 1.5; stroke.Color = Color3.fromRGB(255,255,255); stroke.Transparency = 0.15; stroke.Parent = icon
-    icon.Image = "rbxassetid://3926305904"
-    icon.ImageRectOffset = Vector2.new(4, 204)
-    icon.ImageRectSize   = Vector2.new(36, 36)
+    waitForCamera()
+    local v = workspace.CurrentCamera.ViewportSize
+    local x = 16
+    local y = v.Y/2 - (icon.AbsoluteSize.Y/2)
+    x, y = clampToScreen(x,y)
+    icon.Position = UDim2.fromOffset(x,y)
+    -- đặt 2 lần sau 1 frame để tránh AbsoluteSize chưa cập nhật kịp
+    task.defer(function()
+        local x2, y2 = clampToScreen(icon.Position.X.Offset, icon.Position.Y.Offset)
+        icon.Position = UDim2.fromOffset(x2,y2)
+    end)
 end
-do  -- block riêng cho kéo/thả
+
+-- ===== KÉO/THẢ MƯỢT (bám sát ngón tay) =====
+do
     local dragging = false
     local activeInput = nil
     local grabOffset = Vector2.new(0,0)
@@ -117,7 +130,6 @@ do  -- block riêng cho kéo/thả
         dragging = true
         activeInput = input
         icon.Modal = true
-
         local m = getMouse()
         local abs = icon.AbsolutePosition
         grabOffset = Vector2.new(m.X - abs.X, m.Y - abs.Y)
@@ -155,7 +167,8 @@ do  -- block riêng cho kéo/thả
             activeInput = nil
             icon.Modal = false
             if not wasDrag then
-                pcall(function() _G.Magic_ToggleMenu() end)
+                -- tap: toggle cửa sổ
+                pcall(function() window.Visible = not window.Visible end)
             end
         end
     end)
