@@ -78,22 +78,10 @@ local function viewport()
 end
 
 -- clamp icon vào trong màn hình, tôn trọng AnchorPoint
-local function clampToScreen(px, py)
-    local v  = workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize or Vector2.new(1920,1080)
+local function clampToScreen(x, y)
+    local v  = viewport()
     local sz = icon.AbsoluteSize
-    local ap = icon.AnchorPoint
-    local pad = 6 -- mép an toàn
-
-    -- với AnchorPoint bất kỳ:
-    -- min = pad - sz * ap
-    -- max = v - pad - sz * (1 - ap)
-    local minX = pad - sz.X * ap.X
-    local maxX = v.X - pad - sz.X * (1 - ap.X)
-
-    local minY = pad - sz.Y * ap.Y
-    local maxY = v.Y - pad - sz.Y * (1 - ap.Y)
-
-    return math.clamp(px, minX, maxX), math.clamp(py, minY, maxY)
+    return math.clamp(x, 0, v.X - sz.X), math.clamp(y, 0, v.Y - sz.Y)
 end
 
 local function placeIconSafely()
@@ -122,71 +110,43 @@ if cam then
 end
 
 -- === Drag logic: bám sát ngón tay + tap để toggle ===
--- === Drag icon: bám sát NGÓN TAY BẮT ĐẦU, không hút về joystick ===
+-- logic kéo thả icon
 do
-    local RunService = game:GetService("RunService")
-
     local dragging = false
-    local moved = false
-    local tapStart = 0
-    local rsConn : RBXScriptConnection? = nil
-    local activeInput : InputObject? = nil
+    local activeInput
     local grabOffset = Vector2.zero
-    local startPos = Vector2.zero
 
-    local function startDrag(i: InputObject)
-        -- chỉ nhận input bắt đầu ngay trên icon để tránh lẫn với joystick
-        local abs = icon.AbsolutePosition
-        local size = icon.AbsoluteSize
-        local center = abs + size/2
-        if (Vector2.new(i.Position.X, i.Position.Y) - center).Magnitude > math.max(size.X, size.Y) then
-            return
-        end
-
-        dragging = true
-        moved = false
-        tapStart = tick()
-        activeInput = i
-
-        grabOffset = Vector2.new(i.Position.X - abs.X, i.Position.Y - abs.Y)
-        startPos = Vector2.new(abs.X, abs.Y)
-
-        if rsConn then rsConn:Disconnect() end
-        rsConn = RunService.RenderStepped:Connect(function()
-            if not dragging or not activeInput then return end
-            -- nếu touch này đã end thì kết thúc kéo
-            if activeInput.UserInputState == Enum.UserInputState.End then
-                dragging = false
-                return
-            end
-            local px, py = clampToScreen(activeInput.Position.X - grabOffset.X, activeInput.Position.Y - grabOffset.Y)
-            icon.Position = UDim2.fromOffset(px, py)
-            if (Vector2.new(px, py) - startPos).Magnitude > 4 then
-                moved = true
-            end
-        end)
+    local function viewport()
+        local cam = workspace.CurrentCamera
+        return (cam and cam.ViewportSize) or Vector2.new(800,600)
     end
 
-    local function endDrag()
-        if rsConn then rsConn:Disconnect() rsConn = nil end
-        dragging = false
-        activeInput = nil
-        -- tap ngắn không kéo => toggle
-        if not moved and (tick() - tapStart) < 0.25 then
-            window.Visible = not window.Visible
-        end
+    local function clampToScreen(x, y)
+        local v  = viewport()
+        local sz = icon.AbsoluteSize
+        return math.clamp(x, 0, v.X - sz.X), math.clamp(y, 0, v.Y - sz.Y)
     end
 
     icon.InputBegan:Connect(function(i)
-        if i.UserInputType == Enum.UserInputType.MouseButton1
-        or i.UserInputType == Enum.UserInputType.Touch then
-            startDrag(i)
+        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            activeInput = i
+            local absPos = Vector2.new(icon.AbsolutePosition.X, icon.AbsolutePosition.Y)
+            grabOffset = Vector2.new(i.Position.X, i.Position.Y) - absPos
+        end
+    end)
+
+    UIS.InputChanged:Connect(function(i)
+        if dragging and i == activeInput then
+            local newX, newY = clampToScreen(i.Position.X - grabOffset.X, i.Position.Y - grabOffset.Y)
+            icon.Position = UDim2.fromOffset(newX, newY)
         end
     end)
 
     UIS.InputEnded:Connect(function(i)
         if i == activeInput then
-            endDrag()
+            dragging = false
+            activeInput = nil
         end
     end)
 end
