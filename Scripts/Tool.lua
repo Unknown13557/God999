@@ -657,6 +657,74 @@ _G.__MAGIC_NOCLIP = RunService.Stepped:Connect(function()
     end
 end)
 -- =======================================================
+-- ================== TELEPORT TO PLAYER (FOLLOW TWEEN 300, LUÔN BÁM) ==================
+do
+    local TweenService = game:GetService("TweenService")
+    local activeTp      -- Tween hiện tại
+    local lastGoalPos   -- Vector3 mục tiêu lần trước
+    local cooldownAcc   = 0
+    local MIN_RETARGET_DT = 0.05   -- 20Hz
+    local OFFSET        = CFrame.new(0, 0, -3) -- đứng sát sau lưng 3 studs
+    local MIN_TIME      = 1/120   -- tween tối thiểu (tránh time=0 gây giật)
+
+    local function cancelTween()
+        if activeTp then activeTp:Cancel(); activeTp=nil end
+    end
+
+    local function goalPosFrom(thrp)
+        -- “áp sát” theo hướng quay hiện tại của target
+        return (thrp.CFrame * OFFSET).Position
+    end
+
+    local function startTweenTo(pos)
+        if not hrp then return end
+        local dist = (pos - hrp.Position).Magnitude
+        local t = math.max(dist / 300, MIN_TIME)
+        cancelTween()
+        local tw = TweenService:Create(hrp, TweenInfo.new(t, Enum.EasingStyle.Linear), {CFrame = CFrame.new(pos)})
+        activeTp = tw
+        lastGoalPos = pos
+        tw:Play()
+        tw.Completed:Connect(function()
+            if activeTp == tw then activeTp = nil end
+        end)
+    end
+
+    -- Luôn bám: retarget 20Hz, kể cả đã tới nơi (micro-tween giữ dính)
+    FrameBus:OnEveryFrame(function(dt)
+        -- OFF => dừng ngay
+        if not (S and S.TeleportPlayer and S.TeleportPlayer()) then
+            cancelTween(); lastGoalPos=nil; cooldownAcc=0; return
+        end
+        if not hrp then return end
+        local tgt = S.SelectedTarget and S.SelectedTarget()
+        local thrp = tgt and tgt.Character and tgt.Character:FindFirstChild("HumanoidRootPart")
+        if not thrp then
+            cancelTween(); lastGoalPos=nil; cooldownAcc=0; return
+        end
+
+        cooldownAcc += dt
+        if cooldownAcc < MIN_RETARGET_DT then return end
+        cooldownAcc = 0
+
+        -- Mục tiêu mới theo hướng/ vị trí hiện tại của target
+        local goal = goalPosFrom(thrp)
+
+        -- Luôn retarget:
+        --  - Nếu chưa có tween -> tạo
+        --  - Nếu target xoay/nhích (goal đổi) -> tạo mới
+        --  - Nếu đã tới nơi -> vẫn tạo micro-tween (MIN_TIME) để “khóa” vị trí tương đối
+        local mustRetarget =
+            (activeTp == nil) or
+            (not lastGoalPos) or
+            ((goal - lastGoalPos).Magnitude > 0.01) or           -- goal đổi (target xoay/nhích)
+            ((goal - hrp.Position).Magnitude > 0.01)             -- lệch nhẹ vẫn bám (micro-correct)
+
+        if mustRetarget then
+            startTweenTo(goal)
+        end
+    end)
+end
 
 -- JUMPPOWER: cưỡng bức ổn định (không để game ghi đè), luôn UseJumpPower
 _G.__MAGIC_JP_ENFORCE = RunService.Heartbeat:Connect(function()
@@ -794,8 +862,8 @@ _G.__MAGIC_ESCAPE_LOOP = RunService.RenderStepped:Connect(function(dt)
                 local dist = origin.Y - r.Position.Y
                 if dist <= 100 then
                     local vel = hrp.AssemblyLinearVelocity
-                    if vel.Y < -200 then
-                        hrp.AssemblyLinearVelocity = Vector3.new(vel.X, -200, vel.Z)
+                    if vel.Y < -100 then
+                        hrp.AssemblyLinearVelocity = Vector3.new(vel.X, -100, vel.Z)
                     end
                 end
             end
