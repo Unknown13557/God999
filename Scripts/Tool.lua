@@ -77,14 +77,18 @@ local function placeIconSafely()
     icon.Position = UDim2.fromOffset(x, y)
 end
 
--- icon
+-- === ICON 48x48 + DRAG (smooth, click-safe) ===
+local RS  = game:GetService("RunService")
+local UIS = game:GetService("UserInputService")
+
+-- create icon first
 local icon = Instance.new("ImageButton")
 icon.Name = "MagicFloatingIcon"
 icon.BackgroundColor3 = THEME.Accent
 icon.BackgroundTransparency = 0.2
 icon.Size = UDim2.fromOffset(48, 48)
-icon.AnchorPoint = Vector2.new(0, 0.5)              -- tâm theo cạnh trái
-icon.Position = UDim2.new(0, 16, 0.5, -24)          -- mặc định mé trái
+icon.AnchorPoint = Vector2.new(0, 0.5)          -- left edge, centered vertically
+icon.Position = UDim2.new(0, 16, 0.5, -24)      -- default left-middle
 icon.ZIndex = 1000
 icon.AutoButtonColor = false
 icon.Active = true
@@ -94,14 +98,42 @@ icon.Image = "rbxassetid://3926305904"
 icon.ImageRectOffset = Vector2.new(4, 204)
 icon.ImageRectSize   = Vector2.new(36, 36)
 
--- đảm bảo lúc spawn không off-screen
-placeIconSafely(); task.defer(placeIconSafely); task.delay(0.1, placeIconSafely)
+-- helpers (now safe; icon exists)
+local function viewport()
+    local cam = workspace.CurrentCamera
+    while not cam do RS.RenderStepped:Wait(); cam = workspace.CurrentCamera end
+    return cam.ViewportSize
+end
+local function clampToScreen(x, y)
+    local v  = viewport()
+    local sz = icon.AbsoluteSize
+    return math.clamp(x, 0, v.X - sz.X), math.clamp(y, 0, v.Y - sz.Y)
+end
+local function placeIconSafely()
+    local v = viewport()
+    local x = 16
+    local y = (v.Y * 0.5) - (icon.AbsoluteSize.Y * 0.5)
+    x, y = clampToScreen(x, y)
+    icon.Position = UDim2.fromOffset(x, y)
+end
 
--- kéo/thả bám sát ngón tay/chuột (không giật)
+-- ensure on-screen on spawn
+placeIconSafely()
+task.defer(placeIconSafely)
+task.delay(0.1, placeIconSafely)
+
+-- drag logic with click-versus-drag guard
 do
     local dragging   = false
     local dragTouch  = nil
     local followConn = nil
+
+    -- for click detection
+    local pressPos   = Vector2.zero
+    local pressTime  = 0
+    local movedFar   = false
+    local CLICK_DIST = 6       -- px
+    local CLICK_TIME = 0.35    -- s
 
     local function stopDrag()
         dragging = false
@@ -109,6 +141,7 @@ do
         dragTouch = nil
         if followConn then followConn:Disconnect(); followConn = nil end
     end
+
     local function setPosFromPoint(px, py)
         local halfW, halfH = icon.AbsoluteSize.X * 0.5, icon.AbsoluteSize.Y * 0.5
         local nx, ny = clampToScreen(px - halfW, py - halfH)
@@ -118,32 +151,49 @@ do
     icon.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1
         or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true
+            dragging  = true
             icon.Modal = true
 
+            movedFar  = false
+            pressTime = tick()
             if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                local m = UIS:GetMouseLocation()
+                pressPos = Vector2.new(m.X, m.Y)
                 if followConn then followConn:Disconnect() end
                 followConn = RS.RenderStepped:Connect(function()
                     if not dragging then return end
-                    local m = UIS:GetMouseLocation()
-                    setPosFromPoint(m.X, m.Y)
+                    local mm = UIS:GetMouseLocation()
+                    if not movedFar and (Vector2.new(mm.X, mm.Y) - pressPos).Magnitude > CLICK_DIST then
+                        movedFar = true
+                    end
+                    setPosFromPoint(mm.X, mm.Y)
                 end)
             else
+                pressPos = Vector2.new(input.Position.X, input.Position.Y)
                 dragTouch = input
-                setPosFromPoint(input.Position.X, input.Position.Y)
+                setPosFromPoint(pressPos.X, pressPos.Y)
             end
         end
     end)
 
     UIS.TouchMoved:Connect(function(t)
         if dragging and dragTouch == t then
-            setPosFromPoint(t.Position.X, t.Position.Y)
+            local p = Vector2.new(t.Position.X, t.Position.Y)
+            if not movedFar and (p - pressPos).Magnitude > CLICK_DIST then
+                movedFar = true
+            end
+            setPosFromPoint(p.X, p.Y)
         end
     end)
 
     local function onEnd(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input == dragTouch then
+            local wasDrag = movedFar or (tick() - pressTime) > CLICK_TIME
             stopDrag()
+            -- treat short press without movement as a click to toggle the menu
+            if not wasDrag and window then
+                window.Visible = not window.Visible
+            end
         end
     end
     icon.InputEnded:Connect(onEnd)
