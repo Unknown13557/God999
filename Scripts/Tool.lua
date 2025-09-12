@@ -77,102 +77,89 @@ local function placeIconSafely()
     icon.Position = UDim2.fromOffset(x, y)
 end
 
--- === ICON 48x48 + DRAG (smooth, click-safe) ===
 -- ICON 48x48 (tròn) + KÉO MƯỢT + CLICK/DRAG PHÂN BIỆT
+kéo mượt, không chạm window ở đây
 local icon = Instance.new("ImageButton")
 icon.Name = "FloatingIcon"
 icon.Size = UDim2.fromOffset(48, 48)
-icon.AnchorPoint = Vector2.new(0, 0)
-icon.Position = UDim2.new(0, 16, 0.5, -24)
 icon.BackgroundColor3 = THEME.Accent
 icon.BackgroundTransparency = 0.2
 icon.AutoButtonColor = false
 icon.Active = true
-icon.ZIndex = 1000
+icon.Selectable = false
+icon.Modal = false
+icon.ZIndex = 9999
+icon.Position = UDim2.new(0, 16, 0.5, -24)
 icon.Parent = gui
 
 do
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(1, 0)
-    corner.Parent = icon
-
-    local stroke = Instance.new("UIStroke")
-    stroke.Thickness = 1.5
-    stroke.Color = Color3.fromRGB(255,255,255)
-    stroke.Transparency = 0.15
-    stroke.Parent = icon
+    gui.DisplayOrder = 9999
+    local corner = Instance.new("UICorner"); corner.CornerRadius = UDim.new(1,0); corner.Parent = icon
+    local stroke = Instance.new("UIStroke"); stroke.Thickness = 1.5; stroke.Color = Color3.fromRGB(255,255,255); stroke.Transparency = 0.15; stroke.Parent = icon
+    icon.Image = "rbxassetid://3926305904"
+    icon.ImageRectOffset = Vector2.new(4, 204)
+    icon.ImageRectSize   = Vector2.new(36, 36)
 end
+do  -- block riêng cho kéo/thả
+    local dragging = false
+    local activeInput = nil
+    local grabOffset = Vector2.new(0,0)
+    local startPos = Vector2.new(0,0)
+    local moved = 0
+    local DRAG_THRESHOLD = 6
 
--- sprite sheet Roblox (giữ như bạn đang dùng)
-icon.Image = "rbxassetid://3926305904"
-icon.ImageRectOffset = Vector2.new(4, 204)
-icon.ImageRectSize   = Vector2.new(36, 36)
+    local function getMouse()
+        local m = UIS:GetMouseLocation()
+        return Vector2.new(m.X, m.Y)
+    end
 
--- KÉO MƯỢT (RenderStepped), bám sát ngón tay, vẫn kéo nếu rời khỏi icon
-local RunService = game:GetService("RunService")
-local dragging = false
-local activeInput = nil
-local grabOffset = Vector2.new(0, 0)
-local startPos = Vector2.new(0, 0)
-local movedScore = 0
-local DRAG_THRESHOLD = 6
-local dragConn, endConn
+    local function beginDrag(input)
+        dragging = true
+        activeInput = input
+        icon.Modal = true
 
-local function getMouse()
-    local m = UIS:GetMouseLocation()
-    return Vector2.new(m.X, m.Y)
-end
+        local m = getMouse()
+        local abs = icon.AbsolutePosition
+        grabOffset = Vector2.new(m.X - abs.X, m.Y - abs.Y)
+        startPos = Vector2.new(icon.Position.X.Offset, icon.Position.Y.Offset)
+        moved = 0
+    end
 
-local function beginDrag(input)
-    dragging = true
-    activeInput = input
-
-    -- lấy offset ngay thời điểm bấm để icon dính sát ngón tay
-    local m = getMouse()
-    local abs = icon.AbsolutePosition
-    grabOffset = Vector2.new(m.X - abs.X, m.Y - abs.Y)
-    startPos = Vector2.new(icon.Position.X.Offset, icon.Position.Y.Offset)
-    movedScore = 0
-
-    if dragConn then dragConn:Disconnect() dragConn = nil end
-    if endConn  then endConn:Disconnect()  endConn  = nil end
-
-    -- cập nhật vị trí theo mỗi frame -> mượt, không lag
-    dragConn = RunService.RenderStepped:Connect(function()
+    local function updateDrag()
         if not dragging then return end
-        local p = getMouse()
-        local x = p.X - grabOffset.X
-        local y = p.Y - grabOffset.Y
+        local m = getMouse()
+        local x = m.X - grabOffset.X
+        local y = m.Y - grabOffset.Y
         local cx, cy = clampToScreen(x, y)
-        -- tính tổng dịch chuyển để phân biệt click vs kéo
-        movedScore = math.max(movedScore, math.abs(cx - startPos.X) + math.abs(cy - startPos.Y))
+        moved = math.max(moved, math.abs(cx - startPos.X) + math.abs(cy - startPos.Y))
         icon.Position = UDim2.fromOffset(cx, cy)
+    end
+
+    icon.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch
+        or input.UserInputType == Enum.UserInputType.MouseButton1 then
+            beginDrag(input)
+        end
     end)
 
-    -- kết thúc khi input end (vẫn nhận kể cả rời khỏi icon)
-    endConn = input.Changed:Connect(function()
-        if input.UserInputState == Enum.UserInputState.End then
+    UIS.InputChanged:Connect(function(input)
+        if dragging and input == activeInput then
+            updateDrag()
+        end
+    end)
+
+    UIS.InputEnded:Connect(function(input)
+        if input == activeInput then
+            local wasDrag = moved >= DRAG_THRESHOLD
             dragging = false
-            if dragConn then dragConn:Disconnect() dragConn = nil end
-            if endConn  then endConn:Disconnect()  endConn  = nil end
-            -- nếu hầu như không kéo -> xem như click để toggle menu
-            if movedScore < DRAG_THRESHOLD then
-                window.Visible = not window.Visible
-            end
             activeInput = nil
+            icon.Modal = false
+            if not wasDrag then
+                pcall(function() _G.Magic_ToggleMenu() end)
+            end
         end
     end)
 end
-
-icon.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.Touch
-        or input.UserInputType == Enum.UserInputType.MouseButton1 then
-        beginDrag(input)
-    end
-end)
-
--- chặn highlight tự động khi giữ
-icon.SelectionImageObject = nil
 
 -- toggle menu
 icon.MouseButton1Click:Connect(function()
