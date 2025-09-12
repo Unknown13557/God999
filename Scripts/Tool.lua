@@ -324,7 +324,7 @@ credit.Font = Enum.Font.Gotham
 credit.TextSize = 12
 credit.TextColor3 = THEME.Subtle
 credit.TextXAlignment = Enum.TextXAlignment.Left
-credit.Position = UDim2.fromOffset(8 + title.TextBounds.X + 17, 0) -- ngay sau tiêu đề
+credit.Position = UDim2.fromOffset(8 + title.TextBounds.X + 18, 0) -- ngay sau tiêu đề
 credit.Size = UDim2.new(0, 120, 1, 0)
 
 do -- kéo thả cửa sổ
