@@ -438,8 +438,7 @@ end
 
 -- Các mục
 local escSwitch  = mkSwitchRow("Fast Escape")
--- ===== PlayerList (hiện/ẩn trong scroll, không đè UI khác) =====
-local plToggleBtn   = mkClickBtn("⬇️ Show PlayerList")
+-- === PlayerList container (trong scroll, auto đẩy các nút dưới) ===
 local listHolder = Instance.new("Frame")
 listHolder.Name = "MagicPlayerList"
 listHolder.Size = UDim2.new(1, -PAD, 0, 0)
