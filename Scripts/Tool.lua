@@ -60,9 +60,9 @@ icon.AutoButtonColor = true
 icon.Parent = gui
 Instance.new("UICorner", icon).CornerRadius = UDim.new(1,0)
 
-icon.Image = "rbxassetid://3926305904"
-icon.ImageRectOffset = Vector2.new(4,204)  -- mặc định
-icon.ImageRectSize   = Vector2.new(36,36)
+icon.Image = "rbxassetid://140362089733832"
+icon.ImageRectOffset = Vector2.new(0,0)   -- reset
+icon.ImageRectSize   = Vector2.new(0,0)
 
 -- DRAG (bám ngón tay)
 
