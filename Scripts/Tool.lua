@@ -52,18 +52,32 @@ local icon = Instance.new("ImageButton")
 icon.Name = "MagicFloatingIcon"
 icon.Size = UDim2.fromOffset(48,48)
 icon.Position = UDim2.fromOffset(16, math.floor(viewport().Y*0.5) - 24)
-icon.BackgroundColor3 = THEME.Accent
-icon.BackgroundTransparency = 0.2
+icon.BackgroundColor3 = Color3.new(1, 1, 1)
+icon.BackgroundTransparency = 0
 icon.ZIndex = 1000
 icon.Active = true
 icon.AutoButtonColor = true
 icon.Parent = gui
 Instance.new("UICorner", icon).CornerRadius = UDim.new(1,0)
 
-icon.Image = "rbxassetid://140362089733832"
-icon.ImageRectOffset = Vector2.new(0,0)   -- reset
-icon.ImageRectSize   = Vector2.new(0,0)
+-- PATCH: thay decal + reset sheet + preload (drop-in)
+do
+    local IMAGE_ID = "rbxassetid://90986272289713"
 
+    -- reset mọi thông số có thể còn sót từ bản cũ/spritesheet
+    icon.ImageRectOffset = Vector2.new(0, 0)
+    icon.ImageRectSize   = Vector2.new(0, 0)
+    icon.ScaleType       = Enum.ScaleType.Fit
+    icon.ImageColor3     = Color3.new(1,1,1)
+
+    -- preload để tránh chớp đen khung đầu
+    pcall(function() game:GetService("ContentProvider"):PreloadAsync({ IMAGE_ID }) end)
+
+    -- gán ảnh (ẩn rồi hiện để tránh flicker)
+    icon.ImageTransparency = 1
+    icon.Image = IMAGE_ID
+    icon.ImageTransparency = 0
+end
 -- DRAG (bám ngón tay)
 
 do
