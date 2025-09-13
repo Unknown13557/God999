@@ -52,8 +52,23 @@ gui.IgnoreGuiInset = true
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 gui.Parent = playerGui
 
---== Floating Icon (Roblox default logo) ==--
-local ROBLOX_LOGO = "rbxasset://textures/ui/Settings/MenuBarIcons/RobloxLogoIcon.png" -- icon mặc định
+local ContentProvider = game:GetService("ContentProvider")
+local CANDIDATE_ICONS = {
+    "rbxassetid://631727250", -- ⬅️ ĐIỀN AssetId “target” bạn chọn ở Toolbox (ví dụ 1234567890)
+    "rbxasset://textures/ui/GuiImagePlaceholder.png", -- fallback 1
+    "rbxasset://textures/DevConsole/GraphPoint.png",  -- fallback 2 (nhỏ gọn)
+}
+
+local function pickFirstLoadableImage(candidates)
+    for _,img in ipairs(candidates) do
+        local ok = pcall(function() ContentProvider:PreloadAsync({img}) end)
+        if ok then return img end
+    end
+    return "rbxasset://textures/ui/GuiImagePlaceholder.png"
+end
+
+local chosenIcon = pickFirstLoadableImage(CANDIDATE_ICONS)
+
 local icon = Instance.new("ImageButton")
 icon.Name = "MagicFloatingIcon"
 icon.Size = UDim2.fromOffset(48,48)
@@ -61,24 +76,22 @@ icon.Position = UDim2.fromOffset(16, math.floor(viewport().Y*0.5) - 24)
 icon.BackgroundTransparency = 1
 icon.ZIndex = 1000
 icon.AutoButtonColor = true
-icon.Image = ROBLOX_LOGO
+icon.Image = chosenIcon
 icon.ScaleType = Enum.ScaleType.Fit
 icon.ImageColor3 = Color3.new(1,1,1)
 icon.Parent = gui
 local icCorner = Instance.new("UICorner", icon) icCorner.CornerRadius = UDim.new(1,0)
 
--- Drag icon (không toggle ở InputEnded để tránh double-toggle; lỗi trước nằm ở đây)  
+-- Drag icon (giữ đúng logic không double-toggle)
 do
     local dragging = false
     local dragStartPos = Vector2.new()
     local iconStartPos = UDim2.new()
-
     local function clampIcon(x, y)
         local v  = viewport()
         local sz = icon.AbsoluteSize
         return math.clamp(x, 0, v.X - sz.X), math.clamp(y, 0, v.Y - sz.Y)
     end
-
     icon.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1
         or input.UserInputType == Enum.UserInputType.Touch then
@@ -87,12 +100,10 @@ do
             iconStartPos = icon.Position
         end
     end)
-
     UIS.InputChanged:Connect(function(input)
         if not dragging then return end
         if input.UserInputType ~= Enum.UserInputType.MouseMovement
         and input.UserInputType ~= Enum.UserInputType.Touch then return end
-
         local m = UIS:GetMouseLocation()
         local d = m - dragStartPos
         local nx = iconStartPos.X.Offset + d.X
@@ -100,7 +111,6 @@ do
         nx, ny = clampIcon(nx, ny)
         icon.Position = UDim2.fromOffset(nx, ny)
     end)
-
     UIS.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1
         or input.UserInputType == Enum.UserInputType.Touch then
