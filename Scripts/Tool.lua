@@ -584,12 +584,16 @@ do
     end)
 end
 
---== Fast Escape (tween dọc, hãm rơi khi gần đất) ==--
+--== Fast Escape (LinearVelocity-based, clean teardown) ==--
 do
+    -- Hủy loop cũ nếu có
     if _G.__MAGIC_ESCAPE_LOOP then _G.__MAGIC_ESCAPE_LOOP:Disconnect() end
-    local activeTween
-    local escRayParams = RaycastParams.new()
-    escRayParams.FilterType = Enum.RaycastFilterType.Exclude
+
+    local activeTween -- đề phòng còn sót tween cũ (khi chuyển từ phiên bản cũ sang)
+    local escLV      -- LinearVelocity khi ON
+    local escAtt     -- Attachment gắn vào HRP
+    local Y_SPEED    = 110    -- tốc độ bay thẳng đứng
+    local MAX_ACC    = math.huge
 
     local function EscapeOn()
         local f = _G.MagicMenuStates.FastEscape or _G.MagicMenuStates.ESC or _G.MagicMenuStates.Escape
@@ -600,38 +604,73 @@ do
         return false
     end
 
+    local function ensurePhysicsUp()
+        if not hum then return end
+        hum.PlatformStand = false
+        pcall(function() hum:SetStateEnabled(Enum.HumanoidStateType.FallingDown, true) end)
+        pcall(function() hum:SetStateEnabled(Enum.HumanoidStateType.Freefall, true) end)
+        pcall(function() hum:ChangeState(Enum.HumanoidStateType.Freefall) end)
+    end
+
+    local function stopAllTween()
+        if activeTween then activeTween:Cancel() activeTween=nil end
+    end
+
+    local function startFastEscape()
+        if not (hrp and hum) then return end
+        stopAllTween()      -- dọn tween kiểu cũ nếu có
+        ensurePhysicsUp()   -- đảm bảo không bị khoá state
+
+        if not escAtt then
+            escAtt = Instance.new("Attachment")
+            escAtt.Name = "FastEscape_Att"
+            escAtt.Parent = hrp
+        end
+        if not escLV then
+            escLV = Instance.new("LinearVelocity")
+            escLV.Name = "FastEscape_LV"
+            escLV.Attachment0 = escAtt
+            escLV.RelativeTo = Enum.ActuatorRelativeTo.World
+            escLV.VectorVelocity = Vector3.new(0, Y_SPEED, 0)
+            escLV.MaxForce = MAX_ACC
+            escLV.Parent = hrp
+        else
+            escLV.Enabled = true
+            escLV.VectorVelocity = Vector3.new(0, Y_SPEED, 0)
+        end
+    end
+
+    local function stopFastEscape()
+        -- Tắt lực và trả về rơi bình thường NGAY
+        if escLV then
+            escLV.Enabled = false
+            escLV:Destroy(); escLV = nil
+        end
+        if escAtt then
+            escAtt:Destroy(); escAtt = nil
+        end
+        -- Trả trạng thái rơi + “đập” lại velocity Y để đảm bảo rơi
+        if hrp then
+            local v = hrp.AssemblyLinearVelocity
+            -- Nếu đang bay lên (Y > 0) thì cắt xuống 0 để gravity nắm quyền
+            if v.Y > 0 then
+                hrp.AssemblyLinearVelocity = Vector3.new(v.X, 0, v.Z)
+            end
+        end
+        ensurePhysicsUp()
+    end
+
+    -- Vòng lặp giám sát toggle
     _G.__MAGIC_ESCAPE_LOOP = RS.RenderStepped:Connect(function()
         if not hrp then return end
         if EscapeOn() then
-            if not activeTween then
-                local pos = hrp.Position
-                local target = Vector3.new(pos.X, pos.Y + 50000, pos.Z)
-                local dist = (target - pos).Magnitude
-                local time = dist / 350
-                local tw = TweenService:Create(hrp, TweenInfo.new(time, Enum.EasingStyle.Linear), {CFrame = CFrame.new(target)})
-                activeTween = tw
-                tw:Play()
-                tw.Completed:Connect(function() activeTween = nil end)
-            end
+            if not escLV then startFastEscape() end
         else
-            if activeTween then activeTween:Cancel(); activeTween=nil end
-            if char then
-                escRayParams.FilterDescendantsInstances = {char}
-                local origin = hrp.Position
-                local r = workspace:Raycast(origin, Vector3.new(0,-1000,0), escRayParams)
-                if r then
-                    local dist = origin.Y - r.Position.Y
-                    if dist <= 100 then
-                        local vel = hrp.AssemblyLinearVelocity
-                        if vel.Y < -100 then
-                            hrp.AssemblyLinearVelocity = Vector3.new(vel.X, -100, vel.Z)
-                        end
-                    end
-                end
-            end
+            if escLV or escAtt then stopFastEscape() end
         end
     end)
 end
+
 --== Infinity Zoom ==--
 do
     _G.__MAGIC_ZOOM_FOREVER = (_G.__MAGIC_ZOOM_FOREVER == true)
