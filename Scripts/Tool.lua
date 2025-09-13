@@ -752,7 +752,7 @@ _G.__MAGIC_ESCAPE_LOOP = RunService.RenderStepped:Connect(function(dt)
             local pos = hrp.Position
             local target = Vector3.new(pos.X, pos.Y + 50000, pos.Z)
             local dist = (target - pos).Magnitude
-            local time = dist / 300
+            local time = dist / 350
             local tw = TweenService:Create(hrp, TweenInfo.new(time, Enum.EasingStyle.Linear), {CFrame = CFrame.new(target)})
             activeTween = tw
             tw:Play()
@@ -1102,7 +1102,7 @@ local RunService   = game:GetService("RunService")
 local activeTp        -- tween hiện tại
 local currentTarget   -- player đang bám
 local retimer = 0
-local RETARGET_DT = 0.1
+local RETARGET_DT = 0.07
 local OFFSET     = CFrame.new(0,0,-3) -- đứng sát sau lưng 3 studs (đổi nếu muốn vị trí khác)
 local MIN_TIME   = 1/240              -- tween tối thiểu tránh giật
 
@@ -1117,7 +1117,7 @@ end
 local function startTween(goalPos)
     if not hrp then return end
     local dist = (goalPos - hrp.Position).Magnitude
-    local t    = math.max(dist / 300, MIN_TIME) -- tốc độ 300 s/s
+    local t    = math.max(dist / 350, MIN_TIME) -- tốc độ 300 s/s
     cancelTp()
     local tw = TweenService:Create(hrp, TweenInfo.new(t, Enum.EasingStyle.Linear), {CFrame = CFrame.new(goalPos)})
     activeTp = tw
