@@ -47,37 +47,50 @@ local function clampToScreen(x, y, w, h)
     return math.clamp(x, 0, v.X - w), math.clamp(y, 0, v.Y - h)
 end
 
--- ========== Icon 48x48 (kéo mượt, bám ngón tay) ==========
-local icon = Instance.new("ImageButton")
+-- ========== Floating Icon 48x48 (nền trắng, viền vàng, decal mới) ==========
+local ContentProvider = game:GetService("ContentProvider")
+
+local function viewport()
+    local cam = workspace.CurrentCamera
+    return cam and cam.ViewportSize or Vector2.new(1280,720)
+end
+
+local icon = gui:FindFirstChild("MagicFloatingIcon") or Instance.new("ImageButton")
 icon.Name = "MagicFloatingIcon"
 icon.Size = UDim2.fromOffset(48,48)
 icon.Position = UDim2.fromOffset(16, math.floor(viewport().Y*0.5) - 24)
-icon.BackgroundColor3 = Color3.new(1, 1, 1)
-icon.BackgroundTransparency = 0
+icon.BackgroundColor3 = Color3.fromRGB(255,255,255) -- nền trắng
+icon.BackgroundTransparency = 0                     -- nền đục hoàn toàn
 icon.ZIndex = 1000
 icon.Active = true
 icon.AutoButtonColor = true
 icon.Parent = gui
-Instance.new("UICorner", icon).CornerRadius = UDim.new(1,0)
 
--- PATCH: thay decal + reset sheet + preload (drop-in)
-do
-    local IMAGE_ID = "rbxassetid://90986272289713"
+-- bo tròn góc
+local corner = icon:FindFirstChildOfClass("UICorner") or Instance.new("UICorner")
+corner.CornerRadius = UDim.new(1,0)
+corner.Parent = icon
 
-    -- reset mọi thông số có thể còn sót từ bản cũ/spritesheet
-    icon.ImageRectOffset = Vector2.new(0, 0)
-    icon.ImageRectSize   = Vector2.new(0, 0)
-    icon.ScaleType       = Enum.ScaleType.Fit
-    icon.ImageColor3     = Color3.new(1,1,1)
+-- viền vàng nổi bật
+local stroke = icon:FindFirstChildOfClass("UIStroke") or Instance.new("UIStroke")
+stroke.Thickness = 2
+stroke.Color = Color3.fromRGB(255, 215, 0) -- vàng gold
+stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+stroke.Transparency = 0
+stroke.Parent = icon
 
-    -- preload để tránh chớp đen khung đầu
-    pcall(function() game:GetService("ContentProvider"):PreloadAsync({ IMAGE_ID }) end)
+-- set decal image
+local IMAGE_ID = "rbxassetid://90986272289713"
+icon.ImageRectOffset = Vector2.new(0,0)
+icon.ImageRectSize   = Vector2.new(0,0)
+icon.ScaleType       = Enum.ScaleType.Fit
+icon.ImageColor3     = Color3.new(1,1,1)
 
-    -- gán ảnh (ẩn rồi hiện để tránh flicker)
-    icon.ImageTransparency = 1
-    icon.Image = IMAGE_ID
-    icon.ImageTransparency = 0
-end
+pcall(function() ContentProvider:PreloadAsync({IMAGE_ID}) end)
+
+icon.ImageTransparency = 1
+icon.Image = IMAGE_ID
+icon.ImageTransparency = 0
 -- DRAG (bám ngón tay)
 
 do
