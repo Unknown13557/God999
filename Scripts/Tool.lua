@@ -7,7 +7,6 @@ local UIS              = game:GetService("UserInputService")
 local RS               = game:GetService("RunService")
 local TweenService     = game:GetService("TweenService")
 local TeleportService  = game:GetService("TeleportService")
-local ContentProvider  = game:GetService("ContentProvider")
 
 local lp       = Players.LocalPlayer
 local playerGui= lp:WaitForChild("PlayerGui")
@@ -498,7 +497,7 @@ _G.__MAGIC_SPEED_RUN = RS.RenderStepped:Connect(function(dt)
         local pos = hrp.Position
         local flat = Vector3.new(look.X,0,look.Z)
         if flat.Magnitude > 1e-3 then
-            hrp.CFrame = Cframe.lookAt(pos, pos + flat.Unit, Vector3.yAxis)
+            hrp.CFrame = CFrame.lookAt(pos, pos + flat.Unit, Vector3.yAxis)
         end
     end
 end)
