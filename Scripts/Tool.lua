@@ -32,10 +32,6 @@ local WINDOW_W, WINDOW_H = 300, 250
 local TITLE_H, PAD = 28, 6
 
 --== Utils ==--
-local function viewport()
-    local cam = workspace.CurrentCamera
-    return (cam and cam.ViewportSize) or Vector2.new(1920,1080)
-end
 local function clampToScreen(x, y, w, h)
     local v = viewport()
     return math.clamp(x, 0, v.X - (w or 0)), math.clamp(y, 0, v.Y - (h or 0))
