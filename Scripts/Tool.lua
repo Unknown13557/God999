@@ -31,84 +31,9 @@ local THEME = {
 local WINDOW_W, WINDOW_H = 300, 250
 local TITLE_H, PAD = 28, 6
 
---== Utils ==--
-local function clampToScreen(x, y, w, h)
-    local v = viewport()
-    return math.clamp(x, 0, v.X - (w or 0)), math.clamp(y, 0, v.Y - (h or 0))
-end
-local function tweenColor(inst, c, t)
-    TweenService:Create(inst, TweenInfo.new(t or 0.12), {BackgroundColor3 = c}):Play()
-end
 
---== ScreenGui ==--
-local gui = Instance.new("ScreenGui")
-gui.Name = "FloatingMenuGUI"
-gui.ResetOnSpawn = false
-gui.IgnoreGuiInset = true
-gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-gui.Parent = playerGui
 
-local ContentProvider = game:GetService("ContentProvider")
 
-local function viewport()
-    local cam = workspace.CurrentCamera
-    return cam and cam.ViewportSize or Vector2.new(1280,720)
-end
-
---==== ICON ====
-local icon = gui:FindFirstChild("MagicFloatingIcon") or Instance.new("ImageButton")
-icon.Name = "MagicFloatingIcon"
-icon.Size = UDim2.fromOffset(48,48)
-icon.Position = UDim2.fromOffset(16, math.floor(viewport().Y*0.5) - 24)
-
--- NỀN: để trong suốt để không “ô trắng” che ảnh
-icon.BackgroundColor3 = Color3.fromRGB(255,255,255)
-icon.BackgroundTransparency = 1
-
-icon.ZIndex = 1000
-icon.Active = true
-icon.AutoButtonColor = true
-icon.ScaleType = Enum.ScaleType.Fit
-icon.ResampleMode = Enum.ResamplerMode.Pixelated
-icon.ImageColor3 = Color3.new(1,1,1)
-icon.Parent = gui
-
--- Bo tròn (giữ)
-local corner = icon:FindFirstChildOfClass("UICorner") or Instance.new("UICorner")
-corner.CornerRadius = UDim.new(1,0)
-corner.Parent = icon
-
--- XOÁ VIỀN VÀNG nếu có
-local stroke = icon:FindFirstChildOfClass("UIStroke")
-if stroke then stroke:Destroy() end
-
--- Giữ icon luôn vuông (tránh méo)
-local arc = icon:FindFirstChildOfClass("UIAspectRatioConstraint") or Instance.new("UIAspectRatioConstraint")
-arc.AspectRatio = 1
-arc.Parent = icon
-
---==== ẢNH ====
--- Dùng Doge meme theo bạn: 631727250 (đây là TextureId hợp lệ, không cần thumb)
--- Nếu đổi ID khác mà là DecalId, code vẫn có fallback thumb để hiện ổn định.
-local RAW_ID = "631727250"  -- <== đổi tại đây nếu cần
-
-local CANDIDATES = {
-    "rbxassetid://"..RAW_ID,                                   -- ưu tiên Texture/ImageId
-    "rbxthumb://type=Asset&id="..RAW_ID.."&w=150&h=150",       -- fallback nếu là DecalId/AssetId
-    "rbxasset://textures/ui/GuiImagePlaceholder.png",          -- chót cùng
-}
-
-local function chooseImage(list)
-    for _,img in ipairs(list) do
-        local ok = pcall(function() ContentProvider:PreloadAsync({img}) end)
-        if ok then return img end
-    end
-    return "rbxasset://textures/ui/GuiImagePlaceholder.png"
-end
-
-icon.ImageTransparency = 1
-icon.Image = chooseImage(CANDIDATES)
-icon.ImageTransparency = 0
 
 -- Drag icon (giữ đúng logic không double-toggle)
 do
