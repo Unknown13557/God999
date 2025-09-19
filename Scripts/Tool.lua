@@ -109,7 +109,7 @@ arc.Parent = icon
 -- ẢNH ICON: dùng placeholder mặc định Roblox
 -- (Không dùng ContentProvider:PreloadAsync nữa để tránh lỗi truyền string)
 icon.ImageTransparency = 1
-icon.Image = "rbxasset://textures/ui/GuiImagePlaceholder.png"
+icon.Image = "rbxasset://textures/ui/Settings/MenuBarIcons/Settings.png"
 icon.ImageTransparency = 0
 
 -- Drag icon (giữ đúng logic không double-toggle)
