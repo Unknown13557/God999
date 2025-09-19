@@ -460,9 +460,12 @@ _G.__MAGIC_SPEED_RUN = RS.RenderStepped:Connect(function(dt)
     local target = math.clamp(BASE_WS * f, 0, 200)
     local curVel = hrp.AssemblyLinearVelocity
     local desired = dir * target
-    -- ƯU TIÊN NOCLIP: nếu NoClip đang bật => bỏ qua raycast chống tường
-    local noClipOn = _G.MagicMenuStates.NoClip and _G.MagicMenuStates.NoClip() == true
-    if not noClipOn then
+    -- ƯU TIÊN NOCLIP: nếu NoClip đang bật => bỏ qua raycast chống tường (có guard an toàn)
+local noClipOn = false
+if _G.MagicMenuStates and typeof(_G.MagicMenuStates.NoClip) == "function" then
+    noClipOn = _G.MagicMenuStates.NoClip() == true
+end
+if not noClipOn then
 
     -- chống đâm tường -> trượt theo tường
     local predictDist = math.max((target * dt) + 1.0, 2.0)
