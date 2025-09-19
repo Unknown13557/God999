@@ -10,27 +10,6 @@ local TeleportService  = game:GetService("TeleportService")
 local GuiService = game:GetService("GuiService")
 local lp       = Players.LocalPlayer
 local playerGui= lp:WaitForChild("PlayerGui")
-
---== Cleanup GUI cũ (nếu có) ==--
-do
-    local old = playerGui:FindFirstChild("FloatingMenuGUI")
-    if old then old:Destroy() end
-end
-
---== Theme & Layout ==--
-local THEME = {
-    Background = Color3.fromRGB(35,38,50),
-    Titlebar   = Color3.fromRGB(65,50,90),
-    Stroke     = Color3.fromRGB(180,140,255),
-    Text       = Color3.fromRGB(255,255,255),
-    Subtle     = Color3.fromRGB(210,180,255),
-    Hover      = Color3.fromRGB(90,60,130),
-    Accent     = Color3.fromRGB(150,90,200),
-    ListIdle   = Color3.fromRGB(20,20,20),
-}
-local WINDOW_W, WINDOW_H = 300, 250
-local TITLE_H, PAD = 28, 6
-
 --== Cleanup GUI cũ (nếu có) ==--
 do
     local old = playerGui:FindFirstChild("FloatingMenuGUI")
@@ -70,14 +49,11 @@ end
 local gui = Instance.new("ScreenGui")
 gui.Name = "FloatingMenuGUI"
 gui.ResetOnSpawn = false
-gui.IgnoreGuiInset = true
+gui.IgnoreGuiInset = false  -- để Roblox tự chừa safe area
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 gui.Parent = playerGui
 
--- NÊN: để ScreenGui tôn trọng safe area/topbar trên mobile
-gui.IgnoreGuiInset = false
-
---== ICON (đen + viền đỏ) ==
+--== ICON (đen + viền đỏ, glyph ⚙) ==--
 local icon = gui:FindFirstChild("MagicFloatingIcon") or Instance.new("ImageButton")
 icon.Name = "MagicFloatingIcon"
 icon.Size = UDim2.fromOffset(56,56)
@@ -88,132 +64,36 @@ icon.ImageTransparency = 1
 icon.ZIndex = 1000
 icon.Parent = gui
 
--- vòng tròn + viền đỏ
-(local iconCorner do
-    iconCorner = icon:FindFirstChildOfClass("UICorner") or Instance.new("UICorner")
-    iconCorner.CornerRadius = UDim.new(1,0)
-    iconCorner.Parent = icon
-end)
-(local iconStroke do
-    iconStroke = icon:FindFirstChildOfClass("UIStroke") or Instance.new("UIStroke")
-    iconStroke.Color = Color3.fromRGB(255,50,50)
-    iconStroke.Thickness = 2
-    iconStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-    iconStroke.Parent = icon
-end)
-(local arc do
-    arc = icon:FindFirstChildOfClass("UIAspectRatioConstraint") or Instance.new("UIAspectRatioConstraint")
-    arc.AspectRatio = 1
-    arc.Parent = icon
-end)
+-- Bo tròn
+local iconCorner = icon:FindFirstChildOfClass("UICorner") or Instance.new("UICorner")
+iconCorner.CornerRadius = UDim.new(1,0)
+iconCorner.Parent = icon
 
--- glyph ⚙ căn giữa tuyệt đối (+1px fudge dọc để hết cảm giác lệch)
+-- Viền đỏ
+local iconStroke = icon:FindFirstChildOfClass("UIStroke") or Instance.new("UIStroke")
+iconStroke.Color = Color3.fromRGB(255,50,50)
+iconStroke.Thickness = 2
+iconStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+iconStroke.Parent = icon
+
+-- Giữ tỉ lệ vuông
+local arc = icon:FindFirstChildOfClass("UIAspectRatioConstraint") or Instance.new("UIAspectRatioConstraint")
+arc.AspectRatio = 1
+arc.Parent = icon
+
+-- Glyph ⚙ căn giữa tuyệt đối
 local gear = icon:FindFirstChild("GearGlyph") or Instance.new("TextLabel")
 gear.Name = "GearGlyph"
 gear.BackgroundTransparency = 1
 gear.AnchorPoint = Vector2.new(0.5, 0.5)
-gear.Position = UDim2.fromScale(0.5, 0.5) + UDim2.fromOffset(0, -1) -- nắn 1px lên
-gear.Size = UDim2.fromScale(0.76, 0.76) -- chừa biên đều với viền đỏ
+gear.Position = UDim2.fromScale(0.5, 0.5) + UDim2.fromOffset(0, -1) -- bù 1px cho cân mắt
+gear.Size = UDim2.fromScale(0.76, 0.76)
 gear.Text = "⚙"
 gear.Font = Enum.Font.GothamBold
 gear.TextScaled = true
 gear.TextColor3 = Color3.fromRGB(210,210,210)
 gear.ZIndex = icon.ZIndex + 1
 gear.Parent = icon
-
---== CLAMP: inset chuẩn + dead-zones joystick & jump ==
-local function viewport()
-    local c = workspace.CurrentCamera
-    return (c and c.ViewportSize) or Vector2.new(1280,720)
-end
-
--- vùng tránh joystick trái & nút jump phải (ước lượng phổ biến)
-local JOY = Vector2.new(240, 200)  -- trái-dưới
-local JUMP = Vector2.new(200, 200) -- phải-dưới
-
-local function getInsets()
-    -- trả về left, top, right, bottom theo pixel thực
-    local tl, br = GuiService:GetGuiInset() -- Vector2, Vector2
-    return tl.X, tl.Y, br.X, br.Y
-end
-
-local function round(n) return math.floor(n + 0.5) end
-
-local function clampToUsable(x, y, w, h)
-    local vp = viewport()
-    local left, top, right, bottom = getInsets()
-
-    local minX = left
-    local maxX = vp.X - right - w
-    local minY = top
-    local maxY = vp.Y - bottom - h
-
-    -- clamp trong màn hình trừ insets
-    x = math.clamp(x, minX, maxX)
-    y = math.clamp(y, minY, maxY)
-
-    -- dead-zone joystick trái dưới
-    local jL, jT = left, vp.Y - bottom - JOY.Y
-    local jR, jB = left + JOY.X, vp.Y - bottom
-    if x < jR and (y + h) > jT and y < jB then
-        x = jR + 6
-    end
-
-    -- dead-zone jump phải dưới
-    local kL, kT = vp.X - right - JUMP.X, vp.Y - bottom - JUMP.Y
-    local kR, kB = vp.X - right, vp.Y - bottom
-    if (x + w) > kL and x < kR and (y + h) > kT and y < kB then
-        x = math.min(kL - 6, maxX)
-    end
-
-    return round(x), round(y)
-end
-
--- đặt vị trí ban đầu (góc phải giữa), sau 1 frame để có AbsoluteSize
-task.defer(function()
-    local vp = viewport()
-    local w, h = icon.AbsoluteSize.X, icon.AbsoluteSize.Y
-    local x = vp.X - w - 20
-    local y = (vp.Y - h)/2
-    x, y = clampToUsable(x, y, w, h)
-    icon.Position = UDim2.fromOffset(x, y)
-end)
-
--- kéo icon nhưng luôn clamp
-do
-    local dragging, startPos, startInputPos
-    icon.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1
-            or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true
-            startPos = icon.Position
-            startInputPos = input.Position
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then dragging = false end
-            end)
-        end
-    end)
-    UIS.InputChanged:Connect(function(input)
-        if not dragging then return end
-        if input.UserInputType == Enum.UserInputType.MouseMovement
-            or input.UserInputType == Enum.UserInputType.Touch then
-            local delta = input.Position - startInputPos
-            local x = startPos.X.Offset + delta.X
-            local y = startPos.Y.Offset + delta.Y
-            x, y = clampToUsable(x, y, icon.AbsoluteSize.X, icon.AbsoluteSize.Y)
-            icon.Position = UDim2.fromOffset(x, y)
-        end
-    end)
-end
-
--- tự sửa khi đổi kích thước / xoay máy
-RS.RenderStepped:Connect(function()
-    local pos = icon.Position
-    local x, y = clampToUsable(pos.X.Offset, pos.Y.Offset, icon.AbsoluteSize.X, icon.AbsoluteSize.Y)
-    if x ~= pos.X.Offset or y ~= pos.Y.Offset then
-        icon.Position = UDim2.fromOffset(x, y)
-    end
-end)
 
 ---====Drag icon
     local dragging = false
