@@ -109,7 +109,7 @@ arc.Parent = icon
 -- ẢNH ICON: dùng placeholder mặc định Roblox
 -- (Không dùng ContentProvider:PreloadAsync nữa để tránh lỗi truyền string)
 icon.ImageTransparency = 1
-icon.Image = "rbxasset://textures/ui/PlayerList/Roblox.png"
+icon.Image = "rbxasset://textures/ui/PlayerList/Home.png"
 
 icon.ImageTransparency = 0
 
