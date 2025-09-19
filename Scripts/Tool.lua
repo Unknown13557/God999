@@ -94,16 +94,18 @@ gear.TextScaled = true
 gear.TextColor3 = Color3.fromRGB(210,210,210)
 gear.ZIndex = icon.ZIndex + 1
 gear.Parent = icon
-
 ---====Drag icon
+do
     local dragging = false
-    local dragStartPos = Vector2.new()
-    local iconStartPos = UDim2.new()
+    local dragStartPos = Vector2.new(0, 0)
+    local iconStartPos = icon.Position
+
     local function clampIcon(x, y)
         local v  = viewport()
         local sz = icon.AbsoluteSize
         return math.clamp(x, 0, v.X - sz.X), math.clamp(y, 0, v.Y - sz.Y)
     end
+
     icon.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1
         or input.UserInputType == Enum.UserInputType.Touch then
@@ -112,6 +114,7 @@ gear.Parent = icon
             iconStartPos = icon.Position
         end
     end)
+
     UIS.InputChanged:Connect(function(input)
         if not dragging then return end
         if input.UserInputType ~= Enum.UserInputType.MouseMovement
@@ -123,6 +126,7 @@ gear.Parent = icon
         nx, ny = clampIcon(nx, ny)
         icon.Position = UDim2.fromOffset(nx, ny)
     end)
+
     UIS.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1
         or input.UserInputType == Enum.UserInputType.Touch then
@@ -144,7 +148,9 @@ window.BackgroundTransparency = 0.12
 window.BorderSizePixel = 0
 window.Parent = gui
 Instance.new("UICorner", window).CornerRadius = UDim.new(0,8)
-local wsStroke = Instance.new("UIStroke", window) wsStroke.Color = THEME.Stroke wsStroke.Transparency = 0.2
+local wsStroke = Instance.new("UIStroke", window)
+wsStroke.Color = THEME.Stroke
+wsStroke.Transparency = 0.2
 
 -- Toggle chỉ tại 1 nơi (click icon)
 icon.MouseButton1Click:Connect(function()
