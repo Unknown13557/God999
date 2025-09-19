@@ -578,7 +578,7 @@ do
     local activeTween -- đề phòng còn sót tween cũ (khi chuyển từ phiên bản cũ sang)
     local escLV      -- LinearVelocity khi ON
     local escAtt     -- Attachment gắn vào HRP
-    local Y_SPEED    = 110    -- tốc độ bay thẳng đứng
+    local Y_SPEED    = 350    -- tốc độ bay thẳng đứng
     local MAX_ACC    = math.huge
 
     local function EscapeOn()
@@ -657,7 +657,7 @@ do
     end)
 end
 
---== ESP (tên, khoảng cách, HP) ==--
+--== ESP (username màu trắng, khoảng cách, HP) cải tiến ==--
 do
     local espEnabled = false
     local espLoopConn
@@ -669,16 +669,21 @@ do
         if it and it.bb then it.bb:Destroy() end
         espItems[plr] = nil
     end
+
     local function clearESPAll()
-        for _,it in pairs(espItems) do if it.bb then it.bb:Destroy() end end
+        for _,it in pairs(espItems) do
+            if it.bb then it.bb:Destroy() end
+        end
         table.clear(espItems)
     end
+
     local function createBB()
         local bb = Instance.new("BillboardGui")
-        bb.Size = UDim2.new(0, 220, 0, 32)
+        bb.Size = UDim2.new(0, 260, 0, 36)
         bb.StudsOffset = Vector3.new(0, 3.2, 0)
         bb.AlwaysOnTop = true
         bb.LightInfluence = 0
+
         local nameLabel = Instance.new("TextLabel")
         nameLabel.BackgroundTransparency = 1
         nameLabel.Size = UDim2.new(1, 0, 0.55, 0)
@@ -690,6 +695,7 @@ do
         nameLabel.TextStrokeTransparency = 0
         nameLabel.TextStrokeColor3 = Color3.new(0,0,0)
         nameLabel.Parent = bb
+
         local hpLabel = Instance.new("TextLabel")
         hpLabel.BackgroundTransparency = 1
         hpLabel.Size = UDim2.new(1, 0, 0.45, 0)
@@ -697,14 +703,16 @@ do
         hpLabel.Font = Enum.Font.GothamBold
         hpLabel.TextSize = 14
         hpLabel.Text = ""
-        hpLabel.TextColor3 = Color3.fromRGB(0,200,0)
         hpLabel.TextStrokeTransparency = 0
         hpLabel.TextStrokeColor3 = Color3.new(0,0,0)
         hpLabel.Parent = bb
+
         return bb, nameLabel, hpLabel
     end
+
     local function ensureESP(plr)
         if plr == lp then return end
+        if typeof(plr.UserId) ~= "number" or plr.UserId <= 0 then return end
         local c = plr.Character
         if not c or not c.Parent then return end
         local head = c:FindFirstChild("Head") or c:FindFirstChildWhichIsA("BasePart")
@@ -716,9 +724,13 @@ do
         bb.Parent = head
         espItems[plr] = {bb=bb, name=nl, hp=hl, char=c}
     end
+
     local function hookESPSignals()
-        for _,cn in ipairs(espSignalConns) do pcall(function() cn:Disconnect() end) end
+        for _,cn in ipairs(espSignalConns) do
+            pcall(function() cn:Disconnect() end)
+        end
         table.clear(espSignalConns)
+
         table.insert(espSignalConns, Players.PlayerAdded:Connect(function(p)
             if not espEnabled then return end
             table.insert(espSignalConns, p.CharacterAdded:Connect(function()
@@ -731,9 +743,11 @@ do
             end))
             if p.Character then task.defer(function() ensureESP(p) end) end
         end))
+
         table.insert(espSignalConns, Players.PlayerRemoving:Connect(function(p)
             destroyESPFor(p)
         end))
+
         for _,p in ipairs(Players:GetPlayers()) do
             if p ~= lp then
                 table.insert(espSignalConns, p.CharacterAdded:Connect(function()
@@ -747,53 +761,70 @@ do
             end
         end
     end
+
     local function startESP()
         if espEnabled then return end
         espEnabled = true
         for _,p in ipairs(Players:GetPlayers()) do ensureESP(p) end
         hookESPSignals()
-        espLoopConn = RS.Heartbeat:Connect(function()
-            if not espEnabled then return end
-            local cam = workspace.CurrentCamera
-            if not cam then return end
-            for _,p in ipairs(Players:GetPlayers()) do
-                if p ~= lp then ensureESP(p) end
-            end
-            for p,it in pairs(espItems) do
-                local c = p.Character
-                if not c or not c.Parent then
-                    destroyESPFor(p)
-                else
-                    local head = c:FindFirstChild("Head") or c:FindFirstChildWhichIsA("BasePart")
-                    local hrp2 = c:FindFirstChild("HumanoidRootPart")
-                    local h2   = c:FindFirstChildOfClass("Humanoid")
-                    if not head then
-                        destroyESPFor(p)
-                    else
-                        if it.bb.Parent ~= head then it.bb.Parent = head end
-                        if hrp2 then
-                            local dist = (cam.CFrame.Position - hrp2.Position).Magnitude
-                            local m = math.floor(dist + 0.5)
-                            if it.name then
-                                it.name.Text = string.format('<font color="rgb(255,60,60)">%s</font> <font color="rgb(255,255,255)">[ %dm ]</font>', p.DisplayName or p.Name, m)
-                            end
-                            if it.hp and h2 then
-                                it.hp.Text = string.format("[ %d/%d ]", math.max(0, math.floor(h2.Health + 0.5)), math.max(0, math.floor(h2.MaxHealth + 0.5)))
+
+        espLoopConn = task.spawn(function()
+            while espEnabled do
+                local cam = workspace.CurrentCamera
+                if cam then
+                    for p,it in pairs(espItems) do
+                        local c = p.Character
+                        if not c or not c.Parent then
+                            destroyESPFor(p)
+                        else
+                            local head = c:FindFirstChild("Head") or c:FindFirstChildWhichIsA("BasePart")
+                            local hrp2 = c:FindFirstChild("HumanoidRootPart")
+                            local h2   = c:FindFirstChildOfClass("Humanoid")
+                            if not head then
+                                destroyESPFor(p)
+                            else
+                                if it.bb.Parent ~= head then it.bb.Parent = head end
+                                if hrp2 then
+                                    local dist = (cam.CFrame.Position - hrp2.Position).Magnitude
+                                    local m = math.floor(dist + 0.5)
+                                    if it.name then
+                                        local uname = p.Name
+                                        it.name.Text = string.format(
+                                            '<font color="rgb(255,255,255)">%s [ %dm ]</font>',
+                                            uname, m
+                                        )
+                                    end
+                                    if it.hp and h2 then
+                                        local cur,max = h2.Health, h2.MaxHealth
+                                        local ratio = (max > 0) and (cur/max) or 0
+                                        if ratio > 0.5 then
+                                            it.hp.TextColor3 = Color3.fromRGB(0,200,0)
+                                        elseif ratio > 0.2 then
+                                            it.hp.TextColor3 = Color3.fromRGB(255,200,0)
+                                        else
+                                            it.hp.TextColor3 = Color3.fromRGB(255,0,0)
+                                        end
+                                        it.hp.Text = string.format("[ %d/%d ]", math.floor(cur+0.5), math.floor(max+0.5))
+                                    end
+                                end
                             end
                         end
                     end
                 end
+                task.wait(0.2) -- update 10 lần/giây
             end
         end)
     end
+
     local function stopESP()
         if not espEnabled then return end
         espEnabled = false
-        if espLoopConn then espLoopConn:Disconnect() espLoopConn=nil end
+        if espLoopConn then espLoopConn = nil end
         for _,cn in ipairs(espSignalConns) do pcall(function() cn:Disconnect() end) end
         table.clear(espSignalConns)
         clearESPAll()
     end
+
     if _G.__MAGIC_ESP_WATCH then _G.__MAGIC_ESP_WATCH:Disconnect() end
     _G.__MAGIC_ESP_WATCH = RS.RenderStepped:Connect(function()
         if _G.MagicMenuStates.ESP() then
@@ -803,6 +834,7 @@ do
         end
     end)
 end
+
 --== Teleport Follow (bám sau 3 studs, retarget mượt) ==--
 do
     if _G.__MAGIC_TP_FOLLOW then _G.__MAGIC_TP_FOLLOW:Disconnect() end
