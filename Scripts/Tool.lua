@@ -88,75 +88,62 @@ gear.BackgroundTransparency = 1
 gear.AnchorPoint = Vector2.new(0.5, 0.5)
 gear.Position = UDim2.fromScale(0.5, 0.5)
 gear.Size = UDim2.fromScale(0.7, 0.7)
-gear.Text = "⚙"
+gear.Text = "✡️"
 gear.Font = Enum.Font.GothamBold
 gear.TextScaled = true
 gear.TextColor3 = Color3.fromRGB(210,210,210)
 gear.ZIndex = icon.ZIndex + 1
 gear.Parent = icon
 
-task.defer(function()
+-- Vị trí ban đầu: góc phải giữa (đã clamp, không cần task.defer)
+do
     local v = viewport()
-    local w,h = icon.AbsoluteSize.X, icon.AbsoluteSize.Y
-    local x,y = clampIcon(v.X - w - 20, v.Y*0.5 - h*0.5, w, h)
-    icon.Position = UDim2.fromOffset(x,y)
-end)
+    local w, h = icon.AbsoluteSize.X, icon.AbsoluteSize.Y
+    -- nếu mới tạo AbsoluteSize có thể = Size.Offset, đủ dùng vì icon dùng Offset
+    local x = v.X - w - 20
+    local y = (v.Y - h) * 0.5
+    x, y = clampIcon(x, y, w, h)
+    icon.Position = UDim2.fromOffset(x, y)
+end
+
 ---====Drag icon
 do
     local dragging = false
-    local dragStartPos = Vector2.new(0, 0)
-    local iconStartPos = icon.Position
-
-    --== Utils ==--
-local function viewport()
-    local cam = workspace.CurrentCamera
-    return (cam and cam.ViewportSize) or Vector2.new(1280,720)
-end
-
-local function clampToScreen(x, y, w, h)
-    local v = viewport()
-    return math.clamp(x, 0, v.X - (w or 0)), math.clamp(y, 0, v.Y - (h or 0))
-end
-
--- NEW: clamp icon theo inset thật và kích thước icon
-local function clampIcon(x, y, w, h)
-    local v = viewport()
-    local tl, br = GuiService:GetGuiInset()      -- tl: top-left inset, br: bottom-right inset
-    local left, top = tl.X, tl.Y
-    local right, bottom = br.X, br.Y
-    local maxX = v.X - right - w
-    local maxY = v.Y - bottom - h
-    return math.clamp(x, left, maxX), math.clamp(y, top, maxY)
-    end
+    local dragStart = Vector2.new(0,0)
+    local iconStart = icon.Position
 
     icon.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1
         or input.UserInputType == Enum.UserInputType.Touch then
-            dragging     = true
-            dragStartPos = UIS:GetMouseLocation()
-            iconStartPos = icon.Position
+            dragging = true
+            dragStart = input.Position -- dùng toạ độ của event, ổn định trên mobile
+            iconStart = icon.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
         end
     end)
 
     UIS.InputChanged:Connect(function(input)
-    if not dragging then return end
-    if input.UserInputType ~= Enum.UserInputType.MouseMovement
-    and input.UserInputType ~= Enum.UserInputType.Touch then return end
+        if not dragging then return end
+        if input.UserInputType ~= Enum.UserInputType.MouseMovement
+        and input.UserInputType ~= Enum.UserInputType.Touch then return end
 
-    local m = UIS:GetMouseLocation()
-    local d = m - dragStartPos
-    local nx = iconStartPos.X.Offset + d.X
-    local ny = iconStartPos.Y.Offset + d.Y
-    nx, ny = clampIcon(nx, ny, icon.AbsoluteSize.X, icon.AbsoluteSize.Y)
+        local delta = input.Position - dragStart
+        local nx = iconStart.X.Offset + delta.X
+        local ny = iconStart.Y.Offset + delta.Y
+        nx, ny = clampIcon(nx, ny, icon.AbsoluteSize.X, icon.AbsoluteSize.Y)
+        icon.Position = UDim2.fromOffset(nx, ny)
+    end)
 
-    -- 👇 QUAN TRỌNG: gán lại vị trí
-    icon.Position = UDim2.fromOffset(nx, ny)
-end)
-
-    UIS.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1
-        or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = false
+    -- Giữ icon luôn hợp lệ khi đổi kích thước / xoay máy
+    RS.RenderStepped:Connect(function()
+        local pos = icon.Position
+        local nx, ny = clampIcon(pos.X.Offset, pos.Y.Offset, icon.AbsoluteSize.X, icon.AbsoluteSize.Y)
+        if nx ~= pos.X.Offset or ny ~= pos.Y.Offset then
+            icon.Position = UDim2.fromOffset(nx, ny)
         end
     end)
 end
