@@ -884,103 +884,169 @@ do
     end)
 end
 
---== Tracker ==--
+--== Tracker (multi-target, stick-to-anchor) ==--
 do
     if _G.__TRACKER_LOOP then _G.__TRACKER_LOOP:Disconnect() end
+    if _G.__TRACKER_CLEAN then for _,fn in ipairs(_G.__TRACKER_CLEAN) do pcall(fn) end end
+    _G.__TRACKER_CLEAN = {}
 
-    -- UI setup
-    local playerGui = lp:WaitForChild("PlayerGui")
     local parentGui = playerGui:FindFirstChild("FloatingMenuGUI") or playerGui
 
-    local root = parentGui:FindFirstChild("TrackerRoot") or Instance.new("Frame")
-    root.Name = "TrackerRoot"
-    root.BackgroundTransparency = 1
-    root.AnchorPoint = Vector2.new(0.5, 0)
-    root.Position = UDim2.new(0.5, 0, 0, 0)
-    root.Size = UDim2.fromOffset(0,0)
-    root.ZIndex = 900
-    root.Parent = parentGui
+    -- Neo đỉnh-giữa màn hình (pivot gốc, cố định)
+    local anchor = parentGui:FindFirstChild("TrackerAnchor") or Instance.new("Frame")
+    anchor.Name = "TrackerAnchor"
+    anchor.BackgroundTransparency = 1
+    anchor.AnchorPoint = Vector2.new(0.5, 0)
+    anchor.Position = UDim2.new(0.5, 0, 0, 0)
+    anchor.Size = UDim2.fromOffset(0, 0)
+    anchor.ZIndex = 900
+    anchor.Parent = parentGui
 
-    local line = root:FindFirstChild("TrackerLine") or Instance.new("Frame")
-    line.Name = "TrackerLine"
-    line.BorderSizePixel = 0
-    line.AnchorPoint = Vector2.new(0, 0.5)
-    line.Position = UDim2.fromOffset(0,0)
-    line.Size = UDim2.fromOffset(0,3)
-    line.ZIndex = 901
-    line.Visible = false
-    line.Parent = root
+    -- Bảng item cho từng player
+    local items = {} -- [plr] = {pivot=Frame, line=Frame, hl=Highlight}
 
-    local hl = parentGui:FindFirstChild("TrackerHighlight") or Instance.new("Highlight")
-    hl.Name = "TrackerHighlight"
-    hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-    hl.FillColor = Color3.fromRGB(255,80,80)
-    hl.FillTransparency = 0.7
-    hl.OutlineTransparency = 0
-    hl.Enabled = false
-    hl.Parent = parentGui
-
-    local RED, YELL, GREEN = Color3.fromRGB(255,60,60), Color3.fromRGB(255,210,60), Color3.fromRGB(60,220,90)
-
-    local function nearestTarget()
-        local myChar, myHRP, myHum = lp.Character, nil, nil
-        if myChar then
-            myHRP = myChar:FindFirstChild("HumanoidRootPart")
-            myHum = myChar:FindFirstChildOfClass("Humanoid")
-        end
-        if not (myHRP and myHum and myHum.Health > 0) then return nil end
-
-        local bestPlr, bestHRP, bestDist = nil, nil, math.huge
-        for _, p in ipairs(Players:GetPlayers()) do
-            if p ~= lp then
-                local c = p.Character
-                local hum = c and c:FindFirstChildOfClass("Humanoid")
-                local hrp = c and c:FindFirstChild("HumanoidRootPart")
-                if hum and hum.Health > 0 and hrp then
-                    local d = (hrp.Position - myHRP.Position).Magnitude
-                    if d < bestDist then
-                        bestDist, bestPlr, bestHRP = d, p, hrp
-                    end
-                end
-            end
-        end
-        return bestPlr, bestHRP, bestDist
-    end
-
+    -- Màu theo khoảng cách
+    local RED, YEL, GRN = Color3.fromRGB(255,60,60), Color3.fromRGB(255,210,60), Color3.fromRGB(60,220,90)
     local function colorByDist(d)
-        if d <= 1000 then return RED elseif d <= 3000 then return YELL else return GREEN end
+        if d <= 1000 then return RED elseif d <= 3000 then return YEL else return GRN end
     end
 
-    _G.__TRACKER_LOOP = RS.RenderStepped:Connect(function()
-        if not (_G.MagicMenuStates and _G.MagicMenuStates.Tracker and _G.MagicMenuStates.Tracker()) then
-            line.Visible, hl.Enabled, hl.Adornee = false, false, nil
+    -- Tạo khung cho 1 player
+    local function ensureItem(plr)
+        local it = items[plr]
+        if it then return it end
+
+        -- pivot riêng cho player này, đặt cùng vị trí neo; ta sẽ xoay pivot, KHÔNG xoay line
+        local pivot = Instance.new("Frame")
+        pivot.Name = "TrackerPivot_"..plr.UserId
+        pivot.BackgroundTransparency = 1
+        pivot.AnchorPoint = Vector2.new(0.5, 0)
+        pivot.Position = anchor.Position
+        pivot.Size = UDim2.fromOffset(0, 0)
+        pivot.ZIndex = 901
+        pivot.Parent = parentGui
+
+        -- line kéo từ TRÁI -> PHẢI, đầu TRÁI dính vào gốc pivot
+        local line = Instance.new("Frame")
+        line.Name = "TrackerLine"
+        line.BorderSizePixel = 0
+        line.BackgroundColor3 = RED
+        line.AnchorPoint = Vector2.new(0, 0.5)     -- đầu trái cố định tại pivot
+        line.Position = UDim2.fromOffset(0, 0)
+        line.Size = UDim2.fromOffset(0, 3)         -- ~0.3 mảnh -> 3px
+        line.Visible = false
+        line.ZIndex = 902
+        line.Parent = pivot
+
+        -- highlight mục tiêu
+        local hl = Instance.new("Highlight")
+        hl.Name = "TrackerHL_"..plr.UserId
+        hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+        hl.FillColor = Color3.fromRGB(255,80,80)
+        hl.FillTransparency = 0.7
+        hl.OutlineTransparency = 0
+        hl.Enabled = false
+        hl.Parent = parentGui
+
+        items[plr] = {pivot=pivot, line=line, hl=hl}
+        table.insert(_G.__TRACKER_CLEAN, function()
+            if line then line:Destroy() end
+            if pivot then pivot:Destroy() end
+            if hl then hl:Destroy() end
+        end)
+        return items[plr]
+    end
+
+    local function destroyItem(plr)
+        local it = items[plr]
+        if not it then return end
+        if it.line then it.line:Destroy() end
+        if it.pivot then it.pivot:Destroy() end
+        if it.hl then it.hl:Destroy() end
+        items[plr] = nil
+    end
+
+    -- Cập nhật 1 mục tiêu
+    local function updateFor(plr)
+        if plr == lp then destroyItem(plr) return end
+        local c = plr.Character
+        local hum = c and c:FindFirstChildOfClass("Humanoid")
+        local hrp = c and c:FindFirstChild("HumanoidRootPart")
+        local my = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+        if not (hum and hrp and hum.Health > 0 and my) then
+            destroyItem(plr)
             return
         end
 
-        local tgtPlr, tgtHRP, dist = nearestTarget()
-        if not (tgtPlr and tgtHRP and dist) then
-            line.Visible, hl.Enabled, hl.Adornee = false, false, nil
-            return
-        end
-
-        -- highlight
-        local col = colorByDist(dist)
-        hl.Enabled, hl.Adornee, hl.OutlineColor = true, tgtPlr.Character, col
-
-        -- dây
         local cam = workspace.CurrentCamera
         if not cam then return end
         local vp = cam.ViewportSize
-        local scr, on = cam:WorldToViewportPoint(tgtHRP.Position)
+
+        local it = ensureItem(plr)
+        -- giữ neo luôn ở đỉnh giữa
+        anchor.Position = UDim2.new(0.5, 0, 0, 0)
+        it.pivot.Position = anchor.Position
+
+        -- vị trí màn hình của mục tiêu (clamp nếu offscreen)
+        local v3, on = cam:WorldToViewportPoint(hrp.Position)
+        local to = Vector2.new(v3.X, v3.Y)
+        if not on then
+            to = Vector2.new(math.clamp(to.X, 0, vp.X), math.clamp(to.Y, 0, vp.Y))
+        end
+
         local origin = Vector2.new(vp.X*0.5, 0)
-        local dx, dy = scr.X - origin.X, scr.Y - origin.Y
+        local dx, dy = to.X - origin.X, to.Y - origin.Y
         local len = math.sqrt(dx*dx + dy*dy)
-        line.Visible = true
-        line.BackgroundColor3 = col
-        line.Size = UDim2.fromOffset(len, 3)
-        line.Rotation = math.deg(math.atan2(dy, dx))
+        if len < 1 then
+            it.line.Visible = false
+            it.hl.Enabled = false
+            it.hl.Adornee = nil
+            return
+        end
+
+        local dist = (hrp.Position - my.Position).Magnitude
+        local col = colorByDist(dist)
+
+        -- pivot xoay tới mục tiêu, line kéo dài từ trái->phải đúng chiều dài
+        it.pivot.Rotation = math.deg(math.atan2(dy, dx))
+        it.line.BackgroundColor3 = col
+        it.line.Size = UDim2.fromOffset(len, 3)
+        it.line.Position = UDim2.fromOffset(0, 0)
+        it.line.Visible = true
+
+        -- highlight
+        it.hl.Enabled = true
+        it.hl.OutlineColor = col
+        it.hl.Adornee = c
+    end
+
+    -- Loop
+    _G.__TRACKER_LOOP = RS.RenderStepped:Connect(function()
+        if not (_G.MagicMenuStates and _G.MagicMenuStates.Tracker and _G.MagicMenuStates.Tracker()) then
+            -- tắt: ẩn tất cả
+            for _, it in pairs(items) do
+                if it.line then it.line.Visible = false end
+                if it.hl then it.hl.Enabled = false; it.hl.Adornee = nil end
+            end
+            return
+        end
+
+        -- cập nhật toàn bộ mục tiêu (trừ local player)
+        for _, p in ipairs(Players:GetPlayers()) do
+            if p ~= lp then updateFor(p) end
+        end
+
+        -- dọn player đã rời
+        for p, _ in pairs(items) do
+            if typeof(p) ~= "Instance" or p.Parent == nil then
+                destroyItem(p)
+            end
+        end
     end)
-end
+
+    -- dọn khi player rời
+    table.insert(_G.__TRACKER_CLEAN, Players.PlayerRemoving:Connect(function(p) destroyItem(p) end).Disconnect)
+end 
 
 --== Teleport Follow (bám sau 3 studs, retarget mượt) ==--
 do
@@ -990,7 +1056,7 @@ do
     local activeTp
     local currentTarget
     local retimer = 0
-    local RETARGET_DT = 0.07
+    local RETARGET_DT = 0.03
     local OFFSET = CFrame.new(0,0,-3)
     local MIN_TIME = 1/240
 
