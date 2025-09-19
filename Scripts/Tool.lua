@@ -884,7 +884,7 @@ do
     end)
 end
 
---== Highlight (viền đỏ + cảnh báo offscreen <=500) ==--
+--== Highlight (viền đỏ sáng, auto update) ==--
 do
     if _G.__HIGHLIGHT_LOOP then _G.__HIGHLIGHT_LOOP:Disconnect() end
     if _G.__HIGHLIGHT_CLEAN then
@@ -893,34 +893,13 @@ do
     _G.__HIGHLIGHT_CLEAN = {}
 
     local items = {} -- [plr] = Highlight
-    local warningLabel
-
-    -- tạo UI cảnh báo
-    local function ensureWarning()
-        if warningLabel then return warningLabel end
-        warningLabel = Instance.new("TextLabel")
-        warningLabel.Name = "EnemyWarning"
-        warningLabel.AnchorPoint = Vector2.new(0.5, 0)
-        warningLabel.Position = UDim2.new(0.5, 0, 0, 10)
-        warningLabel.Size = UDim2.new(0, 480, 0, 40)
-        warningLabel.BackgroundTransparency = 1
-        warningLabel.TextColor3 = Color3.fromRGB(255,0,0)
-        warningLabel.Font = Enum.Font.GothamBold
-        warningLabel.TextSize = 28
-        warningLabel.Text = ""
-        warningLabel.Visible = false
-        warningLabel.ZIndex = 999
-        warningLabel.Parent = playerGui
-        table.insert(_G.__HIGHLIGHT_CLEAN, function() if warningLabel then warningLabel:Destroy() end end)
-        return warningLabel
-    end
 
     local function ensureHL(plr)
         if items[plr] then return items[plr] end
         local hl = Instance.new("Highlight")
         hl.Name = "HL_"..plr.UserId
         hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-        hl.FillTransparency = 1                -- không fill
+        hl.FillTransparency = 1                   -- không fill
         hl.OutlineColor = Color3.fromRGB(255,0,0) -- viền đỏ
         hl.OutlineTransparency = 0
         hl.Enabled = true
@@ -939,11 +918,9 @@ do
     _G.__HIGHLIGHT_LOOP = RS.RenderStepped:Connect(function()
         if not (_G.MagicMenuStates and _G.MagicMenuStates.Highlight and _G.MagicMenuStates.Highlight()) then
             for p,_ in pairs(items) do destroyHL(p) end
-            if warningLabel then warningLabel.Visible = false end
             return
         end
 
-        -- highlight tất cả mục tiêu (luôn viền đỏ)
         for _,p in ipairs(Players:GetPlayers()) do
             if p ~= lp then
                 local c = p.Character
@@ -958,39 +935,6 @@ do
             end
         end
 
-        -- cảnh báo nếu có mục tiêu trong 500 studs mà offscreen
-        local cam = workspace.CurrentCamera
-        local myHRP = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
-        if cam and myHRP then
-            local count = 0
-            for _,p in ipairs(Players:GetPlayers()) do
-                if p ~= lp then
-                    local c = p.Character
-                    local hrp = c and c:FindFirstChild("HumanoidRootPart")
-                    local hum = c and c:FindFirstChildOfClass("Humanoid")
-                    if hrp and hum and hum.Health > 0 then
-                        local dist = (hrp.Position - myHRP.Position).Magnitude
-                        if dist <= 500 then
-                            local _, onScreen = cam:WorldToViewportPoint(hrp.Position)
-                            if not onScreen then
-                                count += 1
-                            end
-                        end
-                    end
-                end
-            end
-
-            local warn = ensureWarning()
-            if count > 0 then
-                local word = (count == 1) and "ENEMY" or "ENEMIES"
-                warn.Text = string.format("⚠️ WARNING DETECTED %d %s BEHIND ⚠️", count, word)
-                warn.Visible = true
-            else
-                warn.Visible = false
-            end
-        end
-
-        -- dọn player rời
         for p,_ in pairs(items) do
             if typeof(p) ~= "Instance" or p.Parent == nil then
                 destroyHL(p)
@@ -998,8 +942,20 @@ do
         end
     end)
 
-    table.insert(_G.__HIGHLIGHT_CLEAN, Players.PlayerRemoving:Connect(function(p) destroyHL(p) end).Disconnect)
-end
+    -- auto update khi player mới vào
+    table.insert(_G.__HIGHLIGHT_CLEAN, Players.PlayerAdded:Connect(function(p)
+        task.defer(function()
+            if _G.MagicMenuStates.Highlight and _G.MagicMenuStates.Highlight() then
+                ensureHL(p)
+            end
+        end)
+    end).Disconnect)
+
+    -- dọn khi player rời
+    table.insert(_G.__HIGHLIGHT_CLEAN, Players.PlayerRemoving:Connect(function(p)
+        destroyHL(p)
+    end).Disconnect)
+end       
 
 --== Teleport Follow (bám sau 3 studs, retarget mượt) ==--
 do
