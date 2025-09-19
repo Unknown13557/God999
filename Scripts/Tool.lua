@@ -561,45 +561,59 @@ _G.__MAGIC_JP_ENFORCE = RS.Heartbeat:Connect(function()
     end
 end)
 
---== Infinity Jump ==--
+--== Infinity Jump (tôn trọng JumpPower, guard an toàn) ==--
 do
-    if _G.__MAGIC_INFJUMP     then _G.__MAGIC_INFJUMP:Disconnect() end
-    if _G.__MAGIC_INFJUMP_KEY then _G.__MAGIC_INFJUMP_KEY:Disconnect() end
+    if _G.__MAGIC_INFJUMP      then _G.__MAGIC_INFJUMP:Disconnect() end
+    if _G.__MAGIC_INFJUMP_KEY  then _G.__MAGIC_INFJUMP_KEY:Disconnect() end
     if _G.__MAGIC_INFJUMP_CHAR then _G.__MAGIC_INFJUMP_CHAR:Disconnect() end
 
-    local function canJump()
-        return (_G.MagicMenuStates.InfJump and _G.MagicMenuStates.InfJump())
-            and hum and hum.Parent and hum.Health > 0
+    local function isInfOn()
+        return _G.MagicMenuStates
+           and typeof(_G.MagicMenuStates.InfinityJump) == "function"
+           and (_G.MagicMenuStates.InfinityJump() == true)
     end
-    
+
+    local function recentHumanoid()
+        local c = lp.Character
+        if not c or not c.Parent then return nil,nil,nil end
+        local h = c:FindFirstChildOfClass("Humanoid")
+        local r = c:FindFirstChild("HumanoidRootPart")
+        if not h or not r or h.Health <= 0 then return nil,nil,nil end
+        return c,h,r
+    end
+
     local function doInfJump()
-        if not canJump() then return end
-        pcall(function()
-            hum:SetStateEnabled(Enum.HumanoidStateType.Jumping, true)
-            hum:SetStateEnabled(Enum.HumanoidStateType.Freefall, true)
-            if hum.Sit then hum.Sit = false end
-            hum:ChangeState(Enum.HumanoidStateType.Jumping)
-            hum:ChangeState(Enum.HumanoidStateType.Freefall)
+        if not isInfOn() then return end
+        local c, h, r = recentHumanoid()
+        if not (c and h and r) then return end
+        -- an toàn tuyệt đối trong pcall để không die loop
+        local ok = pcall(function()
+            h:SetStateEnabled(Enum.HumanoidStateType.Jumping, true)
+            h:SetStateEnabled(Enum.HumanoidStateType.Freefall, true)
+            if h.Sit then h.Sit = false end
+            h:ChangeState(Enum.HumanoidStateType.Jumping)
+            h:ChangeState(Enum.HumanoidStateType.Freefall)
 
-            local root = char and char:FindFirstChild("HumanoidRootPart")
-            if root then
-                hum.UseJumpPower = true
-                local jp = tonumber(hum.JumpPower) or 50
-                local v  = root.Velocity
-                root.Velocity = Vector3.new(v.X, math.max(v.Y, jp), v.Z)
-            end
+            -- dùng JumpPower hiện tại (có enforce ở block JumpPower)
+            h.UseJumpPower = true
+            local jp = tonumber(h.JumpPower) or 50
+            local v  = r.Velocity
+            r.Velocity = Vector3.new(v.X, math.max(v.Y, jp), v.Z)
         end)
+        -- nếu có lỗi lẻ, ok=false nhưng không hề “die” script
     end
 
-    _G.__MAGIC_INFJUMP      = UIS.JumpRequest:Connect(doInfJump)
-    _G.__MAGIC_INFJUMP_KEY  = UIS.InputBegan:Connect(function(input,gpe)
+    _G.__MAGIC_INFJUMP     = UIS.JumpRequest:Connect(doInfJump)
+    _G.__MAGIC_INFJUMP_KEY = UIS.InputBegan:Connect(function(input, gpe)
         if gpe then return end
-        if input.KeyCode == Enum.KeyCode.Space then doInfJump() end
+        if input.KeyCode == Enum.KeyCode.Space then
+            doInfJump()
+        end
     end)
-    _G.__MAGIC_INFJUMP_CHAR = lp.CharacterAdded:Connect(function(c)
-        task.wait(0.2)
-        char = c
-        hum  = c:FindFirstChildOfClass("Humanoid")
+
+    -- cập nhật tham chiếu khi respawn (không phụ thuộc biến toàn cục cũ)
+    _G.__MAGIC_INFJUMP_CHAR = lp.CharacterAdded:Connect(function()
+        -- không làm gì ở đây, chỉ để giữ kết nối; doInfJump() luôn tự lấy char/hum/root mới
     end)
 end
 
