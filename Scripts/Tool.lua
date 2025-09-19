@@ -884,6 +884,104 @@ do
     end)
 end
 
+--== Tracker ==--
+do
+    if _G.__TRACKER_LOOP then _G.__TRACKER_LOOP:Disconnect() end
+
+    -- UI setup
+    local playerGui = lp:WaitForChild("PlayerGui")
+    local parentGui = playerGui:FindFirstChild("FloatingMenuGUI") or playerGui
+
+    local root = parentGui:FindFirstChild("TrackerRoot") or Instance.new("Frame")
+    root.Name = "TrackerRoot"
+    root.BackgroundTransparency = 1
+    root.AnchorPoint = Vector2.new(0.5, 0)
+    root.Position = UDim2.new(0.5, 0, 0, 0)
+    root.Size = UDim2.fromOffset(0,0)
+    root.ZIndex = 900
+    root.Parent = parentGui
+
+    local line = root:FindFirstChild("TrackerLine") or Instance.new("Frame")
+    line.Name = "TrackerLine"
+    line.BorderSizePixel = 0
+    line.AnchorPoint = Vector2.new(0, 0.5)
+    line.Position = UDim2.fromOffset(0,0)
+    line.Size = UDim2.fromOffset(0,3)
+    line.ZIndex = 901
+    line.Visible = false
+    line.Parent = root
+
+    local hl = parentGui:FindFirstChild("TrackerHighlight") or Instance.new("Highlight")
+    hl.Name = "TrackerHighlight"
+    hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    hl.FillColor = Color3.fromRGB(255,80,80)
+    hl.FillTransparency = 0.7
+    hl.OutlineTransparency = 0
+    hl.Enabled = false
+    hl.Parent = parentGui
+
+    local RED, YELL, GREEN = Color3.fromRGB(255,60,60), Color3.fromRGB(255,210,60), Color3.fromRGB(60,220,90)
+
+    local function nearestTarget()
+        local myChar, myHRP, myHum = lp.Character, nil, nil
+        if myChar then
+            myHRP = myChar:FindFirstChild("HumanoidRootPart")
+            myHum = myChar:FindFirstChildOfClass("Humanoid")
+        end
+        if not (myHRP and myHum and myHum.Health > 0) then return nil end
+
+        local bestPlr, bestHRP, bestDist = nil, nil, math.huge
+        for _, p in ipairs(Players:GetPlayers()) do
+            if p ~= lp then
+                local c = p.Character
+                local hum = c and c:FindFirstChildOfClass("Humanoid")
+                local hrp = c and c:FindFirstChild("HumanoidRootPart")
+                if hum and hum.Health > 0 and hrp then
+                    local d = (hrp.Position - myHRP.Position).Magnitude
+                    if d < bestDist then
+                        bestDist, bestPlr, bestHRP = d, p, hrp
+                    end
+                end
+            end
+        end
+        return bestPlr, bestHRP, bestDist
+    end
+
+    local function colorByDist(d)
+        if d <= 1000 then return RED elseif d <= 3000 then return YELL else return GREEN end
+    end
+
+    _G.__TRACKER_LOOP = RS.RenderStepped:Connect(function()
+        if not (_G.MagicMenuStates and _G.MagicMenuStates.Tracker and _G.MagicMenuStates.Tracker()) then
+            line.Visible, hl.Enabled, hl.Adornee = false, false, nil
+            return
+        end
+
+        local tgtPlr, tgtHRP, dist = nearestTarget()
+        if not (tgtPlr and tgtHRP and dist) then
+            line.Visible, hl.Enabled, hl.Adornee = false, false, nil
+            return
+        end
+
+        -- highlight
+        local col = colorByDist(dist)
+        hl.Enabled, hl.Adornee, hl.OutlineColor = true, tgtPlr.Character, col
+
+        -- dây
+        local cam = workspace.CurrentCamera
+        if not cam then return end
+        local vp = cam.ViewportSize
+        local scr, on = cam:WorldToViewportPoint(tgtHRP.Position)
+        local origin = Vector2.new(vp.X*0.5, 0)
+        local dx, dy = scr.X - origin.X, scr.Y - origin.Y
+        local len = math.sqrt(dx*dx + dy*dy)
+        line.Visible = true
+        line.BackgroundColor3 = col
+        line.Size = UDim2.fromOffset(len, 3)
+        line.Rotation = math.deg(math.atan2(dy, dx))
+    end)
+end
+
 --== Teleport Follow (bám sau 3 studs, retarget mượt) ==--
 do
     if _G.__MAGIC_TP_FOLLOW then _G.__MAGIC_TP_FOLLOW:Disconnect() end
