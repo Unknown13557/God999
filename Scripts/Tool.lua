@@ -74,58 +74,130 @@ gui.IgnoreGuiInset = true
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 gui.Parent = playerGui
 
---==== ICON (ĐEN + VIỀN ĐỎ) ====
+-- NÊN: để ScreenGui tôn trọng safe area/topbar trên mobile
+gui.IgnoreGuiInset = false
+
+--==== ICON (ĐEN + VIỀN ĐỎ, CĂN GIỮA CHUẨN) ====
 local icon = gui:FindFirstChild("MagicFloatingIcon") or Instance.new("ImageButton")
 icon.Name = "MagicFloatingIcon"
-icon.Size = UDim2.fromOffset(48,48)
-icon.Position = UDim2.fromOffset(16, math.floor(viewport().Y*0.5) - 24)
-
--- Nền đen, không trong suốt
+icon.Size = UDim2.fromOffset(56,56)
+icon.AnchorPoint = Vector2.new(0, 0) -- sẽ tính pos sau cho chắc
 icon.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 icon.BackgroundTransparency = 0
 icon.ZIndex = 1000
-icon.Active = true
 icon.AutoButtonColor = true
 icon.ScaleType = Enum.ScaleType.Fit
-icon.ResampleMode = Enum.ResamplerMode.Pixelated
-icon.ImageTransparency = 1 -- ẩn ảnh nền (dùng glyph thay cho Image)
+icon.ImageTransparency = 1 -- dùng glyph, không dùng Image để tránh ràng buộc ảnh
 icon.Parent = gui
 
--- Bo tròn (hình tròn)
+-- bo tròn + viền đỏ
 local corner = icon:FindFirstChildOfClass("UICorner") or Instance.new("UICorner")
 corner.CornerRadius = UDim.new(1,0)
 corner.Parent = icon
-
--- Viền đỏ
 local stroke = icon:FindFirstChildOfClass("UIStroke") or Instance.new("UIStroke")
 stroke.Color = Color3.fromRGB(255, 50, 50)
 stroke.Thickness = 2
 stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 stroke.Parent = icon
 
--- Giữ icon luôn vuông
-local arc = icon:FindFirstChildOfClass("UIAspectRatioConstraint") or Instance.new("UIAspectRatioConstraint")
-arc.AspectRatio = 1
-arc.Parent = icon
-
--- Glyph bánh răng màu trắng ở giữa
+-- glyph bánh răng TRUNG TÂM TUYỆT ĐỐI
 local gear = icon:FindFirstChild("GearGlyph") or Instance.new("TextLabel")
 gear.Name = "GearGlyph"
 gear.BackgroundTransparency = 1
-gear.Size = UDim2.fromScale(1,1)
-gear.Text = "⚙"
+gear.AnchorPoint = Vector2.new(0.5, 0.5)
+gear.Position = UDim2.fromScale(0.5, 0.5) -- tâm chuẩn
+gear.Size = UDim2.fromScale(0.78, 0.78)    -- trừ viền 1 chút để không “ảo giác lệch”
+gear.Text = "🍑"
 gear.Font = Enum.Font.GothamBold
 gear.TextScaled = true
-gear.TextColor3 = Color3.fromRGB(255,255,255)
+gear.TextColor3 = Color3.fromRGB(210, 210, 210) -- xám đậm giống hình bạn chụp
 gear.ZIndex = icon.ZIndex + 1
 gear.Parent = icon
 
--- (Tuỳ chọn) hiệu ứng hover: đổi nhẹ màu viền
-icon.MouseEnter:Connect(function()
-	stroke.Color = Color3.fromRGB(255, 90, 90)
-end)
-icon.MouseLeave:Connect(function()
-	stroke.Color = Color3.fromRGB(255, 50, 50)
+--==== VỊ TRÍ BAN ĐẦU: né joystick (góc phải, giữa màn hình)
+local function viewport() local c=workspace.CurrentCamera return (c and c.ViewportSize) or Vector2.new(1280,720) end
+local v = viewport()
+icon.Position = UDim2.fromOffset(v.X - icon.AbsoluteSize.X - 20, math.floor(v.Y*0.5) - icon.AbsoluteSize.Y/2)
+
+--==== GIỚI HẠN VÙNG (SAFE AREA + JOYSTICK DEAD ZONE) ====
+local GuiService = game:GetService("GuiService")
+local RS = game:GetService("RunService")
+local UIS = game:GetService("UserInputService")
+
+-- buffer tránh “tai thỏ” / thanh điều hướng
+local function getSafeInsets()
+    local insets = GuiService:GetSafeZoneInsets()
+    return insets -- UDim2
+end
+
+-- ước lượng vùng joystick trái dưới (CoreGui TouchControls)
+-- tuỳ HUD client, để an toàn chừa rộng 240x200px
+local JOYSTICK_W, JOYSTICK_H = 240, 200
+
+local function clampToUsable(x, y, w, h)
+    local vp = viewport()
+    local insets = getSafeInsets()
+    local left   = insets.X.Offset
+    local top    = insets.Y.Offset
+    local right  = insets.X.Scale*vp.X + insets.X.Offset
+    local bottom = insets.Y.Scale*vp.Y + insets.Y.Offset
+
+    -- “dead zone” joystick góc trái dưới
+    local jLeft, jTop = left + 0, vp.Y - bottom - JOYSTICK_H
+    local jRight, jBottom = left + JOYSTICK_W, vp.Y - bottom
+
+    -- clamp cơ bản trong màn hình trừ safe area
+    local minX = left
+    local maxX = vp.X - right - w
+    local minY = top
+    local maxY = vp.Y - bottom - h
+
+    x = math.clamp(x, minX, maxX)
+    y = math.clamp(y, minY, maxY)
+
+    -- nếu icon đè lên vùng joystick thì đẩy ra phải
+    if x < jRight and (y + h) > jTop and y < jBottom then
+        x = jRight + 6
+    end
+    return x, y
+end
+
+-- cho phép kéo icon, nhưng KHÔNG đè joystick
+do
+    local dragging = false
+    local startPos, startMouse
+    icon.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            startPos = icon.Position
+            startMouse = input.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then dragging = false end
+            end)
+        end
+    end)
+    UIS.InputChanged:Connect(function(input)
+        if not dragging then return end
+        if input.UserInputType == Enum.UserInputType.MouseMovement
+        or input.UserInputType == Enum.UserInputType.Touch then
+            local delta = input.Position - startMouse
+            local x = startPos.X.Offset + delta.X
+            local y = startPos.Y.Offset + delta.Y
+            local nx, ny = clampToUsable(x, y, icon.AbsoluteSize.X, icon.AbsoluteSize.Y)
+            icon.Position = UDim2.fromOffset(nx, ny)
+        end
+    end)
+end
+
+-- tự hiệu chỉnh khi đổi kích thước màn hình / xoay thiết bị
+RS.RenderStepped:Connect(function()
+    local x = icon.Position.X.Offset
+    local y = icon.Position.Y.Offset
+    local nx, ny = clampToUsable(x, y, icon.AbsoluteSize.X, icon.AbsoluteSize.Y)
+    if nx ~= x or ny ~= y then
+        icon.Position = UDim2.fromOffset(nx, ny)
+    end
 end)
 
 -- Drag icon (giữ đúng logic không double-toggle)
