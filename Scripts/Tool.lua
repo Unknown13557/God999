@@ -461,43 +461,46 @@ _G.__MAGIC_SPEED_RUN = RS.RenderStepped:Connect(function(dt)
     local curVel = hrp.AssemblyLinearVelocity
     local desired = dir * target
 
-    -- ƯU TIÊN NOCLIP: nếu NoClip bật => bỏ qua raycast chống tường (guard an toàn)
-    local noClipOn = false
-    if _G.MagicMenuStates and typeof(_G.MagicMenuStates.NoClip) == "function" then
-        noClipOn = _G.MagicMenuStates.NoClip() == true
+    -- ƯU TIÊN NOCLIP: nếu NoClip bật thì bỏ qua raycast chống tường (guard an toàn)
+local noClipOn = false
+if _G.MagicMenuStates and typeof(_G.MagicMenuStates.NoClip) == "function" then
+    local ok, res = pcall(_G.MagicMenuStates.NoClip)
+    if ok and res == true then
+        noClipOn = true
     end
+end
 
-    if not noClipOn then
-        -- chống đâm tường -> trượt theo tường
-        local predictDist = math.max((target * dt) + 1.0, 2.0)
-        local hit = workspace:Raycast(hrp.Position, dir * predictDist, rayParams)
-        if hit then
-            local n = hit.Normal
-            if n:Dot(dir) < -0.2 then
-                local tangential = desired - n * desired:Dot(n)
-                desired = (tangential.Magnitude > 0.05)
-                    and tangential.Unit * math.min(tangential.Magnitude, target * 0.85)
-                    or Vector3.zero
-            end
-        end
-    end  -- <== đóng nhánh noClipOn
-
-    -- nội suy mượt, giữ Y (chạy cho cả hai chế độ)
-    local accel = math.clamp(25 * f * dt, 0, 1)
-    local newHoriz = Vector3.new(curVel.X, 0, curVel.Z)
-        :Lerp(Vector3.new(desired.X, 0, desired.Z), accel)
-    hrp.AssemblyLinearVelocity = Vector3.new(newHoriz.X, curVel.Y, newHoriz.Z)
-
-    -- anti-lean (giữ tư thế thẳng)
-    hrp.AssemblyAngularVelocity = Vector3.new(0, hrp.AssemblyAngularVelocity.Y, 0)
-    local look = hrp.CFrame.LookVector
-    if math.abs(look.Y) > 1e-3 then
-        local pos = hrp.Position
-        local flat = Vector3.new(look.X, 0, look.Z)
-        if flat.Magnitude > 1e-3 then
-            hrp.CFrame = CFrame.lookAt(pos, pos + flat.Unit, Vector3.yAxis)
+if not noClipOn then
+    -- chống đâm tường -> trượt theo tường (giữ logic cũ)
+    local predictDist = math.max((target * dt) + 1.0, 2.0)
+    local hit = workspace:Raycast(hrp.Position, dir * predictDist, rayParams)
+    if hit then
+        local n = hit.Normal
+        if n:Dot(dir) < -0.2 then
+            local tangential = desired - n * desired:Dot(n)
+            desired = (tangential.Magnitude > 0.05)
+                and tangential.Unit * math.min(tangential.Magnitude, target * 0.85)
+                or Vector3.zero
         end
     end
+end
+
+-- nội suy mượt, giữ Y (giữ nguyên)
+local accel = math.clamp(25 * f * dt, 0, 1)
+local newHoriz = Vector3.new(curVel.X, 0, curVel.Z)
+    :Lerp(Vector3.new(desired.X, 0, desired.Z), accel)
+hrp.AssemblyLinearVelocity = Vector3.new(newHoriz.X, curVel.Y, newHoriz.Z)
+
+-- anti-lean (giữ tư thế thẳng)
+hrp.AssemblyAngularVelocity = Vector3.new(0, hrp.AssemblyAngularVelocity.Y, 0)
+local look = hrp.CFrame.LookVector
+if math.abs(look.Y) > 1e-3 then
+    local pos = hrp.Position
+    local flat = Vector3.new(look.X, 0, look.Z)
+    if flat.Magnitude > 1e-3 then
+        hrp.CFrame = CFrame.lookAt(pos, pos + flat.Unit, Vector3.yAxis)
+    end
+        end
     
 --== NoClip (khôi phục đúng parts đã chỉnh, không ép true tất cả) ==--  
 if _G.__MAGIC_NOCLIP then _G.__MAGIC_NOCLIP:Disconnect() end
