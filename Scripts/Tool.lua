@@ -884,16 +884,18 @@ do
     end)
 end
 
---== Highlight (viền trắng + cảnh báo offscreen <=500) ==--
+--== Highlight (viền đỏ + cảnh báo offscreen <=500) ==--
 do
     if _G.__HIGHLIGHT_LOOP then _G.__HIGHLIGHT_LOOP:Disconnect() end
-    if _G.__HIGHLIGHT_CLEAN then for _,fn in ipairs(_G.__HIGHLIGHT_CLEAN) do pcall(fn) end end
+    if _G.__HIGHLIGHT_CLEAN then
+        for _,fn in ipairs(_G.__HIGHLIGHT_CLEAN) do pcall(fn) end
+    end
     _G.__HIGHLIGHT_CLEAN = {}
 
     local items = {} -- [plr] = Highlight
     local warningLabel
 
-    -- tạo label cảnh báo
+    -- tạo UI cảnh báo
     local function ensureWarning()
         if warningLabel then return warningLabel end
         warningLabel = Instance.new("TextLabel")
@@ -918,9 +920,8 @@ do
         local hl = Instance.new("Highlight")
         hl.Name = "HL_"..plr.UserId
         hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-        hl.FillColor = Color3.fromRGB(255,255,255)
-        hl.FillTransparency = 0.8
-        hl.OutlineColor = Color3.fromRGB(255,255,255)
+        hl.FillTransparency = 1                -- không fill
+        hl.OutlineColor = Color3.fromRGB(255,0,0) -- viền đỏ
         hl.OutlineTransparency = 0
         hl.Enabled = true
         hl.Parent = playerGui
@@ -942,7 +943,7 @@ do
             return
         end
 
-        -- highlight tất cả mục tiêu
+        -- highlight tất cả mục tiêu (luôn viền đỏ)
         for _,p in ipairs(Players:GetPlayers()) do
             if p ~= lp then
                 local c = p.Character
@@ -957,7 +958,7 @@ do
             end
         end
 
-        -- cảnh báo nếu có mục tiêu trong 500 studs nhưng camera không thấy
+        -- cảnh báo nếu có mục tiêu trong 500 studs mà offscreen
         local cam = workspace.CurrentCamera
         local myHRP = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
         if cam and myHRP then
@@ -978,6 +979,7 @@ do
                     end
                 end
             end
+
             local warn = ensureWarning()
             if count > 0 then
                 local word = (count == 1) and "ENEMY" or "ENEMIES"
