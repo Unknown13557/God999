@@ -500,7 +500,8 @@ if math.abs(look.Y) > 1e-3 then
     if flat.Magnitude > 1e-3 then
         hrp.CFrame = CFrame.lookAt(pos, pos + flat.Unit, Vector3.yAxis)
     end
-        end
+end
+end)      
     
 --== NoClip (khôi phục đúng parts đã chỉnh, không ép true tất cả) ==--  
 if _G.__MAGIC_NOCLIP then _G.__MAGIC_NOCLIP:Disconnect() end
