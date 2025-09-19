@@ -74,44 +74,59 @@ gui.IgnoreGuiInset = true
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 gui.Parent = playerGui
 
---==== ICON (DÙNG MẶC ĐỊNH ROBLOX, KHÔNG PRELOAD) ====
+--==== ICON (ĐEN + VIỀN ĐỎ) ====
 local icon = gui:FindFirstChild("MagicFloatingIcon") or Instance.new("ImageButton")
 icon.Name = "MagicFloatingIcon"
 icon.Size = UDim2.fromOffset(48,48)
 icon.Position = UDim2.fromOffset(16, math.floor(viewport().Y*0.5) - 24)
 
--- Nền trong suốt để không “ô trắng”
-icon.BackgroundColor3 = Color3.fromRGB(255,255,255)
-icon.BackgroundTransparency = 1
-
+-- Nền đen, không trong suốt
+icon.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+icon.BackgroundTransparency = 0
 icon.ZIndex = 1000
 icon.Active = true
 icon.AutoButtonColor = true
 icon.ScaleType = Enum.ScaleType.Fit
 icon.ResampleMode = Enum.ResamplerMode.Pixelated
-icon.ImageColor3 = Color3.new(1,1,1)
+icon.ImageTransparency = 1 -- ẩn ảnh nền (dùng glyph thay cho Image)
 icon.Parent = gui
 
--- Bo tròn tròn (hình tròn)
+-- Bo tròn (hình tròn)
 local corner = icon:FindFirstChildOfClass("UICorner") or Instance.new("UICorner")
 corner.CornerRadius = UDim.new(1,0)
 corner.Parent = icon
 
--- Bỏ stroke vàng nếu có
-local stroke = icon:FindFirstChildOfClass("UIStroke")
-if stroke then stroke:Destroy() end
+-- Viền đỏ
+local stroke = icon:FindFirstChildOfClass("UIStroke") or Instance.new("UIStroke")
+stroke.Color = Color3.fromRGB(255, 50, 50)
+stroke.Thickness = 2
+stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+stroke.Parent = icon
 
 -- Giữ icon luôn vuông
 local arc = icon:FindFirstChildOfClass("UIAspectRatioConstraint") or Instance.new("UIAspectRatioConstraint")
 arc.AspectRatio = 1
 arc.Parent = icon
 
--- ẢNH ICON: dùng placeholder mặc định Roblox
--- (Không dùng ContentProvider:PreloadAsync nữa để tránh lỗi truyền string)
-icon.ImageTransparency = 1
-icon.Image = "rbxasset://textures/ui/PlayerList/Home.png"
+-- Glyph bánh răng màu trắng ở giữa
+local gear = icon:FindFirstChild("GearGlyph") or Instance.new("TextLabel")
+gear.Name = "GearGlyph"
+gear.BackgroundTransparency = 1
+gear.Size = UDim2.fromScale(1,1)
+gear.Text = "⚙"
+gear.Font = Enum.Font.GothamBold
+gear.TextScaled = true
+gear.TextColor3 = Color3.fromRGB(255,255,255)
+gear.ZIndex = icon.ZIndex + 1
+gear.Parent = icon
 
-icon.ImageTransparency = 0
+-- (Tuỳ chọn) hiệu ứng hover: đổi nhẹ màu viền
+icon.MouseEnter:Connect(function()
+	stroke.Color = Color3.fromRGB(255, 90, 90)
+end)
+icon.MouseLeave:Connect(function()
+	stroke.Color = Color3.fromRGB(255, 50, 50)
+end)
 
 -- Drag icon (giữ đúng logic không double-toggle)
 do
