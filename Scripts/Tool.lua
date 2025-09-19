@@ -88,65 +88,50 @@ gear.BackgroundTransparency = 1
 gear.AnchorPoint = Vector2.new(0.5, 0.5)
 gear.Position = UDim2.fromScale(0.5, 0.5)
 gear.Size = UDim2.fromScale(0.7, 0.7)
-gear.Text = "✡️"
+gear.Text = "⚙"
 gear.Font = Enum.Font.GothamBold
 gear.TextScaled = true
 gear.TextColor3 = Color3.fromRGB(210,210,210)
 gear.ZIndex = icon.ZIndex + 1
 gear.Parent = icon
 
--- Vị trí ban đầu: góc phải giữa (đã clamp, không cần task.defer)
-do
-    local v = viewport()
-    local w, h = icon.AbsoluteSize.X, icon.AbsoluteSize.Y
-    -- nếu mới tạo AbsoluteSize có thể = Size.Offset, đủ dùng vì icon dùng Offset
-    local x = v.X - w - 20
-    local y = (v.Y - h) * 0.5
-    x, y = clampIcon(x, y, w, h)
-    icon.Position = UDim2.fromOffset(x, y)
-end
 
----====Drag icon
+-- Drag icon (giữ đúng logic không double-toggle)
 do
     local dragging = false
-    local dragStart = Vector2.new(0,0)
-    local iconStart = icon.Position
-
+    local dragStartPos = Vector2.new()
+    local iconStartPos = UDim2.new()
+    local function clampIcon(x, y)
+        local v  = viewport()
+        local sz = icon.AbsoluteSize
+        return math.clamp(x, 0, v.X - sz.X), math.clamp(y, 0, v.Y - sz.Y)
+    end
     icon.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1
         or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true
-            dragStart = input.Position -- dùng toạ độ của event, ổn định trên mobile
-            iconStart = icon.Position
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    dragging = false
-                end
-            end)
+            dragging     = true
+            dragStartPos = UIS:GetMouseLocation()
+            iconStartPos = icon.Position
         end
     end)
-
     UIS.InputChanged:Connect(function(input)
         if not dragging then return end
         if input.UserInputType ~= Enum.UserInputType.MouseMovement
         and input.UserInputType ~= Enum.UserInputType.Touch then return end
-
-        local delta = input.Position - dragStart
-        local nx = iconStart.X.Offset + delta.X
-        local ny = iconStart.Y.Offset + delta.Y
-        nx, ny = clampIcon(nx, ny, icon.AbsoluteSize.X, icon.AbsoluteSize.Y)
+        local m = UIS:GetMouseLocation()
+        local d = m - dragStartPos
+        local nx = iconStartPos.X.Offset + d.X
+        local ny = iconStartPos.Y.Offset + d.Y
+        nx, ny = clampIcon(nx, ny)
         icon.Position = UDim2.fromOffset(nx, ny)
     end)
-
-    -- Giữ icon luôn hợp lệ khi đổi kích thước / xoay máy
-    RS.RenderStepped:Connect(function()
-        local pos = icon.Position
-        local nx, ny = clampIcon(pos.X.Offset, pos.Y.Offset, icon.AbsoluteSize.X, icon.AbsoluteSize.Y)
-        if nx ~= pos.X.Offset or ny ~= pos.Y.Offset then
-            icon.Position = UDim2.fromOffset(nx, ny)
+    UIS.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
         end
     end)
-end
+end  
 
 --== Window ==--
 local window = Instance.new("Frame")
