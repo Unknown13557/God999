@@ -1,6 +1,4 @@
 --=================== MAGIC TOOL (PACKED + SMOOTH) ===================
--- Tác giả: LUA Programming GOD (refactor & fixes)
-
 --== Services & Globals (khai một lần) ==--
 local Players          = game:GetService("Players")
 local UIS              = game:GetService("UserInputService")
