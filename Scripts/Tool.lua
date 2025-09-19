@@ -386,6 +386,7 @@ end)
 
 --== Mục khác ==--
 local espSwitch    = mkSwitchRow("ESP")
+local trackerSwitch = mkSwitchRow("Tracker")
 local infSwitch    = mkSwitchRow("Infinity Jump")
 local noclipSwitch = mkSwitchRow("NoClip")
 local wsInput      = mkInput("Input WalkSpeed")
@@ -404,6 +405,7 @@ _G.MagicMenuStates.Buttons          = _G.MagicMenuStates.Buttons or {}
 _G.MagicMenuStates.FastEscape       = escSwitch.Get
 _G.MagicMenuStates.TeleportPlayer   = tpSwitch.Get
 _G.MagicMenuStates.ESP              = espSwitch.Get
+_G.MagicMenuStates.Tracker          = trackerSwitch.Get
 _G.MagicMenuStates.NoClip           = noclipSwitch.Get
 _G.MagicMenuStates.WalkSpeedHack    = wsSwitch.Get
 _G.MagicMenuStates.JumpPowerHack    = jpSwitch.Get
