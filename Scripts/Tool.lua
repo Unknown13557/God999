@@ -56,7 +56,7 @@ gui.Parent = playerGui
 --== ICON (đen + viền đỏ, glyph ⚙) ==--
 local icon = gui:FindFirstChild("MagicFloatingIcon") or Instance.new("ImageButton")
 icon.Name = "MagicFloatingIcon"
-icon.Size = UDim2.fromOffset(56,56)
+icon.Size = UDim2.fromOffset(42,42)
 icon.BackgroundColor3 = Color3.fromRGB(0,0,0)
 icon.BackgroundTransparency = 0
 icon.AutoButtonColor = true
@@ -86,24 +86,35 @@ local gear = icon:FindFirstChild("GearGlyph") or Instance.new("TextLabel")
 gear.Name = "GearGlyph"
 gear.BackgroundTransparency = 1
 gear.AnchorPoint = Vector2.new(0.5, 0.5)
-gear.Position = UDim2.fromScale(0.5, 0.5) + UDim2.fromOffset(0, -1) -- bù 1px cho cân mắt
-gear.Size = UDim2.fromScale(0.76, 0.76)
+gear.Position = UDim2.fromScale(0.5, 0.5)
+gear.Size = UDim2.fromScale(0.7, 0.7)
 gear.Text = "⚙"
 gear.Font = Enum.Font.GothamBold
 gear.TextScaled = true
 gear.TextColor3 = Color3.fromRGB(210,210,210)
 gear.ZIndex = icon.ZIndex + 1
 gear.Parent = icon
+
+task.defer(function()
+    local v = viewport()
+    local w,h = icon.AbsoluteSize.X, icon.AbsoluteSize.Y
+    local x,y = clampIcon(v.X - w - 20, v.Y*0.5 - h*0.5, w, h)
+    icon.Position = UDim2.fromOffset(x,y)
+end)
 ---====Drag icon
 do
     local dragging = false
     local dragStartPos = Vector2.new(0, 0)
     local iconStartPos = icon.Position
 
-    local function clampIcon(x, y)
-        local v  = viewport()
-        local sz = icon.AbsoluteSize
-        return math.clamp(x, 0, v.X - sz.X), math.clamp(y, 0, v.Y - sz.Y)
+    local function clampIcon(x, y, w, h)
+    local v = viewport()
+    local insets = GuiService:GetGuiInset()
+    local left, top = insets.X, insets.Y
+    local right, bottom = insets.X, insets.Y
+    local maxX = v.X - right - w
+    local maxY = v.Y - bottom - h
+    return math.clamp(x, left, maxX), math.clamp(y, top, maxY)
     end
 
     icon.InputBegan:Connect(function(input)
@@ -123,8 +134,7 @@ do
         local d = m - dragStartPos
         local nx = iconStartPos.X.Offset + d.X
         local ny = iconStartPos.Y.Offset + d.Y
-        nx, ny = clampIcon(nx, ny)
-        icon.Position = UDim2.fromOffset(nx, ny)
+        nx, ny = clampIcon(nx, ny, icon.AbsoluteSize.X, icon.AbsoluteSize.Y)
     end)
 
     UIS.InputEnded:Connect(function(input)
