@@ -438,7 +438,6 @@ local jpSwitch     = mkSwitchRow("Changer JumpPower")
 local suiBtn    = mkClickBtn("Suicide [Click]")
 local rejoinBtn = mkClickBtn("Server Rejoin [Click]")
 local hopBtn    = mkClickBtn("Server Hop [Click]")
-local zoomBtn   = mkClickBtn("Infinity Zoom [Click]")
 local leaveBtn  = mkClickBtn("Leave [Click]")
 
 --== API hợp nhất (giữ form cũ) ==--
@@ -457,7 +456,6 @@ _G.MagicMenuStates.Buttons.Hop      = hopBtn
 _G.MagicMenuStates.Buttons.Rejoin   = rejoinBtn
 _G.MagicMenuStates.Buttons.Suicide  = suiBtn
 _G.MagicMenuStates.Buttons.Leave    = leaveBtn
-_G.MagicMenuStates.Buttons.Zoom     = zoomBtn
 _G.MagicMenuStates.Buttons.PlayerListToggle = plToggleBtn
 _G.MagicMenuStates.Buttons.ClearTarget      = clearTargetBtn
 _G.MagicMenuStates.SelectedTarget   = function() return _G.Magic_SelectedTarget end
@@ -695,40 +693,6 @@ do
             if not escLV then startFastEscape() end
         else
             if escLV or escAtt then stopFastEscape() end
-        end
-    end)
-end
-
---== Infinity Zoom ==--
-do
-    _G.__MAGIC_ZOOM_FOREVER = (_G.__MAGIC_ZOOM_FOREVER == true)
-    local function refreshZoomButton()
-        if _G.__MAGIC_ZOOM_FOREVER then
-            zoomBtn.Text = "Infinity Zoom: ON"
-            zoomBtn.AutoButtonColor = false
-            zoomBtn.Active = false
-            zoomBtn.Selectable = false
-            zoomBtn.BackgroundTransparency = 0
-        else
-            zoomBtn.Text = "Infinity Zoom [Click]"
-            zoomBtn.Active = true
-            zoomBtn.AutoButtonColor = true
-            zoomBtn.Selectable = true
-        end
-    end
-    refreshZoomButton()
-    zoomBtn.MouseButton1Click:Connect(function()
-        if _G.__MAGIC_ZOOM_FOREVER then return end
-        _G.__MAGIC_ZOOM_FOREVER = true
-        refreshZoomButton()
-    end)
-    if _G.__MAGIC_ZOOM_LOOP then _G.__MAGIC_ZOOM_LOOP:Disconnect() end
-    _G.__MAGIC_ZOOM_LOOP = RS.RenderStepped:Connect(function()
-        local cam = workspace.CurrentCamera
-        if not cam then return end
-        if _G.__MAGIC_ZOOM_FOREVER then
-            if lp.CameraMinZoomDistance ~= 0.5 then lp.CameraMinZoomDistance = 0.5 end
-            if lp.CameraMaxZoomDistance < 1e6 then lp.CameraMaxZoomDistance = 1e6 end
         end
     end)
 end
