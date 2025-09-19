@@ -408,8 +408,25 @@ _G.MagicMenuStates.NoClip           = noclipSwitch.Get
 _G.MagicMenuStates.WalkSpeedHack    = wsSwitch.Get
 _G.MagicMenuStates.JumpPowerHack    = jpSwitch.Get
 _G.MagicMenuStates.InfinityJump     = infSwitch.Get
-_G.MagicMenuStates.WalkSpeedFactor  = function() return tonumber(wsInput.Text) or 10 end
-_G.MagicMenuStates.JumpPowerFactor  = function() return tonumber(jpInput.Text) or 5 end
+_G.MagicMenuStates.WalkSpeedFactor = function()
+    local val = tonumber(wsInput.Text)
+    if val and val > 0 then
+        return val
+    else
+        wsInput.Text = "10" -- fallback mặc định
+        return 10
+    end
+end
+
+_G.MagicMenuStates.JumpPowerFactor = function()
+    local val = tonumber(jpInput.Text)
+    if val and val > 0 then
+        return val
+    else
+        jpInput.Text = "5" -- fallback mặc định
+        return 5
+    end
+end
 _G.MagicMenuStates.Buttons.Hop      = hopBtn
 _G.MagicMenuStates.Buttons.Rejoin   = rejoinBtn
 _G.MagicMenuStates.Buttons.Suicide  = suiBtn
@@ -544,17 +561,17 @@ _G.__MAGIC_JP_ENFORCE = RS.Heartbeat:Connect(function()
     end
 end)
 
---== Infinity Jump (chuẩn, nhẹ) ==--
+--== Infinity Jump ==--
 do
     if _G.__MAGIC_INFJUMP     then _G.__MAGIC_INFJUMP:Disconnect() end
     if _G.__MAGIC_INFJUMP_KEY then _G.__MAGIC_INFJUMP_KEY:Disconnect() end
     if _G.__MAGIC_INFJUMP_CHAR then _G.__MAGIC_INFJUMP_CHAR:Disconnect() end
 
     local function canJump()
-        return (_G.MagicMenuStates.InfinityJump and _G.MagicMenuStates.InfinityJump())
+        return (_G.MagicMenuStates.InfJump and _G.MagicMenuStates.InfJump())
             and hum and hum.Parent and hum.Health > 0
     end
-
+    
     local function doInfJump()
         if not canJump() then return end
         pcall(function()
@@ -563,10 +580,13 @@ do
             if hum.Sit then hum.Sit = false end
             hum:ChangeState(Enum.HumanoidStateType.Jumping)
             hum:ChangeState(Enum.HumanoidStateType.Freefall)
+
             local root = char and char:FindFirstChild("HumanoidRootPart")
             if root then
-                local v = root.Velocity
-                root.Velocity = Vector3.new(v.X, math.max(v.Y, 50), v.Z)
+                hum.UseJumpPower = true
+                local jp = tonumber(hum.JumpPower) or 50
+                local v  = root.Velocity
+                root.Velocity = Vector3.new(v.X, math.max(v.Y, jp), v.Z)
             end
         end)
     end
