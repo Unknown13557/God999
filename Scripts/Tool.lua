@@ -95,44 +95,6 @@ gear.TextColor3 = Color3.fromRGB(210,210,210)
 gear.ZIndex = icon.ZIndex + 1
 gear.Parent = icon
 
-
--- Drag icon (giữ đúng logic không double-toggle)
-do
-    local dragging = false
-    local dragStartPos = Vector2.new()
-    local iconStartPos = UDim2.new()
-    local function clampIcon(x, y)
-        local v  = viewport()
-        local sz = icon.AbsoluteSize
-        return math.clamp(x, 0, v.X - sz.X), math.clamp(y, 0, v.Y - sz.Y)
-    end
-    icon.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1
-        or input.UserInputType == Enum.UserInputType.Touch then
-            dragging     = true
-            dragStartPos = UIS:GetMouseLocation()
-            iconStartPos = icon.Position
-        end
-    end)
-    UIS.InputChanged:Connect(function(input)
-        if not dragging then return end
-        if input.UserInputType ~= Enum.UserInputType.MouseMovement
-        and input.UserInputType ~= Enum.UserInputType.Touch then return end
-        local m = UIS:GetMouseLocation()
-        local d = m - dragStartPos
-        local nx = iconStartPos.X.Offset + d.X
-        local ny = iconStartPos.Y.Offset + d.Y
-        nx, ny = clampIcon(nx, ny)
-        icon.Position = UDim2.fromOffset(nx, ny)
-    end)
-    UIS.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1
-        or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = false
-        end
-    end)
-end  
-
 --== Window ==--
 local window = Instance.new("Frame")
 do
