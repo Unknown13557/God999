@@ -107,11 +107,23 @@ do
     local dragStartPos = Vector2.new(0, 0)
     local iconStartPos = icon.Position
 
-    local function clampIcon(x, y, w, h)
+    --== Utils ==--
+local function viewport()
+    local cam = workspace.CurrentCamera
+    return (cam and cam.ViewportSize) or Vector2.new(1280,720)
+end
+
+local function clampToScreen(x, y, w, h)
     local v = viewport()
-    local insets = GuiService:GetGuiInset()
-    local left, top = insets.X, insets.Y
-    local right, bottom = insets.X, insets.Y
+    return math.clamp(x, 0, v.X - (w or 0)), math.clamp(y, 0, v.Y - (h or 0))
+end
+
+-- NEW: clamp icon theo inset thật và kích thước icon
+local function clampIcon(x, y, w, h)
+    local v = viewport()
+    local tl, br = GuiService:GetGuiInset()      -- tl: top-left inset, br: bottom-right inset
+    local left, top = tl.X, tl.Y
+    local right, bottom = br.X, br.Y
     local maxX = v.X - right - w
     local maxY = v.Y - bottom - h
     return math.clamp(x, left, maxX), math.clamp(y, top, maxY)
@@ -127,15 +139,19 @@ do
     end)
 
     UIS.InputChanged:Connect(function(input)
-        if not dragging then return end
-        if input.UserInputType ~= Enum.UserInputType.MouseMovement
-        and input.UserInputType ~= Enum.UserInputType.Touch then return end
-        local m = UIS:GetMouseLocation()
-        local d = m - dragStartPos
-        local nx = iconStartPos.X.Offset + d.X
-        local ny = iconStartPos.Y.Offset + d.Y
-        nx, ny = clampIcon(nx, ny, icon.AbsoluteSize.X, icon.AbsoluteSize.Y)
-    end)
+    if not dragging then return end
+    if input.UserInputType ~= Enum.UserInputType.MouseMovement
+    and input.UserInputType ~= Enum.UserInputType.Touch then return end
+
+    local m = UIS:GetMouseLocation()
+    local d = m - dragStartPos
+    local nx = iconStartPos.X.Offset + d.X
+    local ny = iconStartPos.Y.Offset + d.Y
+    nx, ny = clampIcon(nx, ny, icon.AbsoluteSize.X, icon.AbsoluteSize.Y)
+
+    -- 👇 QUAN TRỌNG: gán lại vị trí
+    icon.Position = UDim2.fromOffset(nx, ny)
+end)
 
     UIS.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1
