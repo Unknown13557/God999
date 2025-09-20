@@ -899,11 +899,11 @@ do
         local hl = Instance.new("Highlight")
         hl.Name = "HL_"..plr.UserId
         hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-        hl.FillTransparency = 1                   -- không fill
-        hl.OutlineColor = Color3.fromRGB(255,0,0) -- viền đỏ
+        hl.FillTransparency = 1                   -- tắt fill
+        hl.OutlineColor = Color3.fromRGB(255,0,0) -- viền đỏ sáng
         hl.OutlineTransparency = 0
         hl.Enabled = true
-        hl.Parent = playerGui
+        hl.Parent = playerGui                     -- bám theo GUI người chơi
         items[plr] = hl
         table.insert(_G.__HIGHLIGHT_CLEAN, function() if hl then hl:Destroy() end end)
         return hl
@@ -915,12 +915,12 @@ do
         items[plr] = nil
     end
 
+    -- Loop chính: chạy khi toggle bật, tự gán Adornee và dọn khi chết/rời
     _G.__HIGHLIGHT_LOOP = RS.RenderStepped:Connect(function()
         if not (_G.MagicMenuStates and _G.MagicMenuStates.Highlight and _G.MagicMenuStates.Highlight()) then
             for p,_ in pairs(items) do destroyHL(p) end
             return
         end
-
         for _,p in ipairs(Players:GetPlayers()) do
             if p ~= lp then
                 local c = p.Character
@@ -934,7 +934,7 @@ do
                 end
             end
         end
-
+        -- dọn entry mồ côi
         for p,_ in pairs(items) do
             if typeof(p) ~= "Instance" or p.Parent == nil then
                 destroyHL(p)
@@ -942,7 +942,7 @@ do
         end
     end)
 
-    -- auto update khi player mới vào
+    -- Cập nhật khi player mới vào / rời
     table.insert(_G.__HIGHLIGHT_CLEAN, Players.PlayerAdded:Connect(function(p)
         task.defer(function()
             if _G.MagicMenuStates.Highlight and _G.MagicMenuStates.Highlight() then
@@ -951,12 +951,11 @@ do
         end)
     end).Disconnect)
 
-    -- dọn khi player rời
     table.insert(_G.__HIGHLIGHT_CLEAN, Players.PlayerRemoving:Connect(function(p)
         destroyHL(p)
     end).Disconnect)
-end       
-
+end            
+    
 --== Teleport Follow (bám sau 3 studs, retarget mượt) ==--
 do
     if _G.__MAGIC_TP_FOLLOW then _G.__MAGIC_TP_FOLLOW:Disconnect() end
