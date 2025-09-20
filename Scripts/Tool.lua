@@ -884,7 +884,7 @@ do
     end)
 end
 
---== Highlight (viền đỏ sáng, auto update) ==--
+--== Highlight (viền đỏ sáng, auto update, dày hơn) ==--
 do
     if _G.__HIGHLIGHT_LOOP then _G.__HIGHLIGHT_LOOP:Disconnect() end
     if _G.__HIGHLIGHT_CLEAN then
@@ -899,54 +899,74 @@ do
         local hl = Instance.new("Highlight")
         hl.Name = "HL_"..plr.UserId
         hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-        hl.FillTransparency = 1                   -- tắt fill
-        hl.OutlineColor = Color3.fromRGB(255,0,0) -- viền đỏ sáng
+        hl.FillTransparency = 1
+        hl.OutlineColor = Color3.fromRGB(255,0,0)
         hl.OutlineTransparency = 0
         hl.Enabled = true
-        hl.Parent = playerGui                     -- bám theo GUI người chơi
+        hl.Parent = game:GetService("CoreGui") -- để tránh mất khi reset
         items[plr] = hl
-        table.insert(_G.__HIGHLIGHT_CLEAN, function() if hl then hl:Destroy() end end)
-        return hl
+
+        -- tạo thêm bản highlight thứ hai để viền trông dày hơn
+        local hl2 = Instance.new("Highlight")
+        hl2.Name = "HL2_"..plr.UserId
+        hl2.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+        hl2.FillTransparency = 1
+        hl2.OutlineColor = Color3.fromRGB(255,0,0)
+        hl2.OutlineTransparency = 0.2 -- hơi trong → tạo hiệu ứng viền rộng
+        hl2.Enabled = true
+        hl2.Parent = game:GetService("CoreGui")
+        -- lưu cả hai để xoá gọn
+        items[plr.."2"] = hl2
+
+        table.insert(_G.__HIGHLIGHT_CLEAN, function()
+            if hl then hl:Destroy() end
+            if hl2 then hl2:Destroy() end
+        end)
+        return hl, hl2
     end
 
     local function destroyHL(plr)
         local hl = items[plr]
+        local hl2 = items[plr.."2"]
         if hl then hl:Destroy() end
+        if hl2 then hl2:Destroy() end
         items[plr] = nil
+        items[plr.."2"] = nil
     end
 
-    -- Loop chính: chạy khi toggle bật, tự gán Adornee và dọn khi chết/rời
+    local function updateHL(plr)
+        local c = plr.Character
+        local hum = c and c:FindFirstChildOfClass("Humanoid")
+        if hum and hum.Health > 0 then
+            local hl,hl2 = ensureHL(plr)
+            hl.Adornee = c
+            hl2.Adornee = c
+            hl.Enabled = true
+            hl2.Enabled = true
+        else
+            destroyHL(plr)
+        end
+    end
+
+    -- loop quét liên tục
     _G.__HIGHLIGHT_LOOP = RS.RenderStepped:Connect(function()
-        if not (_G.MagicMenuStates and _G.MagicMenuStates.Highlight and _G.MagicMenuStates.Highlight()) then
+        if not (_G.MagicMenuStates.Highlight and _G.MagicMenuStates.Highlight()) then
             for p,_ in pairs(items) do destroyHL(p) end
             return
         end
         for _,p in ipairs(Players:GetPlayers()) do
             if p ~= lp then
-                local c = p.Character
-                local hum = c and c:FindFirstChildOfClass("Humanoid")
-                if hum and hum.Health > 0 then
-                    local hl = ensureHL(p)
-                    hl.Adornee = c
-                    hl.Enabled = true
-                else
-                    destroyHL(p)
-                end
-            end
-        end
-        -- dọn entry mồ côi
-        for p,_ in pairs(items) do
-            if typeof(p) ~= "Instance" or p.Parent == nil then
-                destroyHL(p)
+                updateHL(p)
             end
         end
     end)
 
-    -- Cập nhật khi player mới vào / rời
+    -- gắn lại khi player spawn hoặc mới vào
     table.insert(_G.__HIGHLIGHT_CLEAN, Players.PlayerAdded:Connect(function(p)
-        task.defer(function()
+        p.CharacterAdded:Connect(function()
+            task.wait(0.2)
             if _G.MagicMenuStates.Highlight and _G.MagicMenuStates.Highlight() then
-                ensureHL(p)
+                updateHL(p)
             end
         end)
     end).Disconnect)
@@ -954,7 +974,7 @@ do
     table.insert(_G.__HIGHLIGHT_CLEAN, Players.PlayerRemoving:Connect(function(p)
         destroyHL(p)
     end).Disconnect)
-end            
+end
     
 --== Teleport Follow (bám sau 3 studs, retarget mượt) ==--
 do
