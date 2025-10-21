@@ -36,7 +36,7 @@ local function connectHumanoidForHP(p, hum)
         local h  = tonumber(hum.Health) or 0
         local mh = tonumber(hum.MaxHealth) or 0
         if h >= HP_THRESHOLD or mh >= HP_THRESHOLD then
-            triggerKick(("HP >= %d ở %s (H=%s, MaxH=%s)"):format(HP_THRESHOLD, p.Name, h, mh))
+            triggerKick(("HP >= %d with %s (H=%s, MaxH=%s)"):format(HP_THRESHOLD, p.Name, h, mh))
         end
     end
     checkHP()
