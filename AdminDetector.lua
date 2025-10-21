@@ -63,10 +63,20 @@ end
 
 local function watchHP(p)
     if p == LocalPlayer then return end
-    if p.Character then task.defer(attachCharacterForHP, p, p.Character) end
+    if p.Character then
+        task.defer(attachCharacterForHP, p, p.Character)
+    end
     p.CharacterAdded:Connect(function(char)
         task.defer(attachCharacterForHP, p, char)
     end)
+    if not p.Character then
+        task.defer(function()
+            local newChar = p.Character or p.CharacterAdded:Wait()
+            if newChar and not kicked then
+                attachCharacterForHP(p, newChar)
+            end
+        end)
+    end
 end
 
 local function checkPlayerFull(p)
@@ -78,14 +88,14 @@ local function checkPlayerFull(p)
             local h  = tonumber(hum.Health) or 0
             local mh = tonumber(hum.MaxHealth) or 0
             if h >= HP_THRESHOLD or mh >= HP_THRESHOLD then
-                triggerKick(("HP (startup) >= %d ở %s (H=%s, MaxH=%s)"):format(HP_THRESHOLD, p.Name, h, mh))
+                triggerKick(("HP (startup) >= %d with %s (H=%s, MaxH=%s)"):format(HP_THRESHOLD, p.Name, h, mh))
             end
         end
     end
     watchHP(p)
 end
 
--- ========== ÁP DỤNG ==========
+-- ========== APPLY ==========
 for _, p in ipairs(Players:GetPlayers()) do
     checkPlayerFull(p)
 end
