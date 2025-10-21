@@ -1,5 +1,4 @@
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
 -- ========== CONFIG ==========
@@ -22,7 +21,7 @@ local function triggerKick(reason)
 	if kicked then return end
 	kicked = true
 	log("KICK:", reason)
-	LocalPlayer:Kick("[Admin Detected]" .. tostring(reason))
+	LocalPlayer:Kick("[Admin Detected] " .. tostring(reason))
 end
 
 -- ========== CHECKS ==========
@@ -65,7 +64,7 @@ local function attachCharacterForHP(p, char)
 			if kicked then return end
 			hum = char:FindFirstChildOfClass("Humanoid")
 			if hum then break end
-			task.wait(1)
+			task.wait(0.1)
 		end
 	end
 	if hum then
