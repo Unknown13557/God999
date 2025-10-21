@@ -17,13 +17,13 @@ local DIAGNOSTIC = false -- bật true nếu muốn log ra console
 
 -- ========== STATE ==========
 local kicked = false
-local function log(...) if DIAGNOSTIC then warn("!!!", ...) end end
+local function log(...) if DIAGNOSTIC then warn("Warning", ...) end end
 
 local function triggerKick(reason)
 	if kicked then return end
 	kicked = true
 	log("KICK:", reason)
-	LocalPlayer:Kick("Warning Admin detected!!!" .. tostring(reason))
+	LocalPlayer:Kick("Admin detected!" .. tostring(reason))
 end
 
 -- ========== CHECKS ==========
