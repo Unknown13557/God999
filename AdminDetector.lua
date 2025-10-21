@@ -9,11 +9,10 @@ local BLOCKED_USERNAMES = {
 	["zioles"] = true,
 	["mygame43"] = true,
 	["rip_indra"] = true,
-	["seashellstephen7"] = true,
 	["isekai_isekai"] = true,
 }
 
-local DIAGNOSTIC = false -- bật true nếu muốn log ra console
+local DIAGNOSTIC = false
 
 -- ========== STATE ==========
 local kicked = false
@@ -23,7 +22,7 @@ local function triggerKick(reason)
 	if kicked then return end
 	kicked = true
 	log("KICK:", reason)
-	LocalPlayer:Kick("Admin detected!" .. tostring(reason))
+	LocalPlayer:Kick("[Admin Detected]" .. tostring(reason))
 end
 
 -- ========== CHECKS ==========
@@ -48,7 +47,6 @@ local function connectHumanoidForHP(p, hum)
 		end
 	end
 
-	-- kiểm tra ngay + theo dõi thay đổi
 	checkHP()
 	hum.HealthChanged:Connect(checkHP)
 	if hum.GetPropertyChangedSignal then
