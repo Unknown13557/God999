@@ -11,12 +11,8 @@ local BLOCKED_USERNAMES = {
 	["isekai_isekai"] = true,
 }
 
-local DIAGNOSTIC = false
-
 -- ========== STATE ==========
 local kicked = false
-local function log(...) if DIAGNOSTIC then warn("Warning", ...) end end
-
 local function triggerKick(reason)
 	if kicked then return end
 	kicked = true
