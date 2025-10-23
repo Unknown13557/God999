@@ -53,9 +53,9 @@ local function createUI()
 	layout.FillDirection = Enum.FillDirection.Horizontal
 	layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 	layout.VerticalAlignment = Enum.VerticalAlignment.Center
-	layout.Padding = UDim.new(0, 4)
+	layout.Padding = UDim.new(0, 3)
 
-	local function createBox()
+	local function createBox(labelText)
 		local box = Instance.new("Frame")
 		box.Size = UDim2.fromOffset(56, 32)
 		box.BackgroundColor3 = THEME.BoxBgColor
@@ -81,12 +81,23 @@ local function createUI()
 		lbl.Parent = box
 		local limit = Instance.new("UITextSizeConstraint", lbl)
 		limit.MaxTextSize = 24
+
+		local tag = Instance.new("TextLabel")
+		tag.BackgroundTransparency = 1
+		tag.Size = UDim2.fromOffset(16, 32)
+		tag.Text = labelText
+		tag.TextColor3 = Color3.fromRGB(180,180,180)
+		tag.Font = THEME.Font
+		tag.TextScaled = true
+		tag.ZIndex = TOP_Z + 1
+		tag.Parent = frame
+
 		return lbl
 	end
 
-	local textH = createBox()
-	local textM = createBox()
-	local textS = createBox()
+	local textH = createBox("H")
+	local textM = createBox("M")
+	local textS = createBox("S")
 
 	local dragging, dragStart, startPos
 	frame.InputBegan:Connect(function(input)
