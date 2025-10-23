@@ -3,21 +3,28 @@ local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 
-local THEME = {
-	FrameBgTransparency = 0.7,
-	FrameBgColor = Color3.fromRGB(20, 20, 20),
-	BoxBgTransparency = 0.85,
-	BoxBgColor = Color3.fromRGB(30, 30, 30),
-	BoxStrokeColor = Color3.fromRGB(140, 140, 140),
-	BoxStrokeThickness = 1.6,
-	BoxCorner = 8,
-	TextColor = Color3.fromRGB(235, 235, 235),
-	Font = Enum.Font.GothamBold,
-}
-
 local TOP_DISPLAY_ORDER, TOP_Z = 999999, 50
 local elapsed = 0
 local ui = {}
+
+local THEME = {
+	FrameBgTransparency = 0.55,
+	FrameBgColor = Color3.fromRGB(25,25,25),
+
+	BoxBgTransparency = 0.2,
+	BoxBgColor = Color3.fromRGB(35,35,35),
+	BoxStrokeColor = Color3.fromRGB(150,150,150),
+	BoxStrokeThickness = 1.2,
+	BoxCorner = 8,
+
+	TextColor = Color3.fromRGB(240,240,240),
+	UnitColor = Color3.fromRGB(200,200,200),
+	Font = Enum.Font.GothamBold,
+}
+
+local BOX_W, BOX_H = 52, 30
+local UNIT_W = 16
+local OUTER_GAP, INNER_GAP = 4, 3
 
 local function createUI()
 	local pg = player:WaitForChild("PlayerGui")
@@ -33,7 +40,7 @@ local function createUI()
 	gui.Parent = pg
 
 	local frame = Instance.new("Frame")
-	frame.Size = UDim2.fromOffset(10, 40)
+	frame.Size = UDim2.fromOffset(10, BOX_H + 8)
 	frame.AutomaticSize = Enum.AutomaticSize.X
 	frame.AnchorPoint = Vector2.new(0.5, 0)
 	frame.Position = UDim2.fromScale(0.5, 0.1)
@@ -45,30 +52,27 @@ local function createUI()
 	frame.Parent = gui
 
 	Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
-	local pad = Instance.new("UIPadding", frame)
-	pad.PaddingLeft  = UDim.new(0, 6)
-	pad.PaddingRight = UDim.new(0, 6)
-
 	local layout = Instance.new("UIListLayout", frame)
 	layout.FillDirection = Enum.FillDirection.Horizontal
 	layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 	layout.VerticalAlignment = Enum.VerticalAlignment.Center
-	layout.Padding = UDim.new(0, 3)
+	layout.Padding = UDim.new(0, OUTER_GAP)
 
-	local function createBox(labelText)
+	local function numberBox(parent)
 		local box = Instance.new("Frame")
-		box.Size = UDim2.fromOffset(56, 32)
+		box.Size = UDim2.fromOffset(BOX_W, BOX_H)
+		box.AutomaticSize = Enum.AutomaticSize.X
 		box.BackgroundColor3 = THEME.BoxBgColor
 		box.BackgroundTransparency = THEME.BoxBgTransparency
 		box.BorderSizePixel = 0
 		box.ZIndex = TOP_Z
-		box.Parent = frame
+		box.Parent = parent
 
 		Instance.new("UICorner", box).CornerRadius = UDim.new(0, THEME.BoxCorner)
 		local stroke = Instance.new("UIStroke", box)
 		stroke.Color = THEME.BoxStrokeColor
 		stroke.Thickness = THEME.BoxStrokeThickness
-		stroke.Transparency = 0.25
+		stroke.Transparency = 0.3
 
 		local lbl = Instance.new("TextLabel")
 		lbl.BackgroundTransparency = 1
@@ -80,24 +84,44 @@ local function createUI()
 		lbl.ZIndex = TOP_Z + 1
 		lbl.Parent = box
 		local limit = Instance.new("UITextSizeConstraint", lbl)
-		limit.MaxTextSize = 24
-
-		local tag = Instance.new("TextLabel")
-		tag.BackgroundTransparency = 1
-		tag.Size = UDim2.fromOffset(16, 32)
-		tag.Text = labelText
-		tag.TextColor3 = Color3.fromRGB(180,180,180)
-		tag.Font = THEME.Font
-		tag.TextScaled = true
-		tag.ZIndex = TOP_Z + 1
-		tag.Parent = frame
-
+		limit.MaxTextSize = 20
 		return lbl
 	end
 
-	local textH = createBox("H")
-	local textM = createBox("M")
-	local textS = createBox("S")
+	local function makePair(ch)
+		local pair = Instance.new("Frame")
+		pair.BackgroundTransparency = 1
+		pair.AutomaticSize = Enum.AutomaticSize.X
+		pair.Size = UDim2.fromOffset(BOX_W + UNIT_W + INNER_GAP, BOX_H)
+		pair.ZIndex = TOP_Z
+		pair.Parent = frame
+
+		local lay = Instance.new("UIListLayout", pair)
+		lay.FillDirection = Enum.FillDirection.Horizontal
+		lay.HorizontalAlignment = Enum.HorizontalAlignment.Center
+		lay.VerticalAlignment = Enum.VerticalAlignment.Center
+		lay.Padding = UDim.new(0, INNER_GAP)
+
+		local num = numberBox(pair)
+
+		local tag = Instance.new("TextLabel")
+		tag.BackgroundTransparency = 1
+		tag.Size = UDim2.fromOffset(UNIT_W, BOX_H)
+		tag.Text = ch
+		tag.TextColor3 = THEME.UnitColor
+		tag.Font = THEME.Font
+		tag.TextScaled = true
+		tag.ZIndex = TOP_Z + 1
+		tag.Parent = pair
+		local limit = Instance.new("UITextSizeConstraint", tag)
+		limit.MaxTextSize = 18
+
+		return num
+	end
+
+	local tH = makePair("H")
+	local tM = makePair("M")
+	local tS = makePair("S")
 
 	local dragging, dragStart, startPos
 	frame.InputBegan:Connect(function(input)
@@ -113,10 +137,7 @@ local function createUI()
 	frame.InputChanged:Connect(function(input)
 		if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
 			local delta = input.Position - dragStart
-			frame.Position = UDim2.new(
-				startPos.X.Scale, startPos.X.Offset + delta.X,
-				startPos.Y.Scale, startPos.Y.Offset + delta.Y
-			)
+			frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
 		end
 	end)
 
@@ -127,7 +148,7 @@ local function createUI()
 		end
 	end)
 
-	ui.gui, ui.frame, ui.textH, ui.textM, ui.textS = gui, frame, textH, textM, textS
+	ui.gui, ui.frame, ui.tH, ui.tM, ui.tS = gui, frame, tH, tM, tS
 end
 
 local function pad2(n)
@@ -136,9 +157,9 @@ local function pad2(n)
 end
 
 local function show(h, m, s)
-	if ui.textH then ui.textH.Text = pad2(h) end
-	if ui.textM then ui.textM.Text = pad2(m) end
-	if ui.textS then ui.textS.Text = pad2(s) end
+	ui.tH.Text = pad2(h)
+	ui.tM.Text = pad2(m)
+	ui.tS.Text = pad2(s)
 end
 
 local function runTimer()
@@ -153,7 +174,7 @@ local function runTimer()
 end
 
 createUI()
-show(0, 0, 0)
+show(0,0,0)
 
 RunService.Heartbeat:Connect(function()
 	if ui.gui and ui.gui.DisplayOrder ~= TOP_DISPLAY_ORDER then
@@ -161,9 +182,7 @@ RunService.Heartbeat:Connect(function()
 	end
 end)
 RunService.Stepped:Connect(function()
-	if not ui.gui or not ui.gui.Parent then
-		createUI()
-	end
+	if not ui.gui or not ui.gui.Parent then createUI() end
 end)
 
 task.defer(runTimer)
