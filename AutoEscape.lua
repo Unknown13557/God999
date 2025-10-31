@@ -1,6 +1,3 @@
--- AutoEscapeUp v2 (drag theo yêu cầu + fix xung đột toggle)
--- HP<40% -> bay lên; đang bay nếu HP>=90% -> tự dừng; OFF -> dừng ngay & tắt core (chỉ còn kéo)
-
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -9,10 +6,10 @@ local RunService = game:GetService("RunService")
 local LP = Players.LocalPlayer
 
 -- config
-local SPEED       = 450       -- studs/s
-local TARGET_Y    = 1000000
-local LOW_HP      = 0.40      -- 40%
-local SAFE_HP     = 0.90      -- 90%
+local SPEED       = 450
+local TARGET_Y    = 200000
+local LOW_HP      = 0.40
+local SAFE_HP     = 0.90
 
 -- state
 local Enabled     = true
@@ -24,7 +21,7 @@ local Humanoid, RootPart
 local gui = Instance.new("ScreenGui")
 gui.Name = "AutoEscapeUI"
 gui.IgnoreGuiInset = true
-gui.DisplayOrder = 927262
+gui.DisplayOrder = 999999
 gui.ResetOnSpawn = false
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 gui.Parent = LP:WaitForChild("PlayerGui")
@@ -71,9 +68,8 @@ toggle.AutoButtonColor = false
 Instance.new("UICorner", toggle).CornerRadius = UDim.new(0,8)
 toggle.Parent = frame
 
---================ drag (block bạn yêu cầu + tránh kéo khi bấm vào toggle) ==================
+--================ DRAG ==================
 do
-	-- helper: kiểm tra con trỏ có nằm trên toggle không
 	local function isPointerOver(instance, pos)
 		local p, s = instance.AbsolutePosition, instance.AbsoluteSize
 		return pos.X >= p.X and pos.X <= p.X + s.X and pos.Y >= p.Y and pos.Y <= p.Y + s.Y
@@ -84,11 +80,8 @@ do
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 			local pos = (input.UserInputType == Enum.UserInputType.Touch)
 				and Vector2.new(input.Position.X, input.Position.Y)
-				and UserInputService:GetMouseLocation()
-
-			-- nếu đang bấm ngay trên toggle thì không bật drag
+				or UserInputService:GetMouseLocation()
 			if pos and isPointerOver(toggle, pos) then return end
-
 			dragging = true
 			dragStart = input.Position
 			startPos = frame.Position
@@ -101,20 +94,25 @@ do
 	frame.InputChanged:Connect(function(input)
 		if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
 			local delta = input.Position - dragStart
-			frame.Position = UDim2.new(
-				startPos.X.Scale, startPos.X.Offset + delta.X,
-				startPos.Y.Scale, startPos.Y.Offset + delta.Y
-			)
+			local newX = startPos.X.Offset + delta.X
+			local newY = startPos.Y.Offset + delta.Y
+
+			-- Giới hạn trong màn hình
+			local camera = workspace.CurrentCamera
+			if camera then
+				local vp = camera.ViewportSize
+				newX = math.clamp(newX, 0, vp.X - frame.AbsoluteSize.X)
+				newY = math.clamp(newY, 0, vp.Y - frame.AbsoluteSize.Y)
+			end
+
+			frame.Position = UDim2.new(0, newX, 0, newY)
 		end
 	end)
 end
 
---================ logic bay ==================
+--================ Logic bay ==================
 local function cancelFlight()
-	if TweenObj then
-		TweenObj:Cancel()
-		TweenObj = nil
-	end
+	if TweenObj then TweenObj:Cancel() TweenObj = nil end
 	Flying = false
 end
 
@@ -122,21 +120,17 @@ local function startFlight()
 	if not Enabled or Flying or not RootPart then return end
 	local yNow = RootPart.Position.Y
 	if yNow >= TARGET_Y - 1 then return end
-
 	local dist = TARGET_Y - yNow
 	local duration = dist / SPEED
 	Flying = true
 	local cf = RootPart.CFrame
 	local tween = TweenService:Create(
 		RootPart,
-		TweenInfo.new(duration, Enum.EasingStyle.Linear, Enum.EasingDirection.Out),
+		TweenInfo.new(duration, Enum.EasingStyle.Linear),
 		{ CFrame = CFrame.new(cf.X, TARGET_Y, cf.Z) }
 	)
 	TweenObj = tween
-	tween.Completed:Connect(function()
-		TweenObj = nil
-		Flying = false
-	end)
+	tween.Completed:Connect(function() Flying = false TweenObj = nil end)
 	tween:Play()
 end
 
@@ -145,7 +139,6 @@ local function onHealthChanged(h)
 	if not Humanoid or not Enabled then return end
 	local mh = Humanoid.MaxHealth
 	if mh <= 0 then return end
-
 	local percent = h / mh
 	if not Flying and percent < LOW_HP then
 		startFlight()
@@ -164,12 +157,10 @@ end
 if LP.Character then bindCharacter(LP.Character) end
 LP.CharacterAdded:Connect(bindCharacter)
 
---================ toggle ==================
+--================ TOGGLE ==================
 local function setEnabled(state)
 	Enabled = state
-	if not Enabled then
-		cancelFlight()
-	end
+	if not Enabled then cancelFlight() end
 	if Enabled then
 		toggle.Text = "🟢 ON"
 		toggle.BackgroundColor3 = Color3.fromRGB(50,200,100)
@@ -183,7 +174,7 @@ toggle.MouseButton1Click:Connect(function()
 	setEnabled(not Enabled)
 end)
 
---================ hide/show ==================
+--================ Hide/Show ==================
 UserInputService.InputBegan:Connect(function(input, gpe)
 	if gpe then return end
 	if input.KeyCode == Enum.KeyCode.RightShift then
