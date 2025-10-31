@@ -10,7 +10,7 @@ local LP = Players.LocalPlayer
 
 -- config
 local SPEED       = 450       -- studs/s
-local TARGET_Y    = 200000
+local TARGET_Y    = 1000000
 local LOW_HP      = 0.40      -- 40%
 local SAFE_HP     = 0.90      -- 90%
 
