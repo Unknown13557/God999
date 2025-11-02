@@ -140,34 +140,60 @@ nowe = false
 Frame.Active = true
 Frame.Draggable = false
 
-local dragging, dragStart, startPos
+-- cấu hình nhỏ
+local RESPECT_COREGUI = false  -- true = chừa topbar; false = kéo sát mép trên
+local PADDING = 0              -- khoảng cách sát mép, px
+
+local function getTopInset()
+    -- Nếu ScreenGui.IgnoreGuiInset = true thì KHÔNG cộng inset
+    local sg = Frame:FindFirstAncestorOfClass("ScreenGui")
+    if sg and sg.IgnoreGuiInset then
+        return 0
+    end
+    return GuiService:GetGuiInset().Y
+end
+
+local dragging, dragStart
+local startAbs -- Vector2: vị trí tuyệt đối lúc bắt đầu kéo
+
 Frame.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-		dragging = true
-		dragStart = input.Position
-		startPos = Frame.Position
-		input.Changed:Connect(function()
-			if input.UserInputState == Enum.UserInputState.End then dragging = false end
-		end)
-	end
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+
+        -- Chuyển vị trí về offset tuyệt đối để clamp chuẩn
+        startAbs = Frame.AbsolutePosition
+        Frame.Position = UDim2.fromOffset(startAbs.X, startAbs.Y)
+
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
 end)
 
 Frame.InputChanged:Connect(function(input)
-	if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-		local delta = input.Position - dragStart
-		local newX = startPos.X.Offset + delta.X
-		local newY = startPos.Y.Offset + delta.Y
+    if not dragging then return end
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        local delta = input.Position - dragStart
+        local newX = startAbs.X + delta.X
+        local newY = startAbs.Y + delta.Y
 
-		local cam = workspace.CurrentCamera
-		if cam then
-			local vp = cam.ViewportSize
-			local topInset = GuiService:GetGuiInset().Y
-			newX = math.clamp(newX, 0, vp.X - Frame.AbsoluteSize.X)
-			newY = math.clamp(newY, topInset, vp.Y - Frame.AbsoluteSize.Y)
-		end
+        local cam = workspace.CurrentCamera
+        if cam then
+            local vp = cam.ViewportSize
+            local topInset = getTopInset()
+            local minY = (RESPECT_COREGUI and topInset or 0) + PADDING
+            local maxY = vp.Y - Frame.AbsoluteSize.Y - PADDING
+            if maxY < minY then maxY = minY end -- phòng khi UI quá cao
 
-		Frame.Position = UDim2.new(0, newX, 0, newY)
-	end
+            newX = math.clamp(newX, PADDING, vp.X - Frame.AbsoluteSize.X - PADDING)
+            newY = math.clamp(newY, minY,   maxY)
+        end
+
+        Frame.Position = UDim2.fromOffset(newX, newY)
+    end
 end)
 
 onof.MouseButton1Down:connect(function()
