@@ -1,3 +1,5 @@
+local UserInputService = game:GetService("UserInputService")
+local GuiService = game:GetService("GuiService")
 local main = Instance.new("ScreenGui")
 local Frame = Instance.new("Frame")
 local up = Instance.new("TextButton")
@@ -135,8 +137,38 @@ local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
 
 nowe = false
 
-Frame.Active = true -- main = gui
-Frame.Draggable = true
+Frame.Active = true
+Frame.Draggable = false
+
+local dragging, dragStart, startPos
+Frame.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = true
+		dragStart = input.Position
+		startPos = Frame.Position
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then dragging = false end
+		end)
+	end
+end)
+
+Frame.InputChanged:Connect(function(input)
+	if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+		local delta = input.Position - dragStart
+		local newX = startPos.X.Offset + delta.X
+		local newY = startPos.Y.Offset + delta.Y
+
+		local cam = workspace.CurrentCamera
+		if cam then
+			local vp = cam.ViewportSize
+			local topInset = GuiService:GetGuiInset().Y
+			newX = math.clamp(newX, 0, vp.X - Frame.AbsoluteSize.X)
+			newY = math.clamp(newY, topInset, vp.Y - Frame.AbsoluteSize.Y)
+		end
+
+		Frame.Position = UDim2.new(0, newX, 0, newY)
+	end
+end)
 
 onof.MouseButton1Down:connect(function()
 
