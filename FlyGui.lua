@@ -136,57 +136,59 @@ local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
 
 nowe = false
 
--- Drag with screen-bounds clamp (chuột + cảm ứng) - CLEAN REWRITE (no jump)
+-- DRAG (no-jump, minimal & robust)
 local UIS = game:GetService("UserInputService")
 
-Frame.Active = true -- cần để nhận input
+Frame.Active = true -- để nhận input
 
--- trạng thái kéo
 local dragging = false
-local dragInput
-local pointerStart -- Vector2: vị trí con trỏ lúc bắt đầu kéo (pixel)
-local frameStart   -- Vector2: AbsolutePosition của Frame lúc bắt đầu kéo (pixel)
+local dragOffset -- Vector2: khoảng cách từ góc trái–trên Frame tới điểm click (pixel)
 
--- chặn Frame trong màn hình (clamp trên hệ toạ độ pixel trước khi set)
-local function clampXY(x, y, w, h, viewW, viewH)
-	-- giữ 4 mép trong màn hình
-	local cx = math.clamp(x, 0, math.max(0, viewW - w))
-	local cy = math.clamp(y, 0, math.max(0, viewH - h))
-	return cx, cy
+local function getPointer()
+	-- dùng vị trí chuột dạng pixel ổn định
+	local p = UIS:GetMouseLocation()
+	return Vector2.new(p.X, p.Y)
 end
 
--- cập nhật khi đang kéo
-local function update(input)
-	-- delta chuột kể từ lúc bắt đầu
-	local dx = input.Position.X - pointerStart.X
-	local dy = input.Position.Y - pointerStart.Y
+local function clampXY(x, y, w, h, viewW, viewH)
+	return math.clamp(x, 0, math.max(0, viewW - w)),
+	       math.clamp(y, 0, math.max(0, viewH - h))
+end
 
-	-- toạ độ góc trái-trên mới (pixel) TRƯỚC clamp
-	local newX = frameStart.X + dx
-	local newY = frameStart.Y + dy
-
-	-- viewport & kích thước thực
+local function applyClamped(x, y)
 	local cam = workspace.CurrentCamera
 	if not cam then return end
 	local vp = cam.ViewportSize
 	local w, h = Frame.AbsoluteSize.X, Frame.AbsoluteSize.Y
-
-	-- clamp trước khi set
-	local cx, cy = clampXY(newX, newY, w, h, vp.X, vp.Y)
-
-	-- set bằng Offset (pixel) duy nhất một lần
+	local cx, cy = clampXY(x, y, w, h, vp.X, vp.Y)
 	Frame.Position = UDim2.fromOffset(math.floor(cx + 0.5), math.floor(cy + 0.5))
 end
 
--- bắt đầu kéo
+-- chỉ cập nhật khi có DI CHUYỂN (không set Position khi bắt đầu -> tránh giật)
+UIS.InputChanged:Connect(function(input)
+	if not dragging then return end
+	if input.UserInputType ~= Enum.UserInputType.MouseMovement
+		and input.UserInputType ~= Enum.UserInputType.Touch then
+		return
+	end
+
+	local pointer = getPointer()
+	local newX = pointer.X - dragOffset.X
+	local newY = pointer.Y - dragOffset.Y
+	applyClamped(newX, newY)
+end)
+
+-- bắt đầu kéo: ghi lại offset, KHÔNG chỉnh Position ở đây
 Frame.InputBegan:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton1
 		or input.UserInputType == Enum.UserInputType.Touch then
 
 		dragging = true
-		pointerStart = Vector2.new(input.Position.X, input.Position.Y)
-		frameStart   = Frame.AbsolutePosition -- lấy vị trí hiện tại (pixel), KHÔNG đổi Position ở đây
+		local absPos = Frame.AbsolutePosition
+		local pointer = getPointer()
+		dragOffset = Vector2.new(pointer.X - absPos.X, pointer.Y - absPos.Y)
 
+		-- dừng kéo khi thả
 		input.Changed:Connect(function()
 			if input.UserInputState == Enum.UserInputState.End then
 				dragging = false
@@ -195,48 +197,33 @@ Frame.InputBegan:Connect(function(input)
 	end
 end)
 
--- xác định input di chuyển dùng để kéo
-Frame.InputChanged:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseMovement
+-- nếu nhả chuột bên ngoài Frame
+UIS.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1
 		or input.UserInputType == Enum.UserInputType.Touch then
-		dragInput = input
+		dragging = false
 	end
 end)
 
--- di chuyển khi input thay đổi
-UIS.InputChanged:Connect(function(input)
-	if dragging and input == dragInput then
-		update(input)
-	end
+-- clamp 1 lần khi UI đã render (phòng khi Position đang dùng Scale)
+task.defer(function()
+	local abs = Frame.AbsolutePosition
+	applyClamped(abs.X, abs.Y)
 end)
 
--- clamp lại khi đổi kích thước cửa sổ / camera
+-- clamp khi đổi kích thước cửa sổ/camera
 local function hookViewportChanged()
 	local cam = workspace.CurrentCamera
 	if not cam then return end
 	cam:GetPropertyChangedSignal("ViewportSize"):Connect(function()
 		if not dragging then
 			local abs = Frame.AbsolutePosition
-			local vp = cam.ViewportSize
-			local w, h = Frame.AbsoluteSize.X, Frame.AbsoluteSize.Y
-			local cx, cy = clampXY(abs.X, abs.Y, w, h, vp.X, vp.Y)
-			Frame.Position = UDim2.fromOffset(cx, cy)
+			applyClamped(abs.X, abs.Y)
 		end
 	end)
 end
 if workspace.CurrentCamera then hookViewportChanged() end
 workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(hookViewportChanged)
-
--- bảo đảm ngay khi load, nếu Frame đang nằm ngoài vì dùng Scale, ta clamp 1 lần
-task.defer(function()
-	local cam = workspace.CurrentCamera
-	if not cam then return end
-	local abs = Frame.AbsolutePosition
-	local vp = cam.ViewportSize
-	local w, h = Frame.AbsoluteSize.X, Frame.AbsoluteSize.Y
-	local cx, cy = clampXY(abs.X, abs.Y, w, h, vp.X, vp.Y)
-	Frame.Position = UDim2.fromOffset(cx, cy)
-end)
 
 onof.MouseButton1Down:connect(function()
 
