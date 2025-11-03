@@ -1,3 +1,5 @@
+local UserInputService = game:GetService("UserInputService")
+local GuiService = game:GetService("GuiService")
 local main = Instance.new("ScreenGui")
 local Frame = Instance.new("Frame")
 local up = Instance.new("TextButton")
@@ -136,18 +138,13 @@ local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
 
 nowe = false
 
--- Drag (stable, no-jump, mouse/touch, 4-edge clamp)
-local UserInputService = game:GetService("UserInputService")
-local GuiService = game:GetService("GuiService")
-
--- cấu hình
-local RESPECT_COREGUI = false   -- true: chừa topbar; false: cho kéo chạm trần
-local TOP_MARGIN = 0            -- chừa thêm nếu muốn
+local RESPECT_COREGUI = false
+local TOP_MARGIN = 0
 
 local function pointerPos(input)
 	return (input.UserInputType == Enum.UserInputType.Touch)
 		and Vector2.new(input.Position.X, input.Position.Y)
-		or UserInputService:GetMouseLocation() -- cùng hệ toạ độ với input.Position trong GUI
+		or UserInputService:GetMouseLocation()
 end
 
 local function over(inst, pos)
@@ -159,20 +156,16 @@ local dragging = false
 local dragStart, startPos
 
 Frame.Active = true
-Frame.Draggable = false -- tránh cơ chế cũ xung đột
+Frame.Draggable = false
 
 Frame.InputBegan:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton1
 		or input.UserInputType == Enum.UserInputType.Touch then
-
-		-- nếu bấm vào nút toggle (onof) thì KHÔNG kéo
 		local pos = pointerPos(input)
 		if over(onof, pos) then return end
-
-		-- lấy mốc bắt đầu theo Offset hiện tại
 		dragging = true
 		dragStart = input.Position
-		startPos = Frame.Position -- (Offset)
+		startPos = Frame.Position
 
 		input.Changed:Connect(function()
 			if input.UserInputState == Enum.UserInputState.End then
@@ -205,12 +198,10 @@ Frame.InputChanged:Connect(function(input)
 	end
 end)
 
--- đảm bảo ngay khi load nếu ban đầu dùng Scale thì quy ra Offset mượt
 task.defer(function()
 	local abs = Frame.AbsolutePosition
 	Frame.Position = UDim2.fromOffset(abs.X, abs.Y)
-
-	-- clamp 1 lần
+	
 	local cam = workspace.CurrentCamera
 	if cam then
 		local vp = cam.ViewportSize
@@ -223,7 +214,6 @@ task.defer(function()
 	end
 end)
 
--- clamp lại khi đổi viewport
 local function hookViewportChanged()
 	local cam = workspace.CurrentCamera
 	if not cam then return end
