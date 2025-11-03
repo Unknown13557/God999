@@ -13,6 +13,7 @@ local mini2 = Instance.new("TextButton")
 
 main.Name = "main"
 main.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+main.IgnoreGuiInset = true
 main.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 main.ResetOnSpawn = false
 
@@ -135,52 +136,62 @@ local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
 
 nowe = false
 
--- Drag with screen-bounds clamp (chuột + cảm ứng)
+-- Drag with screen-bounds clamp (chuột + cảm ứng) - FIXED
 local UIS = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
 
-Frame.Active = true  -- cần thiết để nhận input trên GUI
+Frame.Active = true
+Frame.Draggable = false -- không dùng Draggable cũ
 
 local dragging = false
-local dragInput
-local dragStart
-local startPos
+local dragStart -- Vector2 input bắt đầu
+local startAbs  -- Vector2 vị trí tuyệt đối của Frame lúc bắt đầu kéo
 
 local function clampToScreen(gui)
 	local cam = workspace.CurrentCamera
 	if not cam then return end
-	local vp = cam.ViewportSize
-	local abs = gui.AbsoluteSize
 
-	-- đảm bảo Offset luôn trong màn hình
-	local x = math.clamp(gui.Position.X.Offset, 0, math.max(0, vp.X - abs.X))
-	local y = math.clamp(gui.Position.Y.Offset, 0, math.max(0, vp.Y - abs.Y))
-	gui.Position = UDim2.new(0, x, 0, y)
+	-- dùng kích thước hiển thị thực tế
+	local vp = cam.ViewportSize
+	local absSize = gui.AbsoluteSize
+
+	-- chặn trong màn hình: trái/phải: [0, vp.X - absSize.X], trên/dưới: [0, vp.Y - absSize.Y]
+	local clampedX = math.clamp(gui.Position.X.Offset, 0, math.max(0, vp.X - absSize.X))
+	local clampedY = math.clamp(gui.Position.Y.Offset, 0, math.max(0, vp.Y - absSize.Y))
+
+	gui.Position = UDim2.fromOffset(clampedX, clampedY)
 end
 
--- cập nhật clamp khi đổi kích thước cửa sổ / đổi camera
-if workspace.CurrentCamera then
-	workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+-- cập nhật clamp khi đổi kích thước cửa sổ / camera
+local function hookViewportChanged()
+	local cam = workspace.CurrentCamera
+	if not cam then return end
+	cam:GetPropertyChangedSignal("ViewportSize"):Connect(function()
 		clampToScreen(Frame)
 	end)
 end
+if workspace.CurrentCamera then
+	hookViewportChanged()
+end
+workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(hookViewportChanged)
 
 local function update(input)
 	local delta = input.Position - dragStart
-	Frame.Position = UDim2.new(0, startPos.X.Offset + delta.X, 0, startPos.Y.Offset + delta.Y)
+	-- tính theo toạ độ tuyệt đối để không bị ảnh hưởng Scale ban đầu
+	local newX = startAbs.X + delta.X
+	local newY = startAbs.Y + delta.Y
+	Frame.Position = UDim2.fromOffset(newX, newY)
 	clampToScreen(Frame)
 end
 
--- bắt đầu kéo khi nhấn xuống trên Frame
+-- bắt đầu kéo
 Frame.InputBegan:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton1
 		or input.UserInputType == Enum.UserInputType.Touch then
 
 		dragging = true
 		dragStart = input.Position
-		startPos = Frame.Position
+		startAbs = Frame.AbsolutePosition -- LẤY VỊ TRÍ THỰC TẾ LÚC BẮT ĐẦU
 
-		-- khi input kết thúc thì dừng kéo
 		input.Changed:Connect(function()
 			if input.UserInputState == Enum.UserInputState.End then
 				dragging = false
@@ -189,23 +200,22 @@ Frame.InputBegan:Connect(function(input)
 	end
 end)
 
--- theo dõi input đang kéo
-Frame.InputChanged:Connect(function(input)
+-- cập nhật khi di chuyển chuột/ngón tay
+UIS.InputChanged:Connect(function(input)
+	if not dragging then return end
 	if input.UserInputType == Enum.UserInputType.MouseMovement
 		or input.UserInputType == Enum.UserInputType.Touch then
-		dragInput = input
-	end
-end)
-
--- cập nhật vị trí khi input thay đổi
-UIS.InputChanged:Connect(function(input)
-	if input == dragInput and dragging then
 		update(input)
 	end
 end)
 
--- clamp một lần khi tạo xong để đảm bảo không nằm ngoài ngay từ đầu
-clampToScreen(Frame)
+-- đảm bảo ngay từ đầu đã nằm trong màn hình
+task.defer(function()
+	-- chuyển Position sang Offset để tránh “giật” do Scale
+	local absPos = Frame.AbsolutePosition
+	Frame.Position = UDim2.fromOffset(absPos.X, absPos.Y)
+	clampToScreen(Frame)
+end)
 
 onof.MouseButton1Down:connect(function()
 
