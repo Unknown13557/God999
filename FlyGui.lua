@@ -138,21 +138,49 @@ local chr = game.Players.LocalPlayer.Character
 local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
 
 nowe = false
+-- ==== Drag mượt + Clamp 4 mép (không phụ thuộc IgnoreGuiInset) ====
+local UIS = game:GetService("UserInputService")
+local GuiService = game:GetService("GuiService")
 
--- === Drag mượt + clamp 4 mép (chuẩn cho IgnoreGuiInset) ===
 Frame.Active = true
 Frame.Draggable = false
 
-local PADDING = 0  -- khoảng cách sát rìa (px)
+-- Lấy inset trên: nếu ScreenGui KHÔNG bỏ inset thì cộng topbar, ngược lại = 0
+local function getTopInset(sg)
+	local top = 0
+	if not (sg and sg.IgnoreGuiInset) then
+		local inset = GuiService:GetGuiInset()
+		top = inset.Y or 0
+	end
+	return top
+end
 
-local dragging, dragStart, startAbs
+-- Clamp vào khung nhìn hiện tại (kể cả đổi độ phân giải)
+local function clampToScreen(px, py)
+	local cam = workspace.CurrentCamera
+	if not cam then return px, py end
+	local vp = cam.ViewportSize
+	local w, h = Frame.AbsoluteSize.X, Frame.AbsoluteSize.Y
+	local topInset = getTopInset(main)
+
+	local minX, minY = 0, topInset
+	local maxX = math.max(minX, vp.X - w)
+	local maxY = math.max(minY, vp.Y - h)
+
+	return math.clamp(px, minX, maxX), math.clamp(py, minY, maxY)
+end
+
+local dragging = false
+local startPointer
+local startAbs -- vị trí tuyệt đối của Frame khi bắt đầu kéo
 
 Frame.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-		dragging = true
-		dragStart = input.Position
+	if input.UserInputType == Enum.UserInputType.MouseButton1
+		or input.UserInputType == Enum.UserInputType.Touch then
 
-		-- khóa về tọa độ tuyệt đối để không lệch anchor/scale
+		dragging = true
+		startPointer = input.Position
+		-- Khoá về pixel tuyệt đối để không lệch anchor/scale/auto size
 		startAbs = Frame.AbsolutePosition
 		Frame.Position = UDim2.fromOffset(startAbs.X, startAbs.Y)
 
@@ -166,24 +194,12 @@ end)
 
 Frame.InputChanged:Connect(function(input)
 	if not dragging then return end
-	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-		local delta = input.Position - dragStart
-		local newX = startAbs.X + delta.X
-		local newY = startAbs.Y + delta.Y
+	if input.UserInputType == Enum.UserInputType.MouseMovement
+		or input.UserInputType == Enum.UserInputType.Touch then
 
-		local cam = workspace.CurrentCamera
-		if cam then
-			local vp = cam.ViewportSize
-			-- vì main.IgnoreGuiInset = true => mép trên là 0 thật
-			local minY = PADDING
-			local maxY = vp.Y - Frame.AbsoluteSize.Y - PADDING
-			if maxY < minY then maxY = minY end
-
-			newX = math.clamp(newX, PADDING, vp.X - Frame.AbsoluteSize.X - PADDING)
-			newY = math.clamp(newY, minY,   maxY)
-		end
-
-		Frame.Position = UDim2.fromOffset(newX, newY)
+		local delta = input.Position - startPointer
+		local nx, ny = clampToScreen(startAbs.X + delta.X, startAbs.Y + delta.Y)
+		Frame.Position = UDim2.fromOffset(nx, ny)
 	end
 end)
 
