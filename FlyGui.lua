@@ -136,33 +136,30 @@ local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
 
 nowe = false
 
--- Drag with screen-bounds clamp (chuột + cảm ứng) - REWRITE (no-jump)
+-- Drag with screen-bounds clamp (chuột + cảm ứng) - REWRITE (no-jump, keep click offset)
 local UIS = game:GetService("UserInputService")
 
-Frame.Active = true -- cần để nhận input trên GUI
+Frame.Active = true -- nhận input
 
 -- trạng thái kéo
 local dragging = false
 local dragInput
-local dragStart -- Vector2 vị trí con trỏ lúc bắt đầu kéo
-local startAbs  -- Vector2 vị trí tuyệt đối (pixel) của Frame lúc bắt đầu kéo
+local dragOffset -- khoảng cách từ góc trái-trên Frame tới điểm bạn click (pixel)
 
--- chặn Frame trong màn hình
+-- chặn Frame trong màn hình (dựa trên AbsolutePosition để không bị snap khi Position là Scale)
 local function clampToScreen(gui)
 	local cam = workspace.CurrentCamera
 	if not cam then return end
-
 	local vp = cam.ViewportSize
+	local absPos = gui.AbsolutePosition
 	local absSize = gui.AbsoluteSize
 
-	-- giữ nguyên 2 cạnh trái/phải bình thường, chạm trần (0) và không chìm đáy
-	local clampedX = math.clamp(gui.Position.X.Offset, 0, math.max(0, vp.X - absSize.X))
-	local clampedY = math.clamp(gui.Position.Y.Offset, 0, math.max(0, vp.Y - absSize.Y))
-
-	gui.Position = UDim2.fromOffset(clampedX, clampedY)
+	local x = math.clamp(absPos.X, 0, math.max(0, vp.X - absSize.X))
+	local y = math.clamp(absPos.Y, 0, math.max(0, vp.Y - absSize.Y))
+	gui.Position = UDim2.fromOffset(x, y)
 end
 
--- khi đổi viewport hoặc camera thì clamp lại
+-- hook đổi viewport/camera
 local function hookViewportChanged()
 	local cam = workspace.CurrentCamera
 	if not cam then return end
@@ -170,17 +167,14 @@ local function hookViewportChanged()
 		clampToScreen(Frame)
 	end)
 end
-
--- theo dõi thay đổi CurrentCamera (phòng trường hợp camera được tạo lại)
 if workspace.CurrentCamera then hookViewportChanged() end
 workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(hookViewportChanged)
 
--- cập nhật vị trí khi đang kéo
+-- cập nhật vị trí khi đang kéo (giữ đúng điểm click bám theo)
 local function update(input)
-	local delta = input.Position - dragStart
-	local newX = startAbs.X + delta.X
-	local newY = startAbs.Y + delta.Y
-	Frame.Position = UDim2.fromOffset(newX, newY)
+	local newX = input.Position.X - dragOffset.X
+	local newY = input.Position.Y - dragOffset.Y
+	Frame.Position = UDim2.fromOffset(math.floor(newX + 0.5), math.floor(newY + 0.5))
 	clampToScreen(Frame)
 end
 
@@ -189,9 +183,13 @@ Frame.InputBegan:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton1
 		or input.UserInputType == Enum.UserInputType.Touch then
 
+		-- chuẩn hoá ngay thời điểm bắt đầu kéo (tránh Scale -> Offset gây “nảy”)
+		local abs0 = Frame.AbsolutePosition
+		Frame.Position = UDim2.fromOffset(abs0.X, abs0.Y)
+
 		dragging = true
-		dragStart = input.Position
-		startAbs = Frame.AbsolutePosition -- lấy vị trí thực tế (pixel)
+		-- offset click: con trỏ cách góc trái-trên bao nhiêu pixel tại thời điểm bấm
+		dragOffset = Vector2.new(input.Position.X - abs0.X, input.Position.Y - abs0.Y)
 
 		input.Changed:Connect(function()
 			if input.UserInputState == Enum.UserInputState.End then
@@ -216,7 +214,7 @@ UIS.InputChanged:Connect(function(input)
 	end
 end)
 
--- chuẩn hoá 1 lần sau khi UI xuất hiện để tránh giật do Scale -> Offset
+-- chuẩn hoá 1 lần sau khi UI render (an toàn thêm)
 task.defer(function()
 	local abs = Frame.AbsolutePosition
 	Frame.Position = UDim2.fromOffset(abs.X, abs.Y)
