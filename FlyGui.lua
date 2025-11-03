@@ -15,7 +15,6 @@ local mini2 = Instance.new("TextButton")
 
 main.Name = "main"
 main.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-main.IgnoreGuiInset = true
 main.DisplayOrder = 1263329
 main.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 main.ResetOnSpawn = false
