@@ -136,26 +136,22 @@ local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
 
 nowe = false
 
--- DRAG (no-jump, minimal & robust)
+-- DRAG (no-jump, click-anchored, input.Position only)
 local UIS = game:GetService("UserInputService")
 
-Frame.Active = true -- để nhận input
+Frame.Active = true
+Frame.Draggable = false -- tránh cơ chế cũ của Roblox gây xung đột
 
 local dragging = false
-local dragOffset -- Vector2: khoảng cách từ góc trái–trên Frame tới điểm click (pixel)
+local dragInput -- InputObject đang dùng để kéo
+local dragOffset -- Vector2: khoảng cách từ góc trái-trên Frame đến điểm click
 
-local function getPointer()
-	-- dùng vị trí chuột dạng pixel ổn định
-	local p = UIS:GetMouseLocation()
-	return Vector2.new(p.X, p.Y)
+local function clampXY(x, y, w, h, vw, vh)
+	return math.clamp(x, 0, math.max(0, vw - w)),
+	       math.clamp(y, 0, math.max(0, vh - h))
 end
 
-local function clampXY(x, y, w, h, viewW, viewH)
-	return math.clamp(x, 0, math.max(0, viewW - w)),
-	       math.clamp(y, 0, math.max(0, viewH - h))
-end
-
-local function applyClamped(x, y)
+local function setClamped(x, y)
 	local cam = workspace.CurrentCamera
 	if not cam then return end
 	local vp = cam.ViewportSize
@@ -164,31 +160,24 @@ local function applyClamped(x, y)
 	Frame.Position = UDim2.fromOffset(math.floor(cx + 0.5), math.floor(cy + 0.5))
 end
 
--- chỉ cập nhật khi có DI CHUYỂN (không set Position khi bắt đầu -> tránh giật)
-UIS.InputChanged:Connect(function(input)
-	if not dragging then return end
-	if input.UserInputType ~= Enum.UserInputType.MouseMovement
-		and input.UserInputType ~= Enum.UserInputType.Touch then
-		return
-	end
+local function update(input)
+	-- vị trí chuột hiện tại (cùng hệ toạ độ với GUI)
+	local newX = input.Position.X - dragOffset.X
+	local newY = input.Position.Y - dragOffset.Y
+	setClamped(newX, newY)
+end
 
-	local pointer = getPointer()
-	local newX = pointer.X - dragOffset.X
-	local newY = pointer.Y - dragOffset.Y
-	applyClamped(newX, newY)
-end)
-
--- bắt đầu kéo: ghi lại offset, KHÔNG chỉnh Position ở đây
+-- bắt đầu kéo: LẤY offset tại chỗ bấm, KHÔNG set Position ở đây
 Frame.InputBegan:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton1
 		or input.UserInputType == Enum.UserInputType.Touch then
 
 		dragging = true
-		local absPos = Frame.AbsolutePosition
-		local pointer = getPointer()
-		dragOffset = Vector2.new(pointer.X - absPos.X, pointer.Y - absPos.Y)
+		dragInput = input
 
-		-- dừng kéo khi thả
+		local abs = Frame.AbsolutePosition
+		dragOffset = Vector2.new(input.Position.X - abs.X, input.Position.Y - abs.Y)
+
 		input.Changed:Connect(function()
 			if input.UserInputState == Enum.UserInputState.End then
 				dragging = false
@@ -197,28 +186,35 @@ Frame.InputBegan:Connect(function(input)
 	end
 end)
 
--- nếu nhả chuột bên ngoài Frame
-UIS.InputEnded:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1
+-- theo dõi input di chuyển dùng để kéo
+Frame.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement
 		or input.UserInputType == Enum.UserInputType.Touch then
-		dragging = false
+		dragInput = input
 	end
 end)
 
--- clamp 1 lần khi UI đã render (phòng khi Position đang dùng Scale)
-task.defer(function()
-	local abs = Frame.AbsolutePosition
-	applyClamped(abs.X, abs.Y)
+-- kéo khi input thay đổi
+UIS.InputChanged:Connect(function(input)
+	if dragging and input == dragInput then
+		update(input)
+	end
 end)
 
--- clamp khi đổi kích thước cửa sổ/camera
+-- chuẩn hoá 1 lần sau khi render (nếu Position đang ở dạng Scale)
+task.defer(function()
+	local abs = Frame.AbsolutePosition
+	setClamped(abs.X, abs.Y)
+end)
+
+-- clamp khi đổi kích thước cửa sổ/camera (khi KHÔNG kéo)
 local function hookViewportChanged()
 	local cam = workspace.CurrentCamera
 	if not cam then return end
 	cam:GetPropertyChangedSignal("ViewportSize"):Connect(function()
 		if not dragging then
 			local abs = Frame.AbsolutePosition
-			applyClamped(abs.X, abs.Y)
+			setClamped(abs.X, abs.Y)
 		end
 	end)
 end
