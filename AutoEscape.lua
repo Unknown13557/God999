@@ -48,19 +48,27 @@ layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 layout.VerticalAlignment = Enum.VerticalAlignment.Center
 layout.Padding = UDim.new(0,6)
 
-local toggle = Instance.new("TextButton", frame)
-toggle.AutomaticSize = Enum.AutomaticSize.XY
-toggle.Text = "🟢 ON"
-toggle.Font = Enum.Font.GothamBold
-toggle.TextSize = 16
-toggle.TextColor3 = Color3.fromRGB(255,255,255)
-toggle.BackgroundColor3 = Color3.fromRGB(50,200,100)
-toggle.AutoButtonColor = false
-Instance.new("UICorner", toggle).CornerRadius = UDim.new(0,8)
-toggle.TextXAlignment = Enum.TextXAlignment.Center
-toggle.TextYAlignment = Enum.TextYAlignment.Center
-toggle.AnchorPoint = Vector2.new(0.5, 0.5)
-toggle.Position = UDim2.new(0.5, 0, 0.5, 0)
+local toggleWrap = Instance.new("Frame", frame)
+toggleWrap.Name = "ToggleWrap"
+toggleWrap.BackgroundColor3 = Color3.fromRGB(50, 200, 100)
+toggleWrap.Size = UDim2.fromOffset(60, 28)
+toggleWrap.ClipsDescendants = true
+Instance.new("UICorner", toggleWrap).CornerRadius = UDim.new(1, 0)
+
+local knob = Instance.new("Frame", toggleWrap)
+knob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+knob.Size = UDim2.fromOffset(24, 24)
+knob.Position = UDim2.fromOffset(34, 2)
+Instance.new("UICorner", knob).CornerRadius = UDim.new(1, 0)
+
+local toggleStroke = Instance.new("UIStroke", toggleWrap)
+toggleStroke.Color = Color3.fromRGB(255, 255, 255)
+toggleStroke.Thickness = 1.2
+toggleStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+
+local knobStroke = Instance.new("UIStroke", knob)
+knobStroke.Color = Color3.fromRGB(230, 230, 230)
+knobStroke.Thickness = 1.2
 
 local label = Instance.new("TextLabel", frame)
 label.AutomaticSize = Enum.AutomaticSize.XY
@@ -167,15 +175,33 @@ if LP.Character then bindCharacter(LP.Character) end
 LP.CharacterAdded:Connect(bindCharacter)
 
 -- ========= TOGGLE =========
+local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
+local isOn = Enabled
+
+local function setToggle(state)
+	isOn = state
+	local bgOn  = Color3.fromRGB(50, 200, 100)
+	local bgOff = Color3.fromRGB(200, 70, 70)
+	if isOn then
+		TweenService:Create(toggleWrap, tweenInfo, {BackgroundColor3 = bgOn}):Play()
+		TweenService:Create(knob, tweenInfo, {Position = UDim2.fromOffset(34, 2)}):Play()
+	else
+		TweenService:Create(toggleWrap, tweenInfo, {BackgroundColor3 = bgOff}):Play()
+		TweenService:Create(knob, tweenInfo, {Position = UDim2.fromOffset(2, 2)}):Play()
+	end
+end
+
 local function setEnabled(state)
 	Enabled = state
 	if not Enabled then cancelFlight() end
-	if Enabled then
-		toggle.Text = "🟢 ON"
-		toggle.BackgroundColor3 = Color3.fromRGB(50,200,100)
-	else
-		toggle.Text = "🔴 OFF"
-		toggle.BackgroundColor3 = Color3.fromRGB(200,70,70)
-	end
+	setToggle(Enabled)
 end
-toggle.MouseButton1Click:Connect(function() setEnabled(not Enabled) end)
+toggleWrap.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		setEnabled(not Enabled)
+	end
+end)
+
+task.defer(function()
+	setToggle(Enabled)
+end)
