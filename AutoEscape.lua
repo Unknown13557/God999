@@ -48,13 +48,13 @@ layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 layout.VerticalAlignment = Enum.VerticalAlignment.Center
 layout.Padding = UDim.new(0,6)
 
--- Toggle nhỏ gọn kiểu công tắc hiện đại
-local toggleWrap = Instance.new("Frame", frame)
-toggleWrap.Name = "ToggleWrap"
+-- dùng TextButton (để pill bấm được)
+local toggleWrap = Instance.new("TextButton", frame)
+toggleWrap.AutoButtonColor = false
+toggleWrap.Text = ""
 toggleWrap.BackgroundColor3 = Color3.fromRGB(50, 200, 100) -- ON mặc định
-toggleWrap.Size = UDim2.fromOffset(40, 20)  -- 💡 nhỏ gọn, vừa chữ
+toggleWrap.Size = UDim2.fromOffset(40, 20)  -- (hoặc 50,24 tùy bạn)
 toggleWrap.ClipsDescendants = true
-toggleWrap.Active = false  -- không chặn drag
 Instance.new("UICorner", toggleWrap).CornerRadius = UDim.new(1, 0)
 
 -- Viền toggle
@@ -95,6 +95,15 @@ local function setToggle(state)
 	end
 end
 
+local function onToggleClick()
+	setToggle(not isOn)
+	Enabled = isOn
+	if not Enabled then cancelFlight() end
+end
+
+-- Bấm vào cả viên thuốc lẫn nút trắng đều được
+toggleWrap.MouseButton1Click:Connect(onToggleClick)
+knob.MouseButton1Click:Connect(onToggleClick)
 -- Click toggle
 knob.MouseButton1Click:Connect(function()
 	setToggle(not isOn)
@@ -116,6 +125,8 @@ label.Text = "Auto Escape"
 label.Font = Enum.Font.GothamBold
 label.TextSize = 16
 label.TextColor3 = Color3.fromRGB(235,235,235)
+toggleWrap.LayoutOrder = 1
+label.LayoutOrder      = 2
 task.defer(function()
 	local cam = workspace.CurrentCamera
 	local vp = cam and cam.ViewportSize or Vector2.new(1920,1080)
@@ -143,7 +154,15 @@ do
 	frame.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 			local pos = pointerPos(input)
-			if over(toggle, pos) then return end                       -- bấm vào toggle thì không kéo
+		if overAny({toggleWrap, knob}, pos) then return end				
+local function overAny(list, pos)
+	for _, inst in ipairs(list) do
+		if inst and inst.Parent and over(inst, pos) then
+			return true
+		end
+	end
+	return false
+				end
 			dragging, dragStart, startPos = true, input.Position, frame.Position
 			input.Changed:Connect(function()
 				if input.UserInputState == Enum.UserInputState.End then dragging = false end
