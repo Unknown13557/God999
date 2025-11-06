@@ -27,8 +27,8 @@ frame.AnchorPoint = Vector2.new(0,0)
 frame.Position = UDim2.fromOffset(0,0)
 frame.Size = UDim2.fromOffset(140, 46)
 frame.AutomaticSize = Enum.AutomaticSize.XY
-frame.BackgroundColor3 = Color3.fromRGB(255,60,255)
-frame.BackgroundTransparency = 0.5
+frame.BackgroundColor3 = Color3.fromRGB(120, 0, 200)
+frame.BackgroundTransparency = 0
 frame.BorderSizePixel = 0
 frame.Active = true
 frame.Parent = gui
@@ -101,19 +101,12 @@ local function onToggleClick()
 	if not Enabled then cancelFlight() end
 end
 
--- Bấm vào cả viên thuốc lẫn nút trắng đều được
-toggleWrap.MouseButton1Click:Connect(onToggleClick)
-knob.MouseButton1Click:Connect(onToggleClick)
--- Click toggle
-knob.MouseButton1Click:Connect(function()
-	setToggle(not isOn)
-	Enabled = isOn
-	if not Enabled then
-		cancelFlight()
-	end
-end)
+-- Ưu tiên Activated (hỗ trợ chuột + chạm)
+toggleWrap.Activated:Connect(onToggleClick)
+knob.Activated:Connect(onToggleClick)
+toggleWrap.ZIndex = 1
+knob.ZIndex = 2
 
--- Đồng bộ trạng thái khi load
 task.defer(function()
 	setToggle(Enabled)
 end)
@@ -144,8 +137,15 @@ do
 			or UserInputService:GetMouseLocation()
 	end
 	local function over(inst, pos)
+		if not (inst and inst.Parent) then return false end
 		local p, s = inst.AbsolutePosition, inst.AbsoluteSize
 		return pos.X >= p.X and pos.X <= p.X+s.X and pos.Y >= p.Y and pos.Y <= p.Y+s.Y
+	end
+	local function overAny(list, pos)
+		for _, inst in ipairs(list) do
+			if over(inst, pos) then return true end
+		end
+		return false
 	end
 
 	local dragging = false
@@ -154,15 +154,8 @@ do
 	frame.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 			local pos = pointerPos(input)
-		if overAny({toggleWrap, knob}, pos) then return end				
-local function overAny(list, pos)
-	for _, inst in ipairs(list) do
-		if inst and inst.Parent and over(inst, pos) then
-			return true
-		end
-	end
-	return false
-				end
+			-- bấm lên pill hoặc knob thì KHÔNG kéo
+			if overAny({toggleWrap, knob}, pos) then return end
 			dragging, dragStart, startPos = true, input.Position, frame.Position
 			input.Changed:Connect(function()
 				if input.UserInputState == Enum.UserInputState.End then dragging = false end
