@@ -102,7 +102,22 @@ end
 local function onToggleClick()
 	setToggle(not isOn)
 	Enabled = isOn
-	if not Enabled then cancelFlight() end
+
+	if not Enabled then
+		-- khi OFF: hủy bay, ngắt event health, reset logic
+		cancelFlight()
+		if healthConn then
+			healthConn:Disconnect()
+			healthConn = nil
+		end
+	else
+		-- khi ON: gắn lại sự kiện theo dõi máu
+		if LP.Character and LP.Character:FindFirstChild("Humanoid") then
+			local hum = LP.Character:FindFirstChild("Humanoid")
+			if healthConn then healthConn:Disconnect() end
+			healthConn = hum.HealthChanged:Connect(onHealthChanged)
+		end
+	end
 end
 
 -- Ưu tiên Activated (hỗ trợ chuột + chạm)
