@@ -89,7 +89,7 @@ local isOn = true
 local function setToggle(state)
 	isOn = state
 	local bgOn  = Color3.fromRGB(50, 200, 100)
-	local bgOff = Color3.fromRGB(200, 70, 70)
+	local bgOff = Color3.fromRGB(230, 40, 40)
 	if isOn then
 		TweenService:Create(toggleWrap, tweenInfo, {BackgroundColor3 = bgOn}):Play()
 		TweenService:Create(knob, tweenInfo, {Position = UDim2.fromOffset(22, 2)}):Play()
@@ -99,23 +99,25 @@ local function setToggle(state)
 	end
 end
 
-local function onToggleClick()
-	setToggle(not isOn)
-	Enabled = isOn
+-- Áp trạng thái Enabled vào toàn bộ logic (UI + connection + flight)
+local function applyEnabled(state)
+	Enabled = state
 
+	-- UI
+	setToggle(Enabled)  -- xanh khi ON, đỏ khi OFF
+
+	-- Logic
 	if not Enabled then
-		-- OFF: ngắt mọi thứ
-		cancelFlight()
+		-- OFF: tắt sạch
+		cancelFlight()         -- hủy tween nếu đang bay
 		Flying = false
 
-		if healthConn then
+		if healthConn then     -- ngắt event
 			healthConn:Disconnect()
 			healthConn = nil
 		end
-
-		print("[AutoEscape] Script disabled.")
 	else
-		-- ON: gắn lại sự kiện theo dõi máu nếu có Humanoid
+		-- ON: gắn lại event nếu có Humanoid
 		if LP.Character and LP.Character:FindFirstChild("Humanoid") then
 			local hum = LP.Character:FindFirstChild("Humanoid")
 			if healthConn then
@@ -124,8 +126,24 @@ local function onToggleClick()
 			end
 			healthConn = hum.HealthChanged:Connect(onHealthChanged)
 		end
-		print("[AutoEscape] Script enabled.")
 	end
+end
+
+local toggling = false
+local function onToggleClick()
+	if toggling then return end
+	toggling = true
+
+	-- Đảo trạng thái
+	local nextState = not isOn
+	setToggle(nextState)     -- cập nhật UI trước cho mượt
+	applyEnabled(nextState)  -- áp trạng thái thật sự (ngắt/kết nối, huỷ flight)
+	isOn = nextState
+
+	-- nhỏ delay 1 frame để tránh double fire
+	task.delay(0.05, function()
+		toggling = false
+	end)
 end
 
 -- Ưu tiên Activated (hỗ trợ chuột + chạm)
@@ -135,7 +153,8 @@ toggleWrap.ZIndex = 1
 knob.ZIndex = 2
 
 task.defer(function()
-	setToggle(Enabled)
+	setToggle(Enabled)   -- UI
+	applyEnabled(Enabled) -- Logic (đảm bảo đúng connection)
 end)
 
 local label = Instance.new("TextLabel", frame)
