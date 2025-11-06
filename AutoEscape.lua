@@ -19,7 +19,7 @@ local healthConn
 -- ========= GUI =========
 local gui = Instance.new("ScreenGui")
 gui.Name, gui.IgnoreGuiInset, gui.DisplayOrder, gui.ResetOnSpawn, gui.ZIndexBehavior =
-	"AutoEscapeUI", true, 999999, false, Enum.ZIndexBehavior.Sibling
+	"AutoEscapeUI", true, 165468, false, Enum.ZIndexBehavior.Sibling
 gui.Parent = LP:WaitForChild("PlayerGui")
 
 local frame = Instance.new("Frame")
@@ -58,7 +58,7 @@ Instance.new("UICorner", toggle).CornerRadius = UDim.new(0,8)
 
 local label = Instance.new("TextLabel", frame)
 label.AutomaticSize = Enum.AutomaticSize.XY
-label.BackgroundTransparency = 1
+label.BackgroundTransparency = 0.7
 label.Text = "Auto Escape"
 label.Font = Enum.Font.GothamBold
 label.TextSize = 16
