@@ -28,8 +28,8 @@ frame.AnchorPoint = Vector2.new(0, 0)
 frame.Position = UDim2.fromOffset(0, 0)
 frame.Size = UDim2.fromOffset(140, 46)
 frame.AutomaticSize = Enum.AutomaticSize.XY
-frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-frame.BackgroundTransparency = 0
+frame.BackgroundColor3 = Color3.fromRGB(180, 80, 255)
+frame.BackgroundTransparency = 0.7
 frame.BorderSizePixel = 0.25
 frame.Active = true
 frame.Parent = gui
@@ -37,7 +37,7 @@ Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
 
 -- Viền chính (sáng tím neon)
 local stroke = Instance.new("UIStroke")
-stroke.Color = Color3.fromRGB(180, 0, 255)
+stroke.Color = Color3.fromRGB(70, 0, 110)
 stroke.Thickness = 2
 stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 stroke.Parent = frame
