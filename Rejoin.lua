@@ -136,35 +136,60 @@ local function createUI()
 		task.delay(0.15, function() btnDb = false end)
 	end)
 
-	-- Kéo thả
+	-- Drag GUI (stable, clamp 4 cạnh, không giật, có toggle exception)
 do
+	local UserInputService = game:GetService("UserInputService")
+	local GuiService = game:GetService("GuiService")
+
+	-- cấu hình
+	local RESPECT_COREGUI = false   -- true: chừa topbar; false: cho kéo chạm trần
+	local TOP_MARGIN = 0            -- thêm khoảng cách trần (nếu muốn)
+
+	-- lấy vị trí trỏ (touch/mouse)
 	local function pointerPos(input)
 		return (input.UserInputType == Enum.UserInputType.Touch)
 			and Vector2.new(input.Position.X, input.Position.Y)
 			or UserInputService:GetMouseLocation()
 	end
+
+	-- kiểm tra xem trỏ đang nằm trên instance nào (vd: toggle)
 	local function over(inst, pos)
+		if not inst or not inst:IsDescendantOf(game) then return false end
 		local p, s = inst.AbsolutePosition, inst.AbsoluteSize
-		return pos.X >= p.X and pos.X <= p.X+s.X and pos.Y >= p.Y and pos.Y <= p.Y+s.Y
+		return pos.X >= p.X and pos.X <= p.X + s.X and pos.Y >= p.Y and pos.Y <= p.Y + s.Y
 	end
 
+	-- trạng thái kéo
 	local dragging = false
 	local dragStart, startPos
 
+	frame.Active = true
+	frame.Draggable = false -- tránh cơ chế cũ gây xung đột
+
 	frame.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		if input.UserInputType == Enum.UserInputType.MouseButton1
+			or input.UserInputType == Enum.UserInputType.Touch then
+
 			local pos = pointerPos(input)
-			if over(toggle, pos) then return end                       -- bấm vào toggle thì không kéo
+			-- Nếu bấm vào toggle (vd: btn ON/OFF) thì không kéo
+			if over(btn, pos) then return end
+
+			-- lấy mốc bắt đầu
 			dragging, dragStart, startPos = true, input.Position, frame.Position
+
 			input.Changed:Connect(function()
-				if input.UserInputState == Enum.UserInputState.End then dragging = false end
+				if input.UserInputState == Enum.UserInputState.End then
+					dragging = false
+				end
 			end)
 		end
 	end)
 
 	frame.InputChanged:Connect(function(input)
 		if not dragging then return end
-		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+		if input.UserInputType == Enum.UserInputType.MouseMovement
+			or input.UserInputType == Enum.UserInputType.Touch then
+
 			local delta = input.Position - dragStart
 			local newX = startPos.X.Offset + delta.X
 			local newY = startPos.Y.Offset + delta.Y
@@ -174,15 +199,41 @@ do
 				local vp = cam.ViewportSize
 				local topInset = GuiService:GetGuiInset().Y
 				local minY = (RESPECT_COREGUI and (topInset + TOP_MARGIN) or TOP_MARGIN)
-				newX = math.clamp(newX, 0, vp.X - frame.AbsoluteSize.X)
+
+				-- tính bù UIPadding (nếu có)
+				local pad = frame:FindFirstChildOfClass("UIPadding")
+				local leftPad = pad and (pad.PaddingLeft.Offset or 0) or 0
+				local rightPad = pad and (pad.PaddingRight.Offset or 0) or 0
+
+				newX = math.clamp(newX, -leftPad, vp.X - (frame.AbsoluteSize.X - rightPad))
 				newY = math.clamp(newY, minY, vp.Y - frame.AbsoluteSize.Y)
 			end
 
 			frame.Position = UDim2.fromOffset(newX, newY)
 		end
 	end)
+
+	-- sau khi GUI tạo xong, chỉnh Position và clamp 1 lần
+	task.defer(function()
+		local abs = frame.AbsolutePosition
+		frame.Position = UDim2.fromOffset(abs.X, abs.Y)
+
+		local cam = workspace.CurrentCamera
+		if cam then
+			local vp = cam.ViewportSize
+			local topInset = GuiService:GetGuiInset().Y
+			local minY = (RESPECT_COREGUI and (topInset + TOP_MARGIN) or TOP_MARGIN)
+
+			local pad = frame:FindFirstChildOfClass("UIPadding")
+			local leftPad = pad and (pad.PaddingLeft.Offset or 0) or 0
+			local rightPad = pad and (pad.PaddingRight.Offset or 0) or 0
+
+			local x = math.clamp(abs.X, -leftPad, vp.X - (frame.AbsoluteSize.X - rightPad))
+			local y = math.clamp(abs.Y, minY, vp.Y - frame.AbsoluteSize.Y)
+			frame.Position = UDim2.fromOffset(x, y)
+		end
+	end)
 	end
-	
 	-- Ẩn/hiện nhanh
 	UserInputService.InputBegan:Connect(function(input, gp)
 		if gp then return end
