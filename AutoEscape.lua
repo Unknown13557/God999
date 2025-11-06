@@ -28,36 +28,19 @@ frame.AnchorPoint = Vector2.new(0, 0)
 frame.Position = UDim2.fromOffset(0, 0)
 frame.Size = UDim2.fromOffset(140, 46)
 frame.AutomaticSize = Enum.AutomaticSize.XY
-frame.BackgroundColor3 = Color3.fromRGB(60, 0, 90) -- tím đậm
+frame.BackgroundColor3 = Color3.fromRGB(70, 0, 110) -- tím đậm
 frame.BackgroundTransparency = 0.25                -- mờ trong suốt
-frame.BorderSizePixel = 0
+frame.BorderSizePixel = 0.25
 frame.Active = true
 frame.Parent = gui
 Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
 
 -- Viền chính (sáng tím neon)
 local stroke = Instance.new("UIStroke")
-stroke.Color = Color3.fromRGB(170, 0, 255)  -- tím sáng
+stroke.Color = Color3.fromRGB(180, 0, 255)
 stroke.Thickness = 2
 stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 stroke.Parent = frame
-
--- Hiệu ứng glow tím (viền nhoè)
-local glow = Instance.new("UIStroke")
-glow.Color = Color3.fromRGB(180, 60, 255)
-glow.Thickness = 8
-glow.Transparency = 0.75
-glow.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-glow.Parent = frame
-
--- Gradient nhẹ để tạo chiều sâu nền
-local gradient = Instance.new("UIGradient")
-gradient.Color = ColorSequence.new{
-	ColorSequenceKeypoint.new(0, Color3.fromRGB(80, 0, 120)), -- tím đậm hơn
-	ColorSequenceKeypoint.new(1, Color3.fromRGB(40, 0, 80))   -- tím tối đáy
-}
-gradient.Rotation = 90
-gradient.Parent = frame
 
 local padding = Instance.new("UIPadding", frame)
 padding.PaddingTop, padding.PaddingBottom = UDim.new(0,3), UDim.new(0,3)
