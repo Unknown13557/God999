@@ -27,7 +27,7 @@ frame.AnchorPoint = Vector2.new(0,0)
 frame.Position = UDim2.fromOffset(0,0)
 frame.Size = UDim2.fromOffset(140, 46)
 frame.AutomaticSize = Enum.AutomaticSize.XY
-frame.BackgroundColor3 = Color3.fromRGB(255,100,255)
+frame.BackgroundColor3 = Color3.fromRGB(255,60,255)
 frame.BackgroundTransparency = 0.5
 frame.BorderSizePixel = 0
 frame.Active = true
@@ -48,27 +48,66 @@ layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 layout.VerticalAlignment = Enum.VerticalAlignment.Center
 layout.Padding = UDim.new(0,6)
 
+-- Toggle nhỏ gọn kiểu công tắc hiện đại
 local toggleWrap = Instance.new("Frame", frame)
 toggleWrap.Name = "ToggleWrap"
-toggleWrap.BackgroundColor3 = Color3.fromRGB(50, 200, 100)
-toggleWrap.Size = UDim2.fromOffset(60, 28)
+toggleWrap.BackgroundColor3 = Color3.fromRGB(50, 200, 100) -- ON mặc định
+toggleWrap.Size = UDim2.fromOffset(40, 20)  -- 💡 nhỏ gọn, vừa chữ
 toggleWrap.ClipsDescendants = true
+toggleWrap.Active = false  -- không chặn drag
 Instance.new("UICorner", toggleWrap).CornerRadius = UDim.new(1, 0)
 
-local knob = Instance.new("Frame", toggleWrap)
-knob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-knob.Size = UDim2.fromOffset(24, 24)
-knob.Position = UDim2.fromOffset(34, 2)
-Instance.new("UICorner", knob).CornerRadius = UDim.new(1, 0)
-
+-- Viền toggle
 local toggleStroke = Instance.new("UIStroke", toggleWrap)
 toggleStroke.Color = Color3.fromRGB(255, 255, 255)
-toggleStroke.Thickness = 1.2
+toggleStroke.Thickness = 1
 toggleStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
+-- Knob (nút tròn)
+local knob = Instance.new("TextButton", toggleWrap)
+knob.Name = "Knob"
+knob.Size = UDim2.fromOffset(16, 16)
+knob.Position = UDim2.fromOffset(22, 2)  -- vị trí ON (phải)
+knob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+knob.Text = ""
+knob.AutoButtonColor = false
+Instance.new("UICorner", knob).CornerRadius = UDim.new(1, 0)
+
+-- Đổ bóng nhẹ
 local knobStroke = Instance.new("UIStroke", knob)
 knobStroke.Color = Color3.fromRGB(230, 230, 230)
-knobStroke.Thickness = 1.2
+knobStroke.Thickness = 1
+
+-- Tween di chuyển mượt
+local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
+local isOn = true
+
+local function setToggle(state)
+	isOn = state
+	local bgOn  = Color3.fromRGB(50, 200, 100)
+	local bgOff = Color3.fromRGB(200, 70, 70)
+	if isOn then
+		TweenService:Create(toggleWrap, tweenInfo, {BackgroundColor3 = bgOn}):Play()
+		TweenService:Create(knob, tweenInfo, {Position = UDim2.fromOffset(22, 2)}):Play()
+	else
+		TweenService:Create(toggleWrap, tweenInfo, {BackgroundColor3 = bgOff}):Play()
+		TweenService:Create(knob, tweenInfo, {Position = UDim2.fromOffset(2, 2)}):Play()
+	end
+end
+
+-- Click toggle
+knob.MouseButton1Click:Connect(function()
+	setToggle(not isOn)
+	Enabled = isOn
+	if not Enabled then
+		cancelFlight()
+	end
+end)
+
+-- Đồng bộ trạng thái khi load
+task.defer(function()
+	setToggle(Enabled)
+end)
 
 local label = Instance.new("TextLabel", frame)
 label.AutomaticSize = Enum.AutomaticSize.XY
@@ -173,35 +212,3 @@ end
 
 if LP.Character then bindCharacter(LP.Character) end
 LP.CharacterAdded:Connect(bindCharacter)
-
--- ========= TOGGLE =========
-local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
-local isOn = Enabled
-
-local function setToggle(state)
-	isOn = state
-	local bgOn  = Color3.fromRGB(50, 200, 100)
-	local bgOff = Color3.fromRGB(200, 70, 70)
-	if isOn then
-		TweenService:Create(toggleWrap, tweenInfo, {BackgroundColor3 = bgOn}):Play()
-		TweenService:Create(knob, tweenInfo, {Position = UDim2.fromOffset(34, 2)}):Play()
-	else
-		TweenService:Create(toggleWrap, tweenInfo, {BackgroundColor3 = bgOff}):Play()
-		TweenService:Create(knob, tweenInfo, {Position = UDim2.fromOffset(2, 2)}):Play()
-	end
-end
-
-local function setEnabled(state)
-	Enabled = state
-	if not Enabled then cancelFlight() end
-	setToggle(Enabled)
-end
-toggleWrap.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 then
-		setEnabled(not Enabled)
-	end
-end)
-
-task.defer(function()
-	setToggle(Enabled)
-end)
