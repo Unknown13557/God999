@@ -28,8 +28,8 @@ frame.AnchorPoint = Vector2.new(0, 0)
 frame.Position = UDim2.fromOffset(0, 0)
 frame.Size = UDim2.fromOffset(140, 46)
 frame.AutomaticSize = Enum.AutomaticSize.XY
-frame.BackgroundColor3 = Color3.fromRGB(200, 80, 255)
-frame.BackgroundTransparency = 1
+frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+frame.BackgroundTransparency = 0
 frame.BorderSizePixel = 0.25
 frame.Active = true
 frame.Parent = gui
@@ -104,19 +104,27 @@ local function onToggleClick()
 	Enabled = isOn
 
 	if not Enabled then
-		-- khi OFF: hủy bay, ngắt event health, reset logic
+		-- OFF: ngắt mọi thứ
 		cancelFlight()
+		Flying = false
+
 		if healthConn then
 			healthConn:Disconnect()
 			healthConn = nil
 		end
+
+		print("[AutoEscape] Script disabled.")
 	else
-		-- khi ON: gắn lại sự kiện theo dõi máu
+		-- ON: gắn lại sự kiện theo dõi máu nếu có Humanoid
 		if LP.Character and LP.Character:FindFirstChild("Humanoid") then
 			local hum = LP.Character:FindFirstChild("Humanoid")
-			if healthConn then healthConn:Disconnect() end
+			if healthConn then
+				healthConn:Disconnect()
+				healthConn = nil
+			end
 			healthConn = hum.HealthChanged:Connect(onHealthChanged)
 		end
+		print("[AutoEscape] Script enabled.")
 	end
 end
 
@@ -228,8 +236,10 @@ local function onHealthChanged(h)
 	if mh <= 0 then return end
 	local p = h / mh
 	if (not Flying) and p < LOW_HP then
+		print("[AutoEscape] HP low, starting flight")
 		startFlight()
 	elseif Flying and p >= SAFE_HP then
+		print("[AutoEscape] HP safe, cancel flight")
 		cancelFlight()
 	end
 end
@@ -237,8 +247,17 @@ end
 local function bindCharacter(char)
 	Humanoid = char:WaitForChild("Humanoid")
 	RootPart = char:WaitForChild("HumanoidRootPart")
-	if healthConn then healthConn:Disconnect() end
-	healthConn = Humanoid.HealthChanged:Connect(onHealthChanged)
+
+	-- ngắt kết nối cũ nếu có
+	if healthConn then
+		healthConn:Disconnect()
+		healthConn = nil
+	end
+
+	-- chỉ gắn lại nếu đang bật toggle
+	if Enabled then
+		healthConn = Humanoid.HealthChanged:Connect(onHealthChanged)
+	end
 end
 
 if LP.Character then bindCharacter(LP.Character) end
