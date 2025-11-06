@@ -58,8 +58,8 @@ Instance.new("UICorner", toggle).CornerRadius = UDim.new(0,8)
 
 local label = Instance.new("TextLabel", frame)
 label.AutomaticSize = Enum.AutomaticSize.XY
-label.BackgroundTransparency = 0.7
-label.Text = "Auto Escape"
+label.BackgroundTransparency = 1
+label.Text = "AE"
 label.Font = Enum.Font.GothamBold
 label.TextSize = 16
 label.TextColor3 = Color3.fromRGB(235,235,235)
