@@ -137,6 +137,7 @@ local function createUI()
 	end)
 
 	-- Drag GUI (stable, clamp 4 cạnh, không giật, có toggle exception)
+
 	do
 	local UserInputService = game:GetService("UserInputService")
 	local GuiService = game:GetService("GuiService")
@@ -156,8 +157,6 @@ local function createUI()
 		return pos.X >= p.X and pos.X <= p.X + s.X and pos.Y >= p.Y and pos.Y <= p.Y + s.Y
 	end
 
-	frame.AnchorPoint = Vector2.new(0,0)
-
 	local dragging = false
 	local dragStart, startPos
 
@@ -168,11 +167,7 @@ local function createUI()
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 			local pos = pointerPos(input)
 			if over(btn, pos) then return end
-			local abs = frame.AbsolutePosition
-			frame.Position = UDim2.fromOffset(abs.X, abs.Y)
-			dragging = true
-			dragStart = input.Position
-			startPos = frame.Position
+			dragging, dragStart, startPos = true, input.Position, frame.Position
 			input.Changed:Connect(function()
 				if input.UserInputState == Enum.UserInputState.End then dragging = false end
 			end)
@@ -191,7 +186,7 @@ local function createUI()
 				local topInset = GuiService:GetGuiInset().Y
 				local minY = (RESPECT_COREGUI and (topInset + TOP_MARGIN) or TOP_MARGIN)
 				local pad = frame:FindFirstChildOfClass("UIPadding")
-				local leftPad  = (pad and pad.PaddingLeft.Offset)  or 0
+				local leftPad = (pad and pad.PaddingLeft.Offset) or 0
 				local rightPad = (pad and pad.PaddingRight.Offset) or 0
 				local minX = -leftPad
 				local maxX = vp.X - (frame.AbsoluteSize.X - rightPad)
@@ -207,7 +202,7 @@ local function createUI()
 		if not cam then return end
 		local vp = cam.ViewportSize
 		local pad = frame:FindFirstChildOfClass("UIPadding")
-		local leftPad  = (pad and pad.PaddingLeft.Offset)  or 0
+		local leftPad = (pad and pad.PaddingLeft.Offset) or 0
 		local rightPad = (pad and pad.PaddingRight.Offset) or 0
 		local topInset = GuiService:GetGuiInset().Y
 		local minY = (RESPECT_COREGUI and (topInset + TOP_MARGIN) or TOP_MARGIN)
@@ -217,7 +212,7 @@ local function createUI()
 		frame.Position = UDim2.fromOffset(centerX, minY)
 	end
 
-	task.spawn(function()
+	task.defer(function()
 		repeat task.wait() until frame.AbsoluteSize.X > 0
 		local abs = frame.AbsolutePosition
 		frame.Position = UDim2.fromOffset(abs.X, abs.Y)
@@ -236,7 +231,6 @@ local function createUI()
 	if workspace.CurrentCamera then hookViewportChanged() end
 	workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(hookViewportChanged)
 	end
-
 	-- Ẩn/hiện nhanh
 	UserInputService.InputBegan:Connect(function(input, gp)
 		if gp then return end
