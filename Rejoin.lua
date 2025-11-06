@@ -137,7 +137,93 @@ local function createUI()
 	end)
 
 	-- Drag GUI (stable, clamp 4 cạnh, không giật, có toggle exception)
-   
+   do
+	local UIS = game:GetService("UserInputService")
+	local GuiService = game:GetService("GuiService")
+
+	local RESPECT_COREGUI = false
+	local TOP_MARGIN = 0
+
+	local function pointerPos(input)
+		return (input.UserInputType == Enum.UserInputType.Touch)
+			and Vector2.new(input.Position.X, input.Position.Y)
+			or UIS:GetMouseLocation()
+	end
+
+	local function over(inst, pos)
+		if not inst or not inst:IsDescendantOf(game) then return false end
+		local p, s = inst.AbsolutePosition, inst.AbsoluteSize
+		return pos.X >= p.X and pos.X <= p.X + s.X and pos.Y >= p.Y and pos.Y <= p.Y + s.Y
+	end
+
+	local function clampByAnchor(pos)
+		local cam = workspace.CurrentCamera
+		if not cam then return pos end
+		local vp = cam.ViewportSize
+		local w, h = frame.AbsoluteSize.X, frame.AbsoluteSize.Y
+		local ax, ay = frame.AnchorPoint.X, frame.AnchorPoint.Y
+		local insetY = GuiService:GetGuiInset().Y
+		local top = RESPECT_COREGUI and (insetY + TOP_MARGIN) or TOP_MARGIN
+
+		local minX = ax * w
+		local maxX = vp.X - (1 - ax) * w
+		local minY = top + ay * h
+		local maxY = vp.Y - (1 - ay) * h
+
+		local x = math.clamp(pos.X.Offset, minX, math.max(minX, maxX))
+		local y = math.clamp(pos.Y.Offset, minY, math.max(minY, maxY))
+		return UDim2.fromOffset(x, y)
+	end
+
+	local function placeTopCentered()
+		local insetY = GuiService:GetGuiInset().Y
+		local top = RESPECT_COREGUI and (insetY + TOP_MARGIN) or TOP_MARGIN
+		frame.AnchorPoint = Vector2.new(0.5, 0)
+		frame.Position = UDim2.new(0.5, 0, 0, top)
+	end
+
+	local dragging = false
+	local dragStart, startPos
+
+	frame.Active = true
+	frame.Draggable = false
+
+	frame.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			local pos = pointerPos(input)
+			if over(btn, pos) then return end
+			dragging = true
+			dragStart = input.Position
+			startPos = frame.Position
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then dragging = false end
+			end)
+		end
+	end)
+
+	frame.InputChanged:Connect(function(input)
+		if not dragging then return end
+		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+			local delta = input.Position - dragStart
+			local newPos = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X,
+				startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+			frame.Position = clampByAnchor(newPos)
+		end
+	end)
+
+	task.defer(placeTopCentered)
+	frame:GetPropertyChangedSignal("AbsoluteSize"):Once(placeTopCentered)
+
+	local function hookViewportChanged()
+		local cam = workspace.CurrentCamera
+		if not cam then return end
+		cam:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+			if not dragging then placeTopCentered() end
+		end)
+	end
+	if workspace.CurrentCamera then hookViewportChanged() end
+	workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(hookViewportChanged)
+	end
 
 	-- Ẩn/hiện nhanh
 	UserInputService.InputBegan:Connect(function(input, gp)
