@@ -27,14 +27,14 @@ frame.AnchorPoint = Vector2.new(0,0)
 frame.Position = UDim2.fromOffset(0,0)
 frame.Size = UDim2.fromOffset(140, 46)
 frame.AutomaticSize = Enum.AutomaticSize.XY
-frame.BackgroundColor3 = Color3.fromRGB(25,25,25)
-frame.BackgroundTransparency = 0.7
+frame.BackgroundColor3 = Color3.fromRGB(255,120,255)
+frame.BackgroundTransparency = 0.5
 frame.BorderSizePixel = 0
 frame.Active = true
 frame.Parent = gui
 Instance.new("UICorner", frame).CornerRadius = UDim.new(0,10)
 local stroke = Instance.new("UIStroke", frame)
-stroke.Color, stroke.Thickness = Color3.fromRGB(60,60,60), 1.2
+stroke.Color, stroke.Thickness = Color3.fromRGB(255,150,255), 1.2
 
 local padding = Instance.new("UIPadding", frame)
 padding.PaddingTop, padding.PaddingBottom = UDim.new(0,3), UDim.new(0,3)
