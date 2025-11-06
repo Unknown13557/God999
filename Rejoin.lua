@@ -137,26 +137,112 @@ local function createUI()
 	end)
 
 	-- Kéo thả
-	local dragging, dragStart, startPos
-	frame.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-			dragging = true
-			dragStart = input.Position
-			startPos = frame.Position
-			input.Changed:Connect(function()
-				if input.UserInputState == Enum.UserInputState.End then dragging = false end
-			end)
+	-- Kéo thả (stable, no-jump, mouse/touch, 4-edge clamp)
+local UserInputService = game:GetService("UserInputService")
+local GuiService = game:GetService("GuiService")
+
+-- cấu hình
+local RESPECT_COREGUI = false   -- true: chừa topbar; false: cho kéo chạm trần
+local TOP_MARGIN = 0            -- chừa thêm nếu muốn
+
+local function pointerPos(input)
+	return (input.UserInputType == Enum.UserInputType.Touch)
+		and Vector2.new(input.Position.X, input.Position.Y)
+		or UserInputService:GetMouseLocation()
+end
+
+local function over(inst, pos)
+	local p, s = inst.AbsolutePosition, inst.AbsoluteSize
+	return pos.X >= p.X and pos.X <= p.X + s.X and pos.Y >= p.Y and pos.Y <= p.Y + s.Y
+end
+
+local dragging = false
+local dragStart, startPos
+
+frame.Active = true
+frame.Draggable = false -- tránh cơ chế cũ xung đột
+
+frame.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1
+		or input.UserInputType == Enum.UserInputType.Touch then
+
+		-- nếu bấm vào nút toggle thì KHÔNG kéo
+		local pos = pointerPos(input)
+		if over(btn, pos) then return end  -- (btn là nút ON/OFF trong UI)
+
+		-- lấy mốc bắt đầu theo Offset hiện tại
+		dragging = true
+		dragStart = input.Position
+		startPos = frame.Position
+
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
+		end)
+	end
+end)
+
+frame.InputChanged:Connect(function(input)
+	if not dragging then return end
+	if input.UserInputType == Enum.UserInputType.MouseMovement
+		or input.UserInputType == Enum.UserInputType.Touch then
+
+		local delta = input.Position - dragStart
+		local newX = startPos.X.Offset + delta.X
+		local newY = startPos.Y.Offset + delta.Y
+
+		local cam = workspace.CurrentCamera
+		if cam then
+			local vp = cam.ViewportSize
+			local topInset = GuiService:GetGuiInset().Y
+			local minY = (RESPECT_COREGUI and (topInset + TOP_MARGIN) or TOP_MARGIN)
+
+			newX = math.clamp(newX, 0, math.max(0, vp.X - frame.AbsoluteSize.X))
+			newY = math.clamp(newY, minY, math.max(minY, vp.Y - frame.AbsoluteSize.Y))
+		end
+
+		frame.Position = UDim2.fromOffset(newX, newY)
+	end
+end)
+
+-- đảm bảo ngay khi load nếu ban đầu dùng Scale thì quy ra Offset mượt
+task.defer(function()
+	local abs = frame.AbsolutePosition
+	frame.Position = UDim2.fromOffset(abs.X, abs.Y)
+
+	-- clamp 1 lần
+	local cam = workspace.CurrentCamera
+	if cam then
+		local vp = cam.ViewportSize
+		local topInset = GuiService:GetGuiInset().Y
+		local minY = (RESPECT_COREGUI and (topInset + TOP_MARGIN) or TOP_MARGIN)
+
+		local x = math.clamp(abs.X, 0, math.max(0, vp.X - frame.AbsoluteSize.X))
+		local y = math.clamp(abs.Y, minY, math.max(minY, vp.Y - frame.AbsoluteSize.Y))
+		frame.Position = UDim2.fromOffset(x, y)
+	end
+end)
+
+-- clamp lại khi đổi viewport
+local function hookViewportChanged()
+	local cam = workspace.CurrentCamera
+	if not cam then return end
+	cam:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+		if not dragging then
+			local abs = frame.AbsolutePosition
+			local vp = cam.ViewportSize
+			local topInset = GuiService:GetGuiInset().Y
+			local minY = (RESPECT_COREGUI and (topInset + TOP_MARGIN) or TOP_MARGIN)
+
+			local x = math.clamp(abs.X, 0, math.max(0, vp.X - frame.AbsoluteSize.X))
+			local y = math.clamp(abs.Y, minY, math.max(minY, vp.Y - frame.AbsoluteSize.Y))
+			frame.Position = UDim2.fromOffset(x, y)
 		end
 	end)
-	frame.InputChanged:Connect(function(input)
-		if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-			local delta = input.Position - dragStart
-			frame.Position = UDim2.new(
-				startPos.X.Scale, startPos.X.Offset + delta.X,
-				startPos.Y.Scale, startPos.Y.Offset + delta.Y
-			)
-		end
-	end)
+end
+if workspace.CurrentCamera then hookViewportChanged() end
+workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(hookViewportChanged)
 
 	-- Ẩn/hiện nhanh
 	UserInputService.InputBegan:Connect(function(input, gp)
