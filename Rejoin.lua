@@ -41,151 +41,178 @@ local teleporting = false
 local ui = {}
 
 local function createUI()
-	local THEME = {
-		FrameBgColor = Color3.fromRGB(25, 25, 25),
-		FrameBgTransparency = 0.25,
-		TextColor = Color3.fromRGB(255, 255, 255),
-		BtnColor = Color3.fromRGB(70, 70, 70),
-		BtnHoverColor = Color3.fromRGB(90, 90, 90),
-	}
+	local pg = player:WaitForChild("PlayerGui")
+	local old = pg:FindFirstChild("AutoRejoinUI")
+	if old then old:Destroy() end
 
 	local gui = Instance.new("ScreenGui")
-	gui.Name = "RejoinGui"
-	gui.IgnoreGuiInset = true
+	gui.Name = "AutoRejoinUI"
 	gui.ResetOnSpawn = false
+	gui.IgnoreGuiInset = true
+	gui.DisplayOrder = TOP_DISPLAY_ORDER
 	gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-	gui.Parent = game:GetService("CoreGui")
+	gui.Parent = pg
 
 	local frame = Instance.new("Frame")
 	frame.Size = UDim2.fromOffset(10, 40)
 	frame.AutomaticSize = Enum.AutomaticSize.X
+	frame.AnchorPoint = Vector2.new(0, 0)
+	frame.Position = UDim2.fromOffset(0, 0)
 	frame.BackgroundColor3 = THEME.FrameBgColor
 	frame.BackgroundTransparency = THEME.FrameBgTransparency
 	frame.BorderSizePixel = 0
 	frame.Active = true
-	frame.AnchorPoint = Vector2.new(0, 0)
-	frame.Position = UDim2.fromOffset(0, 0)
+	frame.ZIndex = TOP_Z
 	frame.Parent = gui
 
-	local layout = Instance.new("UIListLayout")
-	layout.FillDirection = Enum.FillDirection.Horizontal
-	layout.VerticalAlignment = Enum.VerticalAlignment.Center
-	layout.Padding = UDim.new(0, 2)
-	layout.Parent = frame
-
-	local pad = Instance.new("UIPadding")
-	pad.PaddingLeft = UDim.new(0, 6)
+	Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
+	local pad = Instance.new("UIPadding", frame)
+	pad.PaddingLeft  = UDim.new(0, 6)
 	pad.PaddingRight = UDim.new(0, 6)
-	pad.Parent = frame
+	local layout = Instance.new("UIListLayout", frame)
+	layout.FillDirection = Enum.FillDirection.Horizontal
+	layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+	layout.VerticalAlignment = Enum.VerticalAlignment.Center
+	layout.Padding = UDim.new(0, 4)
+
+	local function createBox()
+		local box = Instance.new("Frame")
+		box.Size = UDim2.fromOffset(56, 32)
+		box.BackgroundColor3 = THEME.BoxBgColor
+		box.BackgroundTransparency = THEME.BoxBgTransparency
+		box.BorderSizePixel = 0
+		box.ZIndex = TOP_Z
+		box.Parent = frame
+		Instance.new("UICorner", box).CornerRadius = UDim.new(0, THEME.BoxCorner)
+		local stroke = Instance.new("UIStroke", box)
+		stroke.Color = THEME.BoxStrokeColor
+		stroke.Thickness = THEME.BoxStrokeThickness
+		stroke.Transparency = 0.25
+		local lbl = Instance.new("TextLabel")
+		lbl.BackgroundTransparency = 1
+		lbl.Size = UDim2.fromScale(1,1)
+		lbl.Text = "00"
+		lbl.TextColor3 = THEME.TextColor
+		lbl.Font = THEME.Font
+		lbl.TextScaled = true
+		lbl.ZIndex = TOP_Z + 1
+		lbl.Parent = box
+		local limit = Instance.new("UITextSizeConstraint", lbl)
+		limit.MaxTextSize = 24
+		return lbl
+	end
+
+	local textM = createBox()
+	local textS = createBox()
 
 	local btn = Instance.new("TextButton")
-	btn.Size = UDim2.fromOffset(60, 26)
-	btn.BackgroundColor3 = THEME.BtnColor
+	btn.Size = UDim2.fromOffset(54, 28)
+	btn.BackgroundColor3 = enabled and THEME.BtnOnColor or THEME.BtnOffColor
+	btn.Text = enabled and "ON" or "OFF"
+	btn.TextColor3 = THEME.BtnTextColor
+	btn.Font = THEME.Font
+	btn.TextScaled = true
 	btn.BorderSizePixel = 0
-	btn.TextColor3 = THEME.TextColor
-	btn.Font = Enum.Font.GothamSemibold
-	btn.TextSize = 14
-	btn.Text = "REJOIN"
+	btn.ZIndex = TOP_Z + 2
 	btn.Parent = frame
+	Instance.new("UICorner", btn).CornerRadius = UDim.new(0,6)
 
-	local counter = Instance.new("TextLabel")
-	counter.BackgroundTransparency = 1
-	counter.Size = UDim2.fromOffset(40, 26)
-	counter.TextColor3 = THEME.TextColor
-	counter.Font = Enum.Font.Gotham
-	counter.TextSize = 14
-	counter.Text = "0"
-	counter.Parent = frame
-
-	return gui, frame, btn, counter
-end
+	local btnDb = false
+	btn.MouseButton1Click:Connect(function()
+		if btnDb or teleporting then return end
+		btnDb = true
+		enabled = not enabled
+		btn.BackgroundColor3 = enabled and THEME.BtnOnColor or THEME.BtnOffColor
+		btn.Text = enabled and "ON" or "OFF"
+		if enabled and remaining <= 0 then
+			remaining = TOTAL_SECONDS
+		end
+		task.delay(0.15, function() btnDb = false end)
+	end)
 
 	do
-	local UserInputService = game:GetService("UserInputService")
-	local GuiService = game:GetService("GuiService")
+		local UserInputService = game:GetService("UserInputService")
+		local GuiService = game:GetService("GuiService")
+		local RESPECT_COREGUI = false
+		local TOP_MARGIN = 0
 
-	local RESPECT_COREGUI = false
-	local TOP_MARGIN = 2
-
-	local function pointerPos(input)
-		return (input.UserInputType == Enum.UserInputType.Touch)
-			and Vector2.new(input.Position.X, input.Position.Y)
-			or UserInputService:GetMouseLocation()
-	end
-
-	local function over(inst, pos)
-		local p, s = inst.AbsolutePosition, inst.AbsoluteSize
-		return pos.X >= p.X and pos.X <= p.X+s.X and pos.Y >= p.Y and pos.Y <= p.Y+s.Y
-	end
-
-	local dragging = false
-	local dragStart, startPos
-
-	frame.Active = true
-	frame.Draggable = false
-	frame.AnchorPoint = Vector2.new(0, 0)
-	frame.Position = UDim2.fromOffset(0, 0)
-
-	frame.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-			local pos = pointerPos(input)
-			if over(btn, pos) then return end
-			dragging, dragStart, startPos = true, input.Position, frame.Position
-			input.Changed:Connect(function()
-				if input.UserInputState == Enum.UserInputState.End then dragging = false end
-			end)
+		local function pointerPos(input)
+			return (input.UserInputType == Enum.UserInputType.Touch)
+				and Vector2.new(input.Position.X, input.Position.Y)
+				or UserInputService:GetMouseLocation()
 		end
-	end)
-
-	frame.InputChanged:Connect(function(input)
-		if not dragging then return end
-		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-			local delta = input.Position - dragStart
-			local newX = startPos.X.Offset + delta.X
-			local newY = startPos.Y.Offset + delta.Y
-
-			local cam = workspace.CurrentCamera
-			if cam then
-				local vp = cam.ViewportSize
-				local topInset = GuiService:GetGuiInset().Y
-				local minY = (RESPECT_COREGUI and (topInset + TOP_MARGIN) or TOP_MARGIN)
-				newX = math.clamp(newX, 0, vp.X - frame.AbsoluteSize.X)
-				newY = math.clamp(newY, minY, vp.Y - frame.AbsoluteSize.Y)
-			end
-
-			frame.Position = UDim2.fromOffset(newX, newY)
+		local function over(inst, pos)
+			local p, s = inst.AbsolutePosition, inst.AbsoluteSize
+			return pos.X >= p.X and pos.X <= p.X+s.X and pos.Y >= p.Y and pos.Y <= p.Y+s.Y
 		end
-	end)
 
-	local function placeTopCentered()
-		local cam = workspace.CurrentCamera
-		if not cam then return end
-		local vp = cam.ViewportSize
-		local topInset = GuiService:GetGuiInset().Y
-		local minY = (RESPECT_COREGUI and (topInset + TOP_MARGIN) or TOP_MARGIN)
-		local x = math.max(0, (vp.X - frame.AbsoluteSize.X) * 0.5)
-		frame.Position = UDim2.fromOffset(x, minY)
-	end
+		local dragging = false
+		local dragStart, startPos
 
-	task.defer(function()
-		repeat task.wait() until frame.AbsoluteSize.X > 0
-		placeTopCentered()
-	end)
-
-	frame:GetPropertyChangedSignal("AbsoluteSize"):Once(placeTopCentered)
-
-	local function hookViewportChanged()
-		local cam = workspace.CurrentCamera
-		if not cam then return end
-		cam:GetPropertyChangedSignal("ViewportSize"):Connect(function()
-			if not dragging then
-				placeTopCentered()
+		frame.Draggable = false
+		frame.InputBegan:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+				local pos = pointerPos(input)
+				if over(btn, pos) then return end
+				dragging, dragStart, startPos = true, input.Position, frame.Position
+				input.Changed:Connect(function()
+					if input.UserInputState == Enum.UserInputState.End then dragging = false end
+				end)
 			end
 		end)
+		frame.InputChanged:Connect(function(input)
+			if not dragging then return end
+			if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+				local delta = input.Position - dragStart
+				local newX = startPos.X.Offset + delta.X
+				local newY = startPos.Y.Offset + delta.Y
+				local cam = workspace.CurrentCamera
+				if cam then
+					local vp = cam.ViewportSize
+					local topInset = GuiService:GetGuiInset().Y
+					local minY = (RESPECT_COREGUI and (topInset + TOP_MARGIN) or TOP_MARGIN)
+					newX = math.clamp(newX, 0, math.max(0, vp.X - frame.AbsoluteSize.X))
+					newY = math.clamp(newY, minY, math.max(minY, vp.Y - frame.AbsoluteSize.Y))
+				end
+				frame.Position = UDim2.fromOffset(newX, newY)
+			end
+		end)
+
+		local function placeTopCentered()
+			local cam = workspace.CurrentCamera
+			if not cam then return end
+			local vp = cam.ViewportSize
+			local topInset = GuiService:GetGuiInset().Y
+			local minY = (RESPECT_COREGUI and (topInset + TOP_MARGIN) or TOP_MARGIN)
+			local x = math.max(0, (vp.X - frame.AbsoluteSize.X) * 0.5)
+			frame.Position = UDim2.fromOffset(x, minY)
+		end
+		task.defer(function()
+			repeat task.wait() until frame.AbsoluteSize.X > 0
+			placeTopCentered()
+		end)
+		frame:GetPropertyChangedSignal("AbsoluteSize"):Once(placeTopCentered)
+		local function hookViewportChanged()
+			local cam = workspace.CurrentCamera
+			if not cam then return end
+			cam:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+				if not dragging then placeTopCentered() end
+			end)
+		end
+		if workspace.CurrentCamera then hookViewportChanged() end
+		workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(hookViewportChanged)
 	end
-	if workspace.CurrentCamera then hookViewportChanged() end
-	workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(hookViewportChanged)
+
+	UserInputService.InputBegan:Connect(function(input, gp)
+		if gp then return end
+		if input.KeyCode == Enum.KeyCode.RightShift then
+			frame.Visible = not frame.Visible
+		end
+	end)
+
+	ui.gui, ui.frame, ui.textM, ui.textS, ui.btn = gui, frame, textM, textS, btn
 end
+	
 	-- Ẩn/hiện nhanh
 	UserInputService.InputBegan:Connect(function(input, gp)
 		if gp then return end
