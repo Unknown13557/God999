@@ -137,8 +137,9 @@ local function createUI()
 	end)
 
 	-- Drag GUI (stable, clamp 4 cạnh, không giật, có toggle exception)
-   do
-	local UIS = game:GetService("UserInputService")
+
+	do
+	local UserInputService = game:GetService("UserInputService")
 	local GuiService = game:GetService("GuiService")
 
 	local RESPECT_COREGUI = false
@@ -147,39 +148,13 @@ local function createUI()
 	local function pointerPos(input)
 		return (input.UserInputType == Enum.UserInputType.Touch)
 			and Vector2.new(input.Position.X, input.Position.Y)
-			or UIS:GetMouseLocation()
+			or UserInputService:GetMouseLocation()
 	end
 
 	local function over(inst, pos)
 		if not inst or not inst:IsDescendantOf(game) then return false end
 		local p, s = inst.AbsolutePosition, inst.AbsoluteSize
 		return pos.X >= p.X and pos.X <= p.X + s.X and pos.Y >= p.Y and pos.Y <= p.Y + s.Y
-	end
-
-	local function clampByAnchor(pos)
-		local cam = workspace.CurrentCamera
-		if not cam then return pos end
-		local vp = cam.ViewportSize
-		local w, h = frame.AbsoluteSize.X, frame.AbsoluteSize.Y
-		local ax, ay = frame.AnchorPoint.X, frame.AnchorPoint.Y
-		local insetY = GuiService:GetGuiInset().Y
-		local top = RESPECT_COREGUI and (insetY + TOP_MARGIN) or TOP_MARGIN
-
-		local minX = ax * w
-		local maxX = vp.X - (1 - ax) * w
-		local minY = top + ay * h
-		local maxY = vp.Y - (1 - ay) * h
-
-		local x = math.clamp(pos.X.Offset, minX, math.max(minX, maxX))
-		local y = math.clamp(pos.Y.Offset, minY, math.max(minY, maxY))
-		return UDim2.fromOffset(x, y)
-	end
-
-	local function placeTopCentered()
-		local insetY = GuiService:GetGuiInset().Y
-		local top = RESPECT_COREGUI and (insetY + TOP_MARGIN) or TOP_MARGIN
-		frame.AnchorPoint = Vector2.new(0.5, 0)
-		frame.Position = UDim2.new(0.5, 0, 0, top)
 	end
 
 	local dragging = false
@@ -192,9 +167,7 @@ local function createUI()
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 			local pos = pointerPos(input)
 			if over(btn, pos) then return end
-			dragging = true
-			dragStart = input.Position
-			startPos = frame.Position
+			dragging, dragStart, startPos = true, input.Position, frame.Position
 			input.Changed:Connect(function()
 				if input.UserInputState == Enum.UserInputState.End then dragging = false end
 			end)
@@ -205,20 +178,56 @@ local function createUI()
 		if not dragging then return end
 		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
 			local delta = input.Position - dragStart
-			local newPos = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X,
-				startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-			frame.Position = clampByAnchor(newPos)
+			local newX = startPos.X.Offset + delta.X
+			local newY = startPos.Y.Offset + delta.Y
+			local cam = workspace.CurrentCamera
+			if cam then
+				local vp = cam.ViewportSize
+				local topInset = GuiService:GetGuiInset().Y
+				local minY = (RESPECT_COREGUI and (topInset + TOP_MARGIN) or TOP_MARGIN)
+				local pad = frame:FindFirstChildOfClass("UIPadding")
+				local leftPad = (pad and pad.PaddingLeft.Offset) or 0
+				local rightPad = (pad and pad.PaddingRight.Offset) or 0
+				local minX = -leftPad
+				local maxX = vp.X - (frame.AbsoluteSize.X - rightPad)
+				newX = math.clamp(newX, minX, math.max(minX, maxX))
+				newY = math.clamp(newY, minY, math.max(minY, vp.Y - frame.AbsoluteSize.Y))
+			end
+			frame.Position = UDim2.fromOffset(newX, newY)
 		end
 	end)
 
-	task.defer(placeTopCentered)
+	-- fix spawn lệch: đợi kích thước thật rồi đặt chính giữa, sát trần
+	local function placeTopCentered()
+		local cam = workspace.CurrentCamera
+		if not cam then return end
+		local vp = cam.ViewportSize
+		local pad = frame:FindFirstChildOfClass("UIPadding")
+		local leftPad = (pad and pad.PaddingLeft.Offset) or 0
+		local rightPad = (pad and pad.PaddingRight.Offset) or 0
+		local topInset = GuiService:GetGuiInset().Y
+		local minY = (RESPECT_COREGUI and (topInset + TOP_MARGIN) or TOP_MARGIN)
+		local minX = -leftPad
+		local maxX = vp.X - (frame.AbsoluteSize.X - rightPad)
+		local centerX = math.floor((minX + maxX) / 2 + 0.5)
+		frame.Position = UDim2.fromOffset(centerX, minY)
+	end
+
+	-- đợi GUI tính xong kích thước thật rồi đặt lại
+	task.spawn(function()
+		repeat task.wait() until frame.AbsoluteSize.X > 0
+		placeTopCentered()
+	end)
+
 	frame:GetPropertyChangedSignal("AbsoluteSize"):Once(placeTopCentered)
 
 	local function hookViewportChanged()
 		local cam = workspace.CurrentCamera
 		if not cam then return end
 		cam:GetPropertyChangedSignal("ViewportSize"):Connect(function()
-			if not dragging then placeTopCentered() end
+			if not dragging then
+				placeTopCentered()
+			end
 		end)
 	end
 	if workspace.CurrentCamera then hookViewportChanged() end
