@@ -1,6 +1,12 @@
+do
 local UserInputService = game:GetService("UserInputService")
 local GuiService = game:GetService("GuiService")
 local main = Instance.new("ScreenGui")
+if syn and syn.protect_gui then
+	syn.protect_gui(main)
+end
+main.Name = "main"
+main.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 local Frame = Instance.new("Frame")
 local up = Instance.new("TextButton")
 local down = Instance.new("TextButton")
@@ -561,3 +567,4 @@ mini2.MouseButton1Click:Connect(function()
 	main.Frame.BackgroundTransparency = 0 
 	closebutton.Position =  UDim2.new(0, 0, -1, 27)
 end)
+end
