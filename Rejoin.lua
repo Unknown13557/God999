@@ -1,3 +1,4 @@
+do
 local Players = game:GetService("Players")
 local TeleportService = game:GetService("TeleportService")
 local UserInputService = game:GetService("UserInputService")
@@ -55,6 +56,9 @@ local function createUI()
 	gui.IgnoreGuiInset = true
 	gui.DisplayOrder = TOP_DISPLAY_ORDER
 	gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+	if syn and syn.protect_gui then
+	syn.protect_gui(gui)
+	end
 	gui.Parent = pg
 
 	local frame = Instance.new("Frame")
@@ -275,3 +279,4 @@ RunService.Stepped:Connect(function()
 end)
 
 task.defer(runTimer)
+end
