@@ -177,6 +177,28 @@ end
 applyBG.MouseButton1Click:Connect(parseBG)
 applyST.MouseButton1Click:Connect(parseStroke)
 
+-- Size Inputs
+local wBox = mkBox(0, 58, "W")
+local hBox = mkBox(50, 58, "H")
+
+bindInt3(wBox)
+bindInt3(hBox)
+
+local applySZ = Instance.new("TextButton")
+applySZ.Size = UDim2.fromOffset(100, 22)
+applySZ.Position = UDim2.new(0, 100, 0, 58)
+applySZ.BackgroundColor3 = Color3.fromRGB(80, 200, 120)
+applySZ.TextColor3 = Color3.new(1,1,1)
+applySZ.Text = "Size"
+applySZ.Parent = ctrl
+
+local function parseSize()
+	local w = tonumber(wBox.Text) or frame.AbsoluteSize.X
+	local h = tonumber(hBox.Text) or frame.AbsoluteSize.Y
+	frame.Size = UDim2.fromOffset(math.clamp(w, 50, 1000), math.clamp(h, 50, 1000))
+end
+
+applySZ.MouseButton1Click:Connect(parseSize)
 -- Drag mượt, giới hạn biên
 local RESPECT_COREGUI = false
 local TOP_MARGIN = 2
