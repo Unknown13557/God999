@@ -20,15 +20,15 @@ local frame = Instance.new("Frame")
 frame.Size = UDim2.fromOffset(210, 120)
 frame.Position = UDim2.fromScale(0.5, 0.5)
 frame.AnchorPoint = Vector2.new(0.5, 0.5)
-frame.BackgroundColor3 = Color3.fromRGB(120, 0, 200)
-frame.BackgroundTransparency = 0.25
+frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+frame.BackgroundTransparency = 1
 frame.BorderSizePixel = 0
 frame.Active = true
 frame.Parent = gui
 
 -- Stroke
 local stroke = Instance.new("UIStroke")
-stroke.Color = Color3.fromRGB(180, 80, 255)
+stroke.Color = Color3.fromRGB(0, 0, 0)
 stroke.Thickness = 2
 stroke.Transparency = 0
 stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
