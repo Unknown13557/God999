@@ -81,7 +81,7 @@ if syn and syn.protect_gui then
 	knob.Name = M("Knob")
 	knob.Size = UDim2.fromOffset(16, 16)
 	knob.Position = UDim2.fromOffset(22, 2)
-	knob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	knob.BackgroundColor3 = Color3.fromRGB(235, 235, 235)
 	knob.Text = ""
 	knob.AutoButtonColor = false
 	knob.ZIndex = 2
