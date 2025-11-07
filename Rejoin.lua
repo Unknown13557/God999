@@ -1,4 +1,3 @@
-do
 local Players = game:GetService("Players")
 local TeleportService = game:GetService("TeleportService")
 local UserInputService = game:GetService("UserInputService")
@@ -276,4 +275,3 @@ RunService.Stepped:Connect(function()
 end)
 
 task.defer(runTimer)
-end
