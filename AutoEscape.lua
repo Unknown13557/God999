@@ -36,7 +36,7 @@ if syn and syn.protect_gui then
 	frame.Name = M("Frame")
 	frame.AnchorPoint = Vector2.new(0, 0)
 	frame.Position = UDim2.fromOffset(0, 0)
-	frame.Size = UDim2.fromOffset(140, 38)
+	frame.Size = UDim2.fromOffset(130, 38)
 	frame.AutomaticSize = Enum.AutomaticSize.XY
 	frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 	frame.BackgroundTransparency = 0.7
@@ -46,7 +46,7 @@ if syn and syn.protect_gui then
 	Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
 
 	local stroke = Instance.new("UIStroke")
-	stroke.Color = Color3.fromRGB(255, 0, 220)
+	stroke.Color = Color3.fromRGB(220, 0, 220)
 	stroke.Thickness = 2
 	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 	stroke.Parent = frame
@@ -73,7 +73,7 @@ if syn and syn.protect_gui then
 	Instance.new("UICorner", toggleWrap).CornerRadius = UDim.new(1, 0)
 
 	local toggleStroke = Instance.new("UIStroke", toggleWrap)
-	toggleStroke.Color = Color3.fromRGB(255, 0, 220)
+	toggleStroke.Color = Color3.fromRGB(220, 220, 220)
 	toggleStroke.Thickness = 1
 	toggleStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
@@ -118,7 +118,7 @@ if syn and syn.protect_gui then
 	local function setToggle(state)
 		isOn = state
 		local bgOn  = Color3.fromRGB(88, 200, 120)
-		local bgOff = Color3.fromRGB(220, 70, 70)
+		local bgOff = Color3.fromRGB(220, 50, 50)
 		if isOn then
 			TweenService:Create(toggleWrap, tweenInfo, {BackgroundColor3 = bgOn}):Play()
 			TweenService:Create(knob, tweenInfo, {Position = UDim2.fromOffset(22, 2)}):Play()
