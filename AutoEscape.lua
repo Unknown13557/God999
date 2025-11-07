@@ -46,7 +46,7 @@ if syn and syn.protect_gui then
 	Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
 
 	local stroke = Instance.new("UIStroke")
-	stroke.Color = Color3.fromRGB(0, 255, 150)
+	stroke.Color = Color3.fromRGB(180, 80, 255)
 	stroke.Thickness = 2
 	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 	stroke.Parent = frame
@@ -66,15 +66,15 @@ if syn and syn.protect_gui then
 	toggleWrap.Name = M("ToggleWrap")
 	toggleWrap.AutoButtonColor = false
 	toggleWrap.Text = ""
-	toggleWrap.BackgroundColor3 = Color3.fromRGB(50, 200, 100)
+	toggleWrap.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
 	toggleWrap.Size = UDim2.fromOffset(40, 20)
 	toggleWrap.ClipsDescendants = true
 	toggleWrap.ZIndex = 1
 	Instance.new("UICorner", toggleWrap).CornerRadius = UDim.new(1, 0)
 
 	local toggleStroke = Instance.new("UIStroke", toggleWrap)
-	toggleStroke.Color = Color3.fromRGB(200, 100, 255)
-	toggleStroke.Thickness = 3
+	toggleStroke.Color = Color3.fromRGB(255, 255, 255)
+	toggleStroke.Thickness = 0.5
 	toggleStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
 	local knob = Instance.new("TextButton", toggleWrap)
@@ -97,7 +97,7 @@ if syn and syn.protect_gui then
 	label.Text = "Auto Escape"
 	label.Font = Enum.Font.GothamBold
 	label.TextSize = 16
-	label.TextColor3 = Color3.fromRGB(235,235,235)
+	label.TextColor3 = Color3.fromRGB(255,255,255)
 
 	toggleWrap.LayoutOrder = 1
 	label.LayoutOrder      = 2
@@ -117,8 +117,8 @@ if syn and syn.protect_gui then
 
 	local function setToggle(state)
 		isOn = state
-		local bgOn  = Color3.fromRGB(50, 200, 100)
-		local bgOff = Color3.fromRGB(255, 50, 50)
+		local bgOn  = Color3.fromRGB(0, 255, 0)
+		local bgOff = Color3.fromRGB(255, 0, 0)
 		if isOn then
 			TweenService:Create(toggleWrap, tweenInfo, {BackgroundColor3 = bgOn}):Play()
 			TweenService:Create(knob, tweenInfo, {Position = UDim2.fromOffset(22, 2)}):Play()
