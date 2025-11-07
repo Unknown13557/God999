@@ -39,7 +39,7 @@ if syn and syn.protect_gui then
 	frame.Size = UDim2.fromOffset(140, 46)
 	frame.AutomaticSize = Enum.AutomaticSize.XY
 	frame.BackgroundColor3 = Color3.fromRGB(70, 0, 110)
-	frame.BackgroundTransparency = 0.25
+	frame.BackgroundTransparency = 1
 	frame.BorderSizePixel = 0
 	frame.Active = true
 	frame.Parent = gui
