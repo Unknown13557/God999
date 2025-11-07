@@ -56,10 +56,11 @@ if syn and syn.protect_gui then
 	padding.PaddingLeft, padding.PaddingRight = UDim.new(0,8), UDim.new(0,8)
 
 	local layout = Instance.new("UIListLayout", frame)
-	layout.FillDirection = Enum.FillDirection.Horizontal
-	layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-	layout.VerticalAlignment = Enum.VerticalAlignment.Center
-	layout.Padding = UDim.new(0,6)
+    layout.FillDirection = Enum.FillDirection.Horizontal
+    layout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+    layout.VerticalAlignment   = Enum.VerticalAlignment.Center
+    layout.Padding             = UDim.new(0, 6)
+    layout.SortOrder           = Enum.SortOrder.LayoutOrder
 
 	local toggleWrap = Instance.new("TextButton", frame)
 	toggleWrap.Name = M("ToggleWrap")
