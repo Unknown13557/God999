@@ -13,9 +13,9 @@ local TOP_MARGIN = 2
 
 -- ========= STATE =========
 local Enabled, Flying, TweenObj = true, false, nil
-local cancelFlight, startFlight, onHealthChanged, bindCharacter
 local Humanoid, RootPart
 local healthConn
+local cancelFlight, startFlight, onHealthChanged, bindCharacter
 
 -- ========= GUI =========
 local gui = Instance.new("ScreenGui")
