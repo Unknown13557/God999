@@ -38,15 +38,15 @@ if syn and syn.protect_gui then
 	frame.Position = UDim2.fromOffset(0, 0)
 	frame.Size = UDim2.fromOffset(140, 46)
 	frame.AutomaticSize = Enum.AutomaticSize.XY
-	frame.BackgroundColor3 = Color3.fromRGB(70, 0, 110)
-	frame.BackgroundTransparency = 1
+	frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+	frame.BackgroundTransparency = 0
 	frame.BorderSizePixel = 0
 	frame.Active = true
 	frame.Parent = gui
 	Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
 
 	local stroke = Instance.new("UIStroke")
-	stroke.Color = Color3.fromRGB(180, 80, 255)
+	stroke.Color = Color3.fromRGB(0, 255, 150)
 	stroke.Thickness = 2
 	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 	stroke.Parent = frame
@@ -73,8 +73,8 @@ if syn and syn.protect_gui then
 	Instance.new("UICorner", toggleWrap).CornerRadius = UDim.new(1, 0)
 
 	local toggleStroke = Instance.new("UIStroke", toggleWrap)
-	toggleStroke.Color = Color3.fromRGB(255, 255, 255)
-	toggleStroke.Thickness = 1
+	toggleStroke.Color = Color3.fromRGB(200, 100, 255)
+	toggleStroke.Thickness = 3
 	toggleStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
 	local knob = Instance.new("TextButton", toggleWrap)
