@@ -117,8 +117,8 @@ if syn and syn.protect_gui then
 
 	local function setToggle(state)
 		isOn = state
-		local bgOn  = Color3.fromRGB(88, 198, 120)
-		local bgOff = Color3.fromRGB(210, 88, 88)
+		local bgOn  = Color3.fromRGB(88, 200, 120)
+		local bgOff = Color3.fromRGB(220, 70, 70)
 		if isOn then
 			TweenService:Create(toggleWrap, tweenInfo, {BackgroundColor3 = bgOn}):Play()
 			TweenService:Create(knob, tweenInfo, {Position = UDim2.fromOffset(22, 2)}):Play()
