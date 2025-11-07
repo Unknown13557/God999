@@ -47,7 +47,7 @@ close.MouseButton1Click:Connect(function() gui:Destroy() end)
 -- Control panel
 local ctrl = Instance.new("Frame")
 ctrl.Size = UDim2.new(1, -12, 0, 58)
-ctrl.Position = UDim2.new(0, 6, 1, -64)
+ctrl.Position = UDim2.new(0, 6, 1, 15)
 ctrl.BackgroundTransparency = 1
 ctrl.Parent = frame
 
