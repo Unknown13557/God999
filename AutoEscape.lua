@@ -13,6 +13,7 @@ local TOP_MARGIN = 2
 
 -- ========= STATE =========
 local Enabled, Flying, TweenObj = true, false, nil
+local cancelFlight, startFlight, onHealthChanged, bindCharacter
 local Humanoid, RootPart
 local healthConn
 
@@ -231,12 +232,12 @@ do
 end
 
 -- ========= FLIGHT LOGIC =========
-local function cancelFlight()
+cancelFlight = function()
 	if TweenObj then TweenObj:Cancel() TweenObj=nil end
 	Flying=false
 end
 
-local function startFlight()
+startFlight = function()
 	if not Enabled or Flying or not RootPart then return end
 	local yNow = RootPart.Position.Y
 	if yNow >= TARGET_Y - 1 then return end
@@ -249,21 +250,19 @@ local function startFlight()
 	TweenObj:Play()
 end
 
-local function onHealthChanged(h)
+onHealthChanged = function(h)
 	if not Humanoid or not Enabled then return end
 	local mh = Humanoid.MaxHealth
 	if mh <= 0 then return end
 	local p = h / mh
 	if (not Flying) and p < LOW_HP then
-		print("[AutoEscape] HP low, starting flight")
 		startFlight()
 	elseif Flying and p >= SAFE_HP then
-		print("[AutoEscape] HP safe, cancel flight")
 		cancelFlight()
 	end
 end
 
-local function bindCharacter(char)
+bindCharacter = function(char)
 	Humanoid = char:WaitForChild("Humanoid")
 	RootPart = char:WaitForChild("HumanoidRootPart")
 
