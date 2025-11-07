@@ -38,7 +38,7 @@ if syn and syn.protect_gui then
 	frame.Position = UDim2.fromOffset(0, 0)
 	frame.Size = UDim2.fromOffset(140, 46)
 	frame.AutomaticSize = Enum.AutomaticSize.XY
-	frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+	frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 	frame.BackgroundTransparency = 0
 	frame.BorderSizePixel = 0
 	frame.Active = true
@@ -66,15 +66,15 @@ if syn and syn.protect_gui then
 	toggleWrap.Name = M("ToggleWrap")
 	toggleWrap.AutoButtonColor = false
 	toggleWrap.Text = ""
-	toggleWrap.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+	toggleWrap.BackgroundColor3 = Color3.fromRGB(50, 255, 50)
 	toggleWrap.Size = UDim2.fromOffset(40, 20)
 	toggleWrap.ClipsDescendants = true
 	toggleWrap.ZIndex = 1
 	Instance.new("UICorner", toggleWrap).CornerRadius = UDim.new(1, 0)
 
 	local toggleStroke = Instance.new("UIStroke", toggleWrap)
-	toggleStroke.Color = Color3.fromRGB(255, 255, 255)
-	toggleStroke.Thickness = 0.5
+	toggleStroke.Color = Color3.fromRGB(180, 80, 255)
+	toggleStroke.Thickness = 1
 	toggleStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
 	local knob = Instance.new("TextButton", toggleWrap)
@@ -87,7 +87,7 @@ if syn and syn.protect_gui then
 	knob.ZIndex = 2
 	Instance.new("UICorner", knob).CornerRadius = UDim.new(1, 0)
 	local knobStroke = Instance.new("UIStroke", knob)
-	knobStroke.Color = Color3.fromRGB(230, 230, 230)
+	knobStroke.Color = Color3.fromRGB(255, 255, 255)
 	knobStroke.Thickness = 1
 
 	local label = Instance.new("TextLabel", frame)
@@ -117,8 +117,8 @@ if syn and syn.protect_gui then
 
 	local function setToggle(state)
 		isOn = state
-		local bgOn  = Color3.fromRGB(0, 255, 0)
-		local bgOff = Color3.fromRGB(255, 0, 0)
+		local bgOn  = Color3.fromRGB(50, 255, 50)
+		local bgOff = Color3.fromRGB(255, 50, 50)
 		if isOn then
 			TweenService:Create(toggleWrap, tweenInfo, {BackgroundColor3 = bgOn}):Play()
 			TweenService:Create(knob, tweenInfo, {Position = UDim2.fromOffset(22, 2)}):Play()
