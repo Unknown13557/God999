@@ -96,7 +96,7 @@ if syn and syn.protect_gui then
 	label.BackgroundTransparency = 1
 	label.Text = "Mẹ mày béo"
 	label.Font = Enum.Font.GothamBold
-	label.TextSize = 15
+	label.TextSize = 10
 	label.TextColor3 = Color3.fromRGB(0, 0, 0)
 
 	toggleWrap.LayoutOrder = 1
