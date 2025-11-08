@@ -36,18 +36,18 @@ if syn and syn.protect_gui then
 	frame.Name = M("Frame")
 	frame.AnchorPoint = Vector2.new(0, 0)
 	frame.Position = UDim2.fromOffset(0, 0)
-	frame.Size = UDim2.fromOffset(130, 38)
+	frame.Size = UDim2.fromOffset(110, 30)
 	frame.AutomaticSize = Enum.AutomaticSize.XY
-	frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-	frame.BackgroundTransparency = 0.7
+	frame.BackgroundColor3 = Color3.fromRGB(242, 60, 255)
+	frame.BackgroundTransparency = 0
 	frame.BorderSizePixel = 0
 	frame.Active = true
 	frame.Parent = gui
 	Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
 
 	local stroke = Instance.new("UIStroke")
-	stroke.Color = Color3.fromRGB(220, 0, 220)
-	stroke.Thickness = 2
+	stroke.Color = Color3.fromRGB(123, 255, 247)
+	stroke.Thickness = 1
 	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 	stroke.Parent = frame
 
@@ -97,7 +97,7 @@ if syn and syn.protect_gui then
 	label.Text = "Auto Escape"
 	label.Font = Enum.Font.GothamBold
 	label.TextSize = 17
-	label.TextColor3 = Color3.fromRGB(235,235,235)
+	label.TextColor3 = Color3.fromRGB(0, 0, 0)
 
 	toggleWrap.LayoutOrder = 1
 	label.LayoutOrder      = 2
