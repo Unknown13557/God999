@@ -1,4 +1,5 @@
-task.wait(3)
+do
+ltask.wait(3)
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
@@ -110,3 +111,4 @@ task.defer(function()
         checkPlayerFull(p)
     end
 end)
+end
