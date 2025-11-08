@@ -94,9 +94,9 @@ if syn and syn.protect_gui then
 	label.Name = M("Label")
 	label.AutomaticSize = Enum.AutomaticSize.XY
 	label.BackgroundTransparency = 1
-	label.Text = "Auto Escape"
+	label.Text = "Mẹ mày béo"
 	label.Font = Enum.Font.GothamBold
-	label.TextSize = 17
+	label.TextSize = 15
 	label.TextColor3 = Color3.fromRGB(0, 0, 0)
 
 	toggleWrap.LayoutOrder = 1
