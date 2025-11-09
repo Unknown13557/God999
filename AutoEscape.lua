@@ -94,7 +94,7 @@ if syn and syn.protect_gui then
 	label.Name = M("Label")
 	label.AutomaticSize = Enum.AutomaticSize.XY
 	label.BackgroundTransparency = 1
-	label.Text ="Kamuii"
+	label.Text ="Kamui"
 	label.Font = Enum.Font.GothamBold
 	label.TextSize = 15
 	label.TextColor3 = Color3.fromRGB(0, 0, 0)
