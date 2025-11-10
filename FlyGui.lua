@@ -145,7 +145,7 @@ local chr = game.Players.LocalPlayer.Character
 local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
 
 nowe = false
--- === NOCOLLIDE (noclip) HELPERS ===
+
 local noclipConn = nil
 local noclipCache = {}
 
@@ -280,6 +280,7 @@ local function hookViewportChanged()
 		end
 	end)
 end
+	
 if workspace.CurrentCamera then hookViewportChanged() end
 workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(hookViewportChanged)
 
@@ -287,7 +288,7 @@ onof.MouseButton1Down:connect(function()
 
 	if nowe == true then
 		nowe = false
-	-- stop noclip ngay khi tắt fly
+	
 	pcall(function() stopNoclip() end)
 
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Climbing,true)
@@ -308,8 +309,6 @@ onof.MouseButton1Down:connect(function()
 		speaker.Character.Humanoid:ChangeState(Enum.HumanoidStateType.RunningNoPhysics)
 	else 
 		nowe = true
-
-
 
 		for i = 1, speeds do
 			spawn(function()
@@ -335,7 +334,7 @@ onof.MouseButton1Down:connect(function()
 		for i,v in next, Hum:GetPlayingAnimationTracks() do
 			v:AdjustSpeed(0)
 		end
-		-- BẮT ĐẦU NOCOLLIDE KHI BẬT FLY
+		
  pcall(function() startNoclip() end)
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Climbing,false)
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown,false)
@@ -355,12 +354,7 @@ onof.MouseButton1Down:connect(function()
 		speaker.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Swimming)
 	end
 
-
-
-
 	if game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid").RigType == Enum.HumanoidRigType.R6 then
-
-
 
 		local plr = game.Players.LocalPlayer
 		local torso = plr.Character.Torso
@@ -370,7 +364,6 @@ onof.MouseButton1Down:connect(function()
 		local lastctrl = {f = 0, b = 0, l = 0, r = 0}
 		local maxspeed = 50
 		local speed = 0
-
 
 		local bg = Instance.new("BodyGyro", torso)
 		bg.P = 9e4
@@ -415,9 +408,6 @@ onof.MouseButton1Down:connect(function()
 		plr.Character.Humanoid.PlatformStand = false
 		game.Players.LocalPlayer.Character.Animate.Disabled = false
 		tpwalking = false
-
-
-
 
 	else
 		local plr = game.Players.LocalPlayer
@@ -473,15 +463,7 @@ onof.MouseButton1Down:connect(function()
 		plr.Character.Humanoid.PlatformStand = false
 		game.Players.LocalPlayer.Character.Animate.Disabled = false
 		tpwalking = false
-
-
-
 	end
-
-
-
-
-
 end)
 
 local tis
@@ -520,30 +502,24 @@ down.MouseLeave:connect(function()
 	end
 end)
 
-
 game:GetService("Players").LocalPlayer.CharacterAdded:Connect(function(char)
 	wait(0.7)
--- cleanup noclip phòng khi vẫn còn
 	pcall(function() stopNoclip() end)
-			
 	game.Players.LocalPlayer.Character.Humanoid.PlatformStand = false
 	game.Players.LocalPlayer.Character.Animate.Disabled = false
 
 end)
-
 
 plus.MouseButton1Down:connect(function()
 	speeds = speeds + 1
 	speed.Text = speeds
 	if nowe == true then
 
-
 		tpwalking = false
 		for i = 1, speeds do
 			spawn(function()
 
 				local hb = game:GetService("RunService").Heartbeat	
-
 
 				tpwalking = true
 				local chr = game.Players.LocalPlayer.Character
@@ -558,6 +534,7 @@ plus.MouseButton1Down:connect(function()
 		end
 	end
 end)
+	
 mine.MouseButton1Down:connect(function()
 	if speeds == 1 then
 		speed.Text = 'cannot be less than 1'
@@ -573,7 +550,6 @@ mine.MouseButton1Down:connect(function()
 
 					local hb = game:GetService("RunService").Heartbeat	
 
-
 					tpwalking = true
 					local chr = game.Players.LocalPlayer.Character
 					local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
@@ -582,16 +558,14 @@ mine.MouseButton1Down:connect(function()
 							chr:TranslateBy(hum.MoveDirection)
 						end
 					end
-
 				end)
 			end
 		end
 	end
 end)
 
--- === CLOSE BUTTON (nhấn đúp trong 1 giây để thoát) ===
 	local lastClick = 0
-	local doubleClickWindow = 1 -- thời gian giữa hai lần nhấn (giây)
+	local doubleClickWindow = 1
 
 	closebutton.MouseButton1Click:Connect(function()
 		local now = tick()
