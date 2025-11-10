@@ -566,13 +566,21 @@ end)
 
 	local lastClick = 0
 	local doubleClickWindow = 1
-
+	
+	local originalTextColor = closebutton.TextColor3
 	closebutton.MouseButton1Click:Connect(function()
 		local now = tick()
 		if now - lastClick <= doubleClickWindow then
 			main:Destroy()
 		else
 			lastClick = now
+			closebutton.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+			task.delay(doubleClickWindow, function()
+				if tick() - lastClick >= doubleClickWindow then
+					closebutton.TextColor3 = originalTextColor
+				end
+			end)
 		end
 	end)
 
