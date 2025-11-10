@@ -589,9 +589,18 @@ mine.MouseButton1Down:connect(function()
 	end
 end)
 
-closebutton.MouseButton1Click:Connect(function()
-	main:Destroy()
-end)
+-- === CLOSE BUTTON (nhấn đúp trong 1 giây để thoát) ===
+	local lastClick = 0
+	local doubleClickWindow = 1 -- thời gian giữa hai lần nhấn (giây)
+
+	closebutton.MouseButton1Click:Connect(function()
+		local now = tick()
+		if now - lastClick <= doubleClickWindow then
+			main:Destroy()
+		else
+			lastClick = now
+		end
+	end)
 
 mini.MouseButton1Click:Connect(function()
 	up.Visible = false
