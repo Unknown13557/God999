@@ -71,9 +71,40 @@ onof.Font = Enum.Font.SourceSans
 onof.Text = "FLY"
 onof.TextColor3 = Color3.fromRGB(0, 0, 0)
 onof.TextSize = 14.000
-local onofDefaultText = onof.TextColor3
-local FLY_ACTIVE_COLOR = Color3.fromRGB(242, 60, 255)
 
+local onofDefaultTextColor = onof.TextColor3
+local onofDefaultBG        = onof.BackgroundColor3
+local onofDefaultText      = onof.Text
+
+local flyRainbowRunning = false
+local flyRainbowThread  = nil
+
+local function startFlyVisuals()
+	onof.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+	onof.Text = "FLY"
+	onof.TextStrokeTransparency = 0
+	onof.TextStrokeColor3 = Color3.fromRGB(255, 255, 255)
+	flyRainbowRunning = true
+	if not flyRainbowThread or coroutine.status(flyRainbowThread) == "dead" then
+		flyRainbowThread = coroutine.create(function()
+			local t = 0
+			while flyRainbowRunning do
+				t += RunService.RenderStepped:Wait() or 0
+				onof.TextColor3 = Color3.fromHSV((t * 0.3) % 1, 1, 1)
+			end
+		end)
+		coroutine.resume(flyRainbowThread)
+	end
+end
+
+local function stopFlyVisuals()
+	flyRainbowRunning = false
+	onof.BackgroundColor3 = onofDefaultBG
+	onof.TextColor3       = onofDefaultTextColor
+	onof.Text             = onofDefaultText
+	onof.TextStrokeTransparency = 1
+end
+	
 TextLabel.Parent = Frame
 TextLabel.BackgroundColor3 = Color3.fromRGB(242, 60, 255)
 TextLabel.Position = UDim2.new(0.469327301, 0, 0, 0)
@@ -300,7 +331,7 @@ onof.MouseButton1Down:connect(function()
 
 	if nowe == true then
 		nowe = false
-onof.TextColor3 = onofDefaultText
+	stopFlyVisuals()
 				
 		pcall(function() stopNoclip() end)
 
@@ -323,7 +354,7 @@ onof.TextColor3 = onofDefaultText
 	else 
 		nowe = true
 				
-		onof.TextColor3 = FLY_ACTIVE_COLOR
+		startFlyVisuals()
 		for i = 1, speeds do
 			spawn(function()
 				local hb = RS.Heartbeat	
@@ -516,7 +547,7 @@ Players.LocalPlayer.CharacterAdded:Connect(function(char)
 	pcall(function() stopNoclip() end)
 	LocalPlayer.Character.Humanoid.PlatformStand = false
 	LocalPlayer.Character.Animate.Disabled = false
-    onof.TextColor3 = onofDefaultText
+    stopFlyVisuals()
 end)
 
 plus.MouseButton1Down:connect(function()
