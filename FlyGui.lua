@@ -197,105 +197,148 @@ mini2.Position = UDim2.new(0, 44, -1, 57)
 mini2.Visible = false
 
 local COL1_W, COL2_W, COL3_W = 44, 45, 100
-local ROW_H = 28
-local TOTAL_W = COL1_W + COL2_W + COL3_W
-local TOTAL_H = ROW_H * 2
+local ROW_H    = 28
+local GRID_W   = COL1_W + COL2_W + COL3_W
+local GRID_H   = ROW_H * 2
+local BAR_H    = ROW_H
 
-Frame.Size = UDim2.fromOffset(TOTAL_W, TOTAL_H)
+main.DisplayOrder = 1
 
-local Left = Instance.new("Frame")
-Left.Name = "Left"
-Left.BackgroundTransparency = 1
-Left.Size = UDim2.fromOffset(COL1_W + COL2_W, TOTAL_H)
-Left.Position = UDim2.fromOffset(0, 0)
-Left.Parent = Frame
+local BASE_Z = 5
+for _,child in ipairs(Frame:GetChildren()) do
+	if child:IsA("GuiObject") then child.ZIndex = BASE_Z end
+end
 
-local LeftH = Instance.new("UIListLayout")
-LeftH.FillDirection = Enum.FillDirection.Horizontal
-LeftH.SortOrder = Enum.SortOrder.LayoutOrder
-LeftH.Padding = UDim.new(0, 0)
-LeftH.Parent = Left
+local RootV = Instance.new("UIListLayout")
+RootV.FillDirection = Enum.FillDirection.Vertical
+RootV.SortOrder     = Enum.SortOrder.LayoutOrder
+RootV.Padding       = UDim.new(0,0)
+RootV.Parent        = Frame
+
+local Bar = Instance.new("Frame")
+Bar.Name = "Bar"
+Bar.BackgroundTransparency = 1
+Bar.Size = UDim2.fromOffset(GRID_W, BAR_H)
+Bar.LayoutOrder = 1
+Bar.ZIndex = BASE_Z
+Bar.Parent = Frame
+
+local BarH = Instance.new("UIListLayout")
+BarH.FillDirection = Enum.FillDirection.Horizontal
+BarH.SortOrder     = Enum.SortOrder.LayoutOrder
+BarH.Padding       = UDim.new(0,0)
+BarH.Parent        = Bar
+
+closebutton.Parent   = Bar
+closebutton.Size     = UDim2.fromOffset(COL1_W, BAR_H)
+closebutton.LayoutOrder = 1
+closebutton.ZIndex   = BASE_Z
+
+mini.Parent          = Bar
+mini.Size            = UDim2.fromOffset(COL2_W, BAR_H)
+mini.LayoutOrder     = 2
+mini.ZIndex          = BASE_Z
+
+TextLabel.Parent     = Bar
+TextLabel.Size       = UDim2.new(1, -(COL1_W+COL2_W), 0, BAR_H)
+TextLabel.LayoutOrder= 3
+TextLabel.ZIndex     = BASE_Z
+
+local Grid = Instance.new("Frame")
+Grid.Name = "Grid"
+Grid.BackgroundTransparency = 1
+Grid.Size = UDim2.fromOffset(GRID_W, GRID_H)
+Grid.LayoutOrder = 2
+Grid.ZIndex = BASE_Z
+Grid.Parent = Frame
+
+local GridH = Instance.new("UIListLayout")
+GridH.FillDirection = Enum.FillDirection.Horizontal
+GridH.SortOrder     = Enum.SortOrder.LayoutOrder
+GridH.Padding       = UDim.new(0,0)
+GridH.Parent        = Grid
 
 local Col1 = Instance.new("Frame")
-Col1.Name = "Col1"
 Col1.BackgroundTransparency = 1
-Col1.Size = UDim2.fromOffset(COL1_W, TOTAL_H)
+Col1.Size = UDim2.fromOffset(COL1_W, GRID_H)
 Col1.LayoutOrder = 1
-Col1.Parent = Left
+Col1.Parent = Grid
 
 local Col1V = Instance.new("UIListLayout")
 Col1V.FillDirection = Enum.FillDirection.Vertical
-Col1V.SortOrder = Enum.SortOrder.LayoutOrder
-Col1V.Padding = UDim.new(0, 0)
 Col1V.Parent = Col1
 
+up.Parent = Col1;   up.Size   = UDim2.new(1,0,0,ROW_H);   up.ZIndex = BASE_Z
+down.Parent = Col1; down.Size = UDim2.new(1,0,0,ROW_H);   down.ZIndex = BASE_Z
+
 local Col2 = Instance.new("Frame")
-Col2.Name = "Col2"
 Col2.BackgroundTransparency = 1
-Col2.Size = UDim2.fromOffset(COL2_W, TOTAL_H)
+Col2.Size = UDim2.fromOffset(COL2_W, GRID_H)
 Col2.LayoutOrder = 2
-Col2.Parent = Left
+Col2.Parent = Grid
 
 local Col2V = Instance.new("UIListLayout")
 Col2V.FillDirection = Enum.FillDirection.Vertical
-Col2V.SortOrder = Enum.SortOrder.LayoutOrder
-Col2V.Padding = UDim.new(0, 0)
 Col2V.Parent = Col2
 
-up.Parent = Col1
-up.Size = UDim2.new(1, 0, 0, ROW_H)
-up.LayoutOrder = 1
+plus.Parent = Col2; plus.Size = UDim2.new(1,0,0,ROW_H);  plus.ZIndex = BASE_Z
+mine.Parent = Col2; mine.Size = UDim2.new(1,0,0,ROW_H);  mine.ZIndex = BASE_Z
 
-down.Parent = Col1
-down.Size = UDim2.new(1, 0, 0, ROW_H)
-down.LayoutOrder = 2
+local Col3 = Instance.new("Frame")
+Col3.BackgroundTransparency = 1
+Col3.Size = UDim2.fromOffset(COL3_W, GRID_H)
+Col3.LayoutOrder = 3
+Col3.Parent = Grid
 
-plus.Parent = Col2
-plus.Size = UDim2.new(1, 0, 0, ROW_H)
-plus.LayoutOrder = 1
+local Col3V = Instance.new("UIListLayout")
+Col3V.FillDirection = Enum.FillDirection.Vertical
+Col3V.Parent = Col3
 
-mine.Parent = Col2
-mine.Size = UDim2.new(1, 0, 0, ROW_H)
-mine.LayoutOrder = 2
+local Col3Top = Instance.new("Frame")
+Col3Top.BackgroundTransparency = 1
+Col3Top.Size = UDim2.new(1,0,0,ROW_H)
+Col3Top.Parent = Col3
 
-local Right = Instance.new("Frame")
-Right.Name = "Right"
-Right.BackgroundTransparency = 1
-Right.Size = UDim2.fromOffset(COL3_W, TOTAL_H)
-Right.Position = UDim2.fromOffset(COL1_W + COL2_W, 0)
-Right.Parent = Frame
+local Col3Bottom = Instance.new("Frame")
+Col3Bottom.BackgroundTransparency = 1
+Col3Bottom.Size = UDim2.new(1,0,0,ROW_H)
+Col3Bottom.Parent = Col3
 
-local RightV = Instance.new("UIListLayout")
-RightV.FillDirection = Enum.FillDirection.Vertical
-RightV.SortOrder = Enum.SortOrder.LayoutOrder
-RightV.Padding = UDim.new(0, 0)
-RightV.Parent = Right
+local Col3BottomH = Instance.new("UIListLayout")
+Col3BottomH.FillDirection = Enum.FillDirection.Horizontal
+Col3BottomH.Parent = Col3Bottom
 
-TextLabel.Parent = Right
-TextLabel.Size = UDim2.new(1, 0, 0, ROW_H)
-TextLabel.LayoutOrder = 1
+speed.Parent = Col3Bottom
+speed.Size   = UDim2.fromOffset(44, ROW_H)
+speed.ZIndex = BASE_Z
 
-local Bottom = Instance.new("Frame")
-Bottom.Name = "Bottom"
-Bottom.BackgroundTransparency = 1
-Bottom.Size = UDim2.new(1, 0, 0, ROW_H)
-Bottom.LayoutOrder = 2
-Bottom.Parent = Right
+onof.Parent  = Col3Bottom
+onof.Size    = UDim2.new(1, -44, 0, ROW_H)
+onof.ZIndex  = BASE_Z
 
-local BottomH = Instance.new("UIListLayout")
-BottomH.FillDirection = Enum.FillDirection.Horizontal
-BottomH.SortOrder = Enum.SortOrder.LayoutOrder
-BottomH.Padding = UDim.new(0, 0)
-BottomH.Parent = Bottom
+local function setExpanded(v)
+	if v then
+		Grid.Visible = true
+		mini.Visible = true
+		mini2.Visible = false
+		main.Frame.BackgroundTransparency = 0
+		closebutton.Position = UDim2.new(0, 0, -1, 27)
+		Frame.Size = UDim2.fromOffset(GRID_W, BAR_H + GRID_H)
+	else
+		Grid.Visible = false
+		mini.Visible = false
+		mini2.Visible = true
+		main.Frame.BackgroundTransparency = 1
+		closebutton.Position = UDim2.new(0, 0, -1, 57)
+		Frame.Size = UDim2.fromOffset(GRID_W, BAR_H)
+	end
+end
 
-speed.Parent = Bottom
-speed.Size = UDim2.fromOffset(44, ROW_H)
-speed.LayoutOrder = 1
+setExpanded(true)
 
-onof.Parent = Bottom
-onof.Size = UDim2.new(1, -44, 0, ROW_H)
-onof.LayoutOrder = 2
-
+mini.MouseButton1Click:Connect(function() setExpanded(false) end)
+mini2.MouseButton1Click:Connect(function() setExpanded(true) end)
+	
 speeds = 16
 
 local speaker = LocalPlayer
