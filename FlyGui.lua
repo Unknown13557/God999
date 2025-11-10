@@ -1,6 +1,16 @@
 do
 local UserInputService = game:GetService("UserInputService")
-local GuiService = game:GetService("GuiService")
+local GuiService       = game:GetService("GuiService")
+local Players          = game:GetService("Players")
+local RunService       = game:GetService("RunService")
+local Workspace        = game:GetService("Workspace")
+
+local LocalPlayer = Players.LocalPlayer
+local RS          = RunService
+local WS          = Workspace
+local UIS         = UserInputService
+local GS          = GuiService
+
 local main = Instance.new("ScreenGui")
 if syn and syn.protect_gui then
 	syn.protect_gui(main)
@@ -139,9 +149,9 @@ mini2.Visible = false
 
 speeds = 16
 
-local speaker = game:GetService("Players").LocalPlayer
+local speaker = LocalPlayer
 
-local chr = game.Players.LocalPlayer.Character
+local chr = LocalPlayer.Character
 local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
 
 nowe = false
@@ -159,15 +169,15 @@ end
 
 local function startNoclip()
 	if noclipConn then return end
-	local char = game.Players.LocalPlayer and game.Players.LocalPlayer.Character
+	local char = LocalPlayer and LocalPlayer.Character
 	if not char then return end
 
 	for _, p in ipairs(char:GetDescendants()) do
 		if p:IsA("BasePart") then cacheAndDisablePart(p) end
 	end
 
-	noclipConn = game:GetService("RunService").Stepped:Connect(function()
-		local c = game.Players.LocalPlayer and game.Players.LocalPlayer.Character
+	noclipConn = RS.Stepped:Connect(function()
+		local c = LocalPlayer and LocalPlayer.Character
 		if not c then return end
 		for part, _ in pairs(noclipCache) do
 			if part and part.Parent then part.CanCollide = false end
@@ -186,7 +196,7 @@ local function stopNoclip()
 		end
 	end
 	noclipCache = {}
-	end
+end
 
 local RESPECT_COREGUI = false
 local TOP_MARGIN = 0
@@ -194,7 +204,7 @@ local TOP_MARGIN = 0
 local function pointerPos(input)
 	return (input.UserInputType == Enum.UserInputType.Touch)
 		and Vector2.new(input.Position.X, input.Position.Y)
-		or UserInputService:GetMouseLocation()
+		or UIS:GetMouseLocation()
 end
 
 local function over(inst, pos)
@@ -234,10 +244,10 @@ Frame.InputChanged:Connect(function(input)
 		local newX = startPos.X.Offset + delta.X
 		local newY = startPos.Y.Offset + delta.Y
 
-		local cam = workspace.CurrentCamera
+		local cam = WS.CurrentCamera
 		if cam then
 			local vp = cam.ViewportSize
-			local topInset = GuiService:GetGuiInset().Y
+			local topInset = GS:GetGuiInset().Y
 			local minY = (RESPECT_COREGUI and (topInset + TOP_MARGIN) or TOP_MARGIN)
 
 			newX = math.clamp(newX, 0, math.max(0, vp.X - Frame.AbsoluteSize.X))
@@ -252,10 +262,10 @@ task.defer(function()
 	local abs = Frame.AbsolutePosition
 	Frame.Position = UDim2.fromOffset(abs.X, abs.Y)
 	
-	local cam = workspace.CurrentCamera
+	local cam = WS.CurrentCamera
 	if cam then
 		local vp = cam.ViewportSize
-		local topInset = GuiService:GetGuiInset().Y
+		local topInset = GS:GetGuiInset().Y
 		local minY = (RESPECT_COREGUI and (topInset + TOP_MARGIN) or TOP_MARGIN)
 
 		local x = math.clamp(abs.X, 0, math.max(0, vp.X - Frame.AbsoluteSize.X))
@@ -265,13 +275,13 @@ task.defer(function()
 end)
 
 local function hookViewportChanged()
-	local cam = workspace.CurrentCamera
+	local cam = WS.CurrentCamera
 	if not cam then return end
 	cam:GetPropertyChangedSignal("ViewportSize"):Connect(function()
 		if not dragging then
 			local abs = Frame.AbsolutePosition
 			local vp = cam.ViewportSize
-			local topInset = GuiService:GetGuiInset().Y
+			local topInset = GS:GetGuiInset().Y
 			local minY = (RESPECT_COREGUI and (topInset + TOP_MARGIN) or TOP_MARGIN)
 
 			local x = math.clamp(abs.X, 0, math.max(0, vp.X - Frame.AbsoluteSize.X))
@@ -281,15 +291,15 @@ local function hookViewportChanged()
 	end)
 end
 	
-if workspace.CurrentCamera then hookViewportChanged() end
-workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(hookViewportChanged)
+if WS.CurrentCamera then hookViewportChanged() end
+WS:GetPropertyChangedSignal("CurrentCamera"):Connect(hookViewportChanged)
 
 onof.MouseButton1Down:connect(function()
 
 	if nowe == true then
 		nowe = false
 	
-	pcall(function() stopNoclip() end)
+		pcall(function() stopNoclip() end)
 
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Climbing,true)
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown,true)
@@ -312,31 +322,26 @@ onof.MouseButton1Down:connect(function()
 
 		for i = 1, speeds do
 			spawn(function()
-
-				local hb = game:GetService("RunService").Heartbeat	
-
-
+				local hb = RS.Heartbeat	
 				tpwalking = true
-				local chr = game.Players.LocalPlayer.Character
+				local chr = LocalPlayer.Character
 				local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
 				while tpwalking and hb:Wait() and chr and hum and hum.Parent do
 					if hum.MoveDirection.Magnitude > 0 then
 						chr:TranslateBy(hum.MoveDirection)
 					end
 				end
-
 			end)
 		end
-		game.Players.LocalPlayer.Character.Animate.Disabled = true
-		local Char = game.Players.LocalPlayer.Character
+		LocalPlayer.Character.Animate.Disabled = true
+		local Char = LocalPlayer.Character
 		local Hum = Char:FindFirstChildOfClass("Humanoid") or Char:FindFirstChildOfClass("AnimationController")
 
 		for i,v in next, Hum:GetPlayingAnimationTracks() do
 			v:AdjustSpeed(0)
 		end
 		
- pcall(function() startNoclip() end)
- 	
+		pcall(function() startNoclip() end)
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Climbing,false)
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown,false)
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Flying,false)
@@ -352,12 +357,12 @@ onof.MouseButton1Down:connect(function()
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated,false)
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.StrafingNoPhysics,false)
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Swimming,false)
-        speaker.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Swimming)
+		speaker.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Swimming)
 	end
-				
-	if game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid").RigType == Enum.HumanoidRigType.R6 then
 
-		local plr = game.Players.LocalPlayer
+	if LocalPlayer.Character:FindFirstChildOfClass("Humanoid").RigType == Enum.HumanoidRigType.R6 then
+
+		local plr = LocalPlayer
 		local torso = plr.Character.Torso
 		local flying = true
 		local deb = true
@@ -376,8 +381,8 @@ onof.MouseButton1Down:connect(function()
 		if nowe == true then
 			plr.Character.Humanoid.PlatformStand = true
 		end
-		while nowe == true or game:GetService("Players").LocalPlayer.Character.Humanoid.Health == 0 do
-			game:GetService("RunService").RenderStepped:Wait()
+		while nowe == true or LocalPlayer.Character.Humanoid.Health == 0 do
+			RS.RenderStepped:Wait()
 
 			if ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0 then
 				speed = speed+.5+(speed/maxspeed)
@@ -391,15 +396,15 @@ onof.MouseButton1Down:connect(function()
 				end
 			end
 			if (ctrl.l + ctrl.r) ~= 0 or (ctrl.f + ctrl.b) ~= 0 then
-				bv.velocity = ((game.Workspace.CurrentCamera.CoordinateFrame.lookVector * (ctrl.f+ctrl.b)) + ((game.Workspace.CurrentCamera.CoordinateFrame * CFrame.new(ctrl.l+ctrl.r,(ctrl.f+ctrl.b)*.2,0).p) - game.Workspace.CurrentCamera.CoordinateFrame.p))*speed
+				bv.velocity = ((WS.CurrentCamera.CoordinateFrame.lookVector * (ctrl.f+ctrl.b)) + ((WS.CurrentCamera.CoordinateFrame * CFrame.new(ctrl.l+ctrl.r,(ctrl.f+ctrl.b)*.2,0).p) - WS.CurrentCamera.CoordinateFrame.p))*speed
 				lastctrl = {f = ctrl.f, b = ctrl.b, l = ctrl.l, r = ctrl.r}
 			elseif (ctrl.l + ctrl.r) == 0 and (ctrl.f + ctrl.b) == 0 and speed ~= 0 then
-				bv.velocity = ((game.Workspace.CurrentCamera.CoordinateFrame.lookVector * (lastctrl.f+lastctrl.b)) + ((game.Workspace.CurrentCamera.CoordinateFrame * CFrame.new(lastctrl.l+lastctrl.r,(lastctrl.f+lastctrl.b)*.2,0).p) - game.Workspace.CurrentCamera.CoordinateFrame.p))*speed
+				bv.velocity = ((WS.CurrentCamera.CoordinateFrame.lookVector * (lastctrl.f+lastctrl.b)) + ((WS.CurrentCamera.CoordinateFrame * CFrame.new(lastctrl.l+lastctrl.r,(lastctrl.f+lastctrl.b)*.2,0).p) - WS.CurrentCamera.CoordinateFrame.p))*speed
 			else
 				bv.velocity = Vector3.new(0,0,0)
 			end
 
-			bg.cframe = game.Workspace.CurrentCamera.CoordinateFrame * CFrame.Angles(-math.rad((ctrl.f+ctrl.b)*50*speed/maxspeed),0,0)
+			bg.cframe = WS.CurrentCamera.CoordinateFrame * CFrame.Angles(-math.rad((ctrl.f+ctrl.b)*50*speed/maxspeed),0,0)
 		end
 		ctrl = {f = 0, b = 0, l = 0, r = 0}
 		lastctrl = {f = 0, b = 0, l = 0, r = 0}
@@ -407,11 +412,11 @@ onof.MouseButton1Down:connect(function()
 		bg:Destroy()
 		bv:Destroy()
 		plr.Character.Humanoid.PlatformStand = false
-		game.Players.LocalPlayer.Character.Animate.Disabled = false
+		LocalPlayer.Character.Animate.Disabled = false
 		tpwalking = false
 
 	else
-		local plr = game.Players.LocalPlayer
+		local plr = LocalPlayer
 		local UpperTorso = plr.Character.UpperTorso
 		local flying = true
 		local deb = true
@@ -419,7 +424,6 @@ onof.MouseButton1Down:connect(function()
 		local lastctrl = {f = 0, b = 0, l = 0, r = 0}
 		local maxspeed = 50
 		local speed = 0
-
 
 		local bg = Instance.new("BodyGyro", UpperTorso)
 		bg.P = 9e4
@@ -431,7 +435,7 @@ onof.MouseButton1Down:connect(function()
 		if nowe == true then
 			plr.Character.Humanoid.PlatformStand = true
 		end
-		while nowe == true or game:GetService("Players").LocalPlayer.Character.Humanoid.Health == 0 do
+		while nowe == true or LocalPlayer.Character.Humanoid.Health == 0 do
 			wait()
 
 			if ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0 then
@@ -446,15 +450,15 @@ onof.MouseButton1Down:connect(function()
 				end
 			end
 			if (ctrl.l + ctrl.r) ~= 0 or (ctrl.f + ctrl.b) ~= 0 then
-				bv.velocity = ((game.Workspace.CurrentCamera.CoordinateFrame.lookVector * (ctrl.f+ctrl.b)) + ((game.Workspace.CurrentCamera.CoordinateFrame * CFrame.new(ctrl.l+ctrl.r,(ctrl.f+ctrl.b)*.2,0).p) - game.Workspace.CurrentCamera.CoordinateFrame.p))*speed
+				bv.velocity = ((WS.CurrentCamera.CoordinateFrame.lookVector * (ctrl.f+ctrl.b)) + ((WS.CurrentCamera.CoordinateFrame * CFrame.new(ctrl.l+ctrl.r,(ctrl.f+ctrl.b)*.2,0).p) - WS.CurrentCamera.CoordinateFrame.p))*speed
 				lastctrl = {f = ctrl.f, b = ctrl.b, l = ctrl.l, r = ctrl.r}
 			elseif (ctrl.l + ctrl.r) == 0 and (ctrl.f + ctrl.b) == 0 and speed ~= 0 then
-				bv.velocity = ((game.Workspace.CurrentCamera.CoordinateFrame.lookVector * (lastctrl.f+lastctrl.b)) + ((game.Workspace.CurrentCamera.CoordinateFrame * CFrame.new(lastctrl.l+lastctrl.r,(lastctrl.f+lastctrl.b)*.2,0).p) - game.Workspace.CurrentCamera.CoordinateFrame.p))*speed
+				bv.velocity = ((WS.CurrentCamera.CoordinateFrame.lookVector * (lastctrl.f+lastctrl.b)) + ((WS.CurrentCamera.CoordinateFrame * CFrame.new(lastctrl.l+lastctrl.r,(lastctrl.f+lastctrl.b)*.2,0).p) - WS.CurrentCamera.CoordinateFrame.p))*speed
 			else
 				bv.velocity = Vector3.new(0,0,0)
 			end
 
-			bg.cframe = game.Workspace.CurrentCamera.CoordinateFrame * CFrame.Angles(-math.rad((ctrl.f+ctrl.b)*50*speed/maxspeed),0,0)
+			bg.cframe = WS.CurrentCamera.CoordinateFrame * CFrame.Angles(-math.rad((ctrl.f+ctrl.b)*50*speed/maxspeed),0,0)
 		end
 		ctrl = {f = 0, b = 0, l = 0, r = 0}
 		lastctrl = {f = 0, b = 0, l = 0, r = 0}
@@ -462,7 +466,7 @@ onof.MouseButton1Down:connect(function()
 		bg:Destroy()
 		bv:Destroy()
 		plr.Character.Humanoid.PlatformStand = false
-		game.Players.LocalPlayer.Character.Animate.Disabled = false
+		LocalPlayer.Character.Animate.Disabled = false
 		tpwalking = false
 	end
 end)
@@ -473,7 +477,7 @@ up.MouseButton1Down:connect(function()
 	tis = up.MouseEnter:connect(function()
 		while tis do
 			wait()
-			game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0,1,0)
+			LocalPlayer.Character.HumanoidRootPart.CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0,1,0)
 		end
 	end)
 end)
@@ -491,7 +495,7 @@ down.MouseButton1Down:connect(function()
 	dis = down.MouseEnter:connect(function()
 		while dis do
 			wait()
-			game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0,-1,0)
+			LocalPlayer.Character.HumanoidRootPart.CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0,-1,0)
 		end
 	end)
 end)
@@ -503,12 +507,11 @@ down.MouseLeave:connect(function()
 	end
 end)
 
-game:GetService("Players").LocalPlayer.CharacterAdded:Connect(function(char)
+Players.LocalPlayer.CharacterAdded:Connect(function(char)
 	wait(0.7)
 	pcall(function() stopNoclip() end)
-	game.Players.LocalPlayer.Character.Humanoid.PlatformStand = false
-	game.Players.LocalPlayer.Character.Animate.Disabled = false
-
+	LocalPlayer.Character.Humanoid.PlatformStand = false
+	LocalPlayer.Character.Animate.Disabled = false
 end)
 
 plus.MouseButton1Down:connect(function()
@@ -519,18 +522,15 @@ plus.MouseButton1Down:connect(function()
 		tpwalking = false
 		for i = 1, speeds do
 			spawn(function()
-
-				local hb = game:GetService("RunService").Heartbeat	
-
+				local hb = RS.Heartbeat	
 				tpwalking = true
-				local chr = game.Players.LocalPlayer.Character
+				local chr = LocalPlayer.Character
 				local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
 				while tpwalking and hb:Wait() and chr and hum and hum.Parent do
 					if hum.MoveDirection.Magnitude > 0 then
 						chr:TranslateBy(hum.MoveDirection)
 					end
 				end
-
 			end)
 		end
 	end
@@ -548,11 +548,9 @@ mine.MouseButton1Down:connect(function()
 			tpwalking = false
 			for i = 1, speeds do
 				spawn(function()
-
-					local hb = game:GetService("RunService").Heartbeat	
-
+					local hb = RS.Heartbeat	
 					tpwalking = true
-					local chr = game.Players.LocalPlayer.Character
+					local chr = LocalPlayer.Character
 					local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
 					while tpwalking and hb:Wait() and chr and hum and hum.Parent do
 						if hum.MoveDirection.Magnitude > 0 then
@@ -565,25 +563,25 @@ mine.MouseButton1Down:connect(function()
 	end
 end)
 
-	local lastClick = 0
-	local doubleClickWindow = 1
-	
-	local originalTextColor = closebutton.TextColor3
-	closebutton.MouseButton1Click:Connect(function()
-		local now = tick()
-		if now - lastClick <= doubleClickWindow then
-			main:Destroy()
-		else
-			lastClick = now
-			closebutton.TextColor3 = Color3.fromRGB(255, 255, 255)
+local lastClick = 0
+local doubleClickWindow = 1
 
-			task.delay(doubleClickWindow, function()
-				if tick() - lastClick >= doubleClickWindow then
-					closebutton.TextColor3 = originalTextColor
-				end
-			end)
-		end
-	end)
+local originalTextColor = closebutton.TextColor3
+closebutton.MouseButton1Click:Connect(function()
+	local now = tick()
+	if now - lastClick <= doubleClickWindow then
+		main:Destroy()
+	else
+		lastClick = now
+		closebutton.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+		task.delay(doubleClickWindow, function()
+			if tick() - lastClick >= doubleClickWindow then
+				closebutton.TextColor3 = originalTextColor
+			end
+		end)
+	end
+end)
 
 mini.MouseButton1Click:Connect(function()
 	up.Visible = false
