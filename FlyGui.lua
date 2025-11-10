@@ -368,7 +368,7 @@ flyStateConn = hum.StateChanged:Connect(function(_, new)
 		hum:ChangeState(Enum.HumanoidStateType.Flying)
 	end
 end)
-
+end
 	if game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid").RigType == Enum.HumanoidRigType.R6 then
 
 		local plr = game.Players.LocalPlayer
