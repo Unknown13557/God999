@@ -70,39 +70,55 @@ onof.Size = UDim2.new(0, 56, 0, 28)
 onof.Font = Enum.Font.SourceSans
 onof.Text = "FLY"
 onof.TextColor3 = Color3.fromRGB(0, 0, 0)
-onof.TextSize = 14.000
+onof.TextSize = 15.000
 
 local onofDefaultTextColor = onof.TextColor3
 local onofDefaultBG        = onof.BackgroundColor3
 local onofDefaultText      = onof.Text
 
-local flyRainbowRunning = false
-local flyRainbowThread  = nil
+local onofStroke = onof:FindFirstChild("FlyStroke") or Instance.new("UIStroke")
+onofStroke.Name = "FlyStroke"
+onofStroke.Parent = onof
+onofStroke.Thickness = 2
+onofStroke.Transparency = 0
+onofStroke.Color = Color3.fromRGB(255,255,255)
+onofStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+onofStroke.Enabled = false
+
+onof.BorderSizePixel = 0
+
+local flyRainbowConn = nil
+local flyHueTime     = 0
 
 local function startFlyVisuals()
 	onof.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 	onof.Text = "FLY"
 	onof.TextStrokeTransparency = 0
 	onof.TextStrokeColor3 = Color3.fromRGB(255, 255, 255)
-	flyRainbowRunning = true
-	if not flyRainbowThread or coroutine.status(flyRainbowThread) == "dead" then
-		flyRainbowThread = coroutine.create(function()
-			local t = 0
-			while flyRainbowRunning do
-				t += RunService.RenderStepped:Wait() or 0
-				onof.TextColor3 = Color3.fromHSV((t * 0.3) % 1, 1, 1)
-			end
-		end)
-		coroutine.resume(flyRainbowThread)
-	end
+	onofStroke.Enabled = true
+
+	if flyRainbowConn then flyRainbowConn:Disconnect() end
+	flyRainbowConn = RS.RenderStepped:Connect(function(dt)
+		flyHueTime += dt
+		local hue = (flyHueTime * 0.3) % 1
+		local rainbow = Color3.fromHSV(hue, 1, 1)
+		onof.TextColor3  = rainbow
+		onofStroke.Color = rainbow
+	end)
 end
 
 local function stopFlyVisuals()
-	flyRainbowRunning = false
+	if flyRainbowConn then
+		flyRainbowConn:Disconnect()
+		flyRainbowConn = nil
+	end
+
 	onof.BackgroundColor3 = onofDefaultBG
 	onof.TextColor3       = onofDefaultTextColor
 	onof.Text             = onofDefaultText
 	onof.TextStrokeTransparency = 1
+	onofStroke.Enabled = false
+	onofStroke.Color = Color3.fromRGB(255,255,255)
 end
 	
 TextLabel.Parent = Frame
