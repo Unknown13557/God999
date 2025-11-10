@@ -70,7 +70,7 @@ onof.Size = UDim2.new(0, 56, 0, 28)
 onof.Font = Enum.Font.SourceSans
 onof.Text = "FLY"
 onof.TextColor3 = Color3.fromRGB(0, 0, 0)
-onof.TextSize = 15.000
+onof.TextSize = 16.000
 onof.ZIndex = 50
 
 local onofDefaultTextColor = onof.TextColor3
@@ -92,7 +92,7 @@ local flyRainbowConn = nil
 local flyHueTime     = 0
 
 local function startFlyVisuals()
-	onof.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+	onof.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 	onof.Text = "FLY"
 	onof.TextStrokeTransparency = 0
 	onof.TextStrokeColor3 = Color3.fromRGB(255, 255, 255)
@@ -132,7 +132,9 @@ TextLabel.TextColor3 = Color3.fromRGB(0, 0, 0)
 TextLabel.TextScaled = true
 TextLabel.TextSize = 14.000
 TextLabel.TextWrapped = true
-
+TextLabel.ZIndex = 40
+	
+	
 plus.Name = "plus"
 plus.Parent = Frame
 plus.BackgroundColor3 = Color3.fromRGB(133, 145, 255)
@@ -166,7 +168,7 @@ mine.Font = Enum.Font.SourceSans
 mine.Text = "-"
 mine.TextColor3 = Color3.fromRGB(0, 0, 0)
 mine.TextScaled = true
-mine.TextSize = 14.000
+mine.TextSize = 15.000
 mine.TextWrapped = true
 
 closebutton.Name = "Close"
