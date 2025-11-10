@@ -5,6 +5,8 @@ local main = Instance.new("ScreenGui")
 if syn and syn.protect_gui then
 	syn.protect_gui(main)
 end
+main.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+main.DisplayOrder = 198282823
 main.Name = "main"
 main.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 local Frame = Instance.new("Frame")
