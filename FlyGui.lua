@@ -124,7 +124,7 @@ end
 TextLabel.Parent = Frame
 TextLabel.BackgroundColor3 = Color3.fromRGB(242, 60, 255)
 TextLabel.Position = UDim2.new(0.469327301, 0, 0, 0)
-TextLabel.Size = UDim2.new(0, 100, 0, 30)
+TextLabel.Size = UDim2.new(0, 100, 0, 28)
 TextLabel.Font = Enum.Font.SourceSans
 TextLabel.Text = "︻デ═一"
 TextLabel.TextColor3 = Color3.fromRGB(0, 0, 0)
@@ -160,7 +160,7 @@ mine.Name = "mine"
 mine.Parent = Frame
 mine.BackgroundColor3 = Color3.fromRGB(123, 255, 247)
 mine.Position = UDim2.new(0.231578946, 0, 0.491228074, 0)
-mine.Size = UDim2.new(0, 45, 0, 32)
+mine.Size = UDim2.new(0, 45, 0, 31)
 mine.Font = Enum.Font.SourceSans
 mine.Text = "-"
 mine.TextColor3 = Color3.fromRGB(0, 0, 0)
@@ -175,7 +175,7 @@ closebutton.Font = Enum.Font.SourceSans
 closebutton.Size = UDim2.new(0, 45, 0, 28)
 closebutton.Text = "X"
 closebutton.TextSize = 30
-closebutton.Position =  UDim2.new(0, 0, -2, 27)
+closebutton.Position =  UDim2.new(0, 0, -1, 27)
 
 mini.Name = "minimize"
 mini.Parent = main.Frame
@@ -184,7 +184,7 @@ mini.Font = Enum.Font.SourceSans
 mini.Size = UDim2.new(0, 45, 0, 28)
 mini.Text = "-"
 mini.TextSize = 40
-mini.Position = UDim2.new(0, 44, -2, 27)
+mini.Position = UDim2.new(0, 44, -1, 27)
 
 mini2.Name = "minimize2"
 mini2.Parent = main.Frame
