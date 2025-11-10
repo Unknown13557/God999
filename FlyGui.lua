@@ -124,7 +124,7 @@ end
 TextLabel.Parent = Frame
 TextLabel.BackgroundColor3 = Color3.fromRGB(242, 60, 255)
 TextLabel.Position = UDim2.new(0.469327301, 0, 0, 0)
-TextLabel.Size = UDim2.new(0, 100, 0, 28)
+TextLabel.Size = UDim2.new(0, 100, 0, 30)
 TextLabel.Font = Enum.Font.SourceSans
 TextLabel.Text = "︻デ═一"
 TextLabel.TextColor3 = Color3.fromRGB(0, 0, 0)
@@ -160,7 +160,7 @@ mine.Name = "mine"
 mine.Parent = Frame
 mine.BackgroundColor3 = Color3.fromRGB(123, 255, 247)
 mine.Position = UDim2.new(0.231578946, 0, 0.491228074, 0)
-mine.Size = UDim2.new(0, 45, 0, 29)
+mine.Size = UDim2.new(0, 45, 0, 32)
 mine.Font = Enum.Font.SourceSans
 mine.Text = "-"
 mine.TextColor3 = Color3.fromRGB(0, 0, 0)
