@@ -145,6 +145,48 @@ local chr = game.Players.LocalPlayer.Character
 local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
 
 nowe = false
+-- === NOCOLLIDE (noclip) HELPERS ===
+local noclipConn = nil
+local noclipCache = {}
+
+local function cacheAndDisablePart(part)
+	if not part or not part:IsA("BasePart") then return end
+	if noclipCache[part] == nil then
+		noclipCache[part] = part.CanCollide
+	end
+	part.CanCollide = false
+end
+
+local function startNoclip()
+	if noclipConn then return end
+	local char = game.Players.LocalPlayer and game.Players.LocalPlayer.Character
+	if not char then return end
+
+	for _, p in ipairs(char:GetDescendants()) do
+		if p:IsA("BasePart") then cacheAndDisablePart(p) end
+	end
+
+	noclipConn = game:GetService("RunService").Stepped:Connect(function()
+		local c = game.Players.LocalPlayer and game.Players.LocalPlayer.Character
+		if not c then return end
+		for part, _ in pairs(noclipCache) do
+			if part and part.Parent then part.CanCollide = false end
+		end
+		for _, p in ipairs(c:GetDescendants()) do
+			if p:IsA("BasePart") and noclipCache[p] == nil then cacheAndDisablePart(p) end
+		end
+	end)
+end
+
+local function stopNoclip()
+	if noclipConn then noclipConn:Disconnect(); noclipConn = nil end
+	for part, prev in pairs(noclipCache) do
+		if part and part.Parent then
+			if prev == nil then part.CanCollide = true else part.CanCollide = prev end
+		end
+	end
+	noclipCache = {}
+	end
 
 local RESPECT_COREGUI = false
 local TOP_MARGIN = 0
@@ -245,6 +287,8 @@ onof.MouseButton1Down:connect(function()
 
 	if nowe == true then
 		nowe = false
+	-- stop noclip ngay khi tắt fly
+	pcall(function() stopNoclip() end)
 
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Climbing,true)
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown,true)
@@ -291,6 +335,8 @@ onof.MouseButton1Down:connect(function()
 		for i,v in next, Hum:GetPlayingAnimationTracks() do
 			v:AdjustSpeed(0)
 		end
+		-- BẮT ĐẦU NOCOLLIDE KHI BẬT FLY
+ pcall(function() startNoclip() end)
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Climbing,false)
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown,false)
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Flying,false)
@@ -358,7 +404,7 @@ onof.MouseButton1Down:connect(function()
 			else
 				bv.velocity = Vector3.new(0,0,0)
 			end
-			--	game.Players.LocalPlayer.Character.Animate.Disabled = true
+
 			bg.cframe = game.Workspace.CurrentCamera.CoordinateFrame * CFrame.Angles(-math.rad((ctrl.f+ctrl.b)*50*speed/maxspeed),0,0)
 		end
 		ctrl = {f = 0, b = 0, l = 0, r = 0}
@@ -477,6 +523,9 @@ end)
 
 game:GetService("Players").LocalPlayer.CharacterAdded:Connect(function(char)
 	wait(0.7)
+-- cleanup noclip phòng khi vẫn còn
+	pcall(function() stopNoclip() end)
+			
 	game.Players.LocalPlayer.Character.Humanoid.PlatformStand = false
 	game.Players.LocalPlayer.Character.Animate.Disabled = false
 
