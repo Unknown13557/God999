@@ -17,7 +17,6 @@ if syn and syn.protect_gui then
 end
 main.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 main.DisplayOrder = 198282823
-
 main.Name = "main"
 main.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 main.IgnoreGuiInset = true
@@ -27,90 +26,165 @@ main.ResetOnSpawn = false
 Frame.Parent = main
 Frame.BackgroundColor3 = Color3.fromRGB(163, 255, 137)
 Frame.BorderColor3 = Color3.fromRGB(103, 221, 213)
--- Khung vừa khít 3 cột x 2 hàng
-Frame.Position = UDim2.new(0, Frame.Position.X.Offset, 0, Frame.Position.Y.Offset) -- giữ vị trí gốc nếu bạn muốn
-Frame.Size = UDim2.fromOffset(189, 56) -- 44+45+100 , 28*2
+Frame.Position = UDim2.new(0.100320168, 0, 0.379746825, 0)
+Frame.Size = UDim2.new(0, 190, 0, 57)
 
--- HÀNG TRÊN
 up.Name = "up"
 up.Parent = Frame
 up.BackgroundColor3 = Color3.fromRGB(79, 255, 152)
-up.Size = UDim2.fromOffset(44, 28)
-up.Position = UDim2.fromOffset(0, 0)
+up.Size = UDim2.new(0, 44, 0, 28)
 up.Font = Enum.Font.SourceSans
 up.Text = "UP"
 up.TextColor3 = Color3.fromRGB(0, 0, 0)
-up.TextSize = 15
+up.TextSize = 15.000
 
-plus.Name = "plus"
-plus.Parent = Frame
-plus.BackgroundColor3 = Color3.fromRGB(133, 145, 255)
-plus.Size = UDim2.fromOffset(45, 28)
-plus.Position = UDim2.fromOffset(44, 0)
-plus.Font = Enum.Font.SourceSans
-plus.Text = "+"
-plus.TextColor3 = Color3.fromRGB(0, 0, 0)
-plus.TextScaled = true
-plus.TextSize = 14.5
-plus.TextWrapped = true
-
-TextLabel.Parent = Frame
-TextLabel.BackgroundColor3 = Color3.fromRGB(242, 60, 255)
-TextLabel.Size = UDim2.fromOffset(100, 28)
-TextLabel.Position = UDim2.fromOffset(89, 0) -- 44+45
-TextLabel.Font = Enum.Font.SourceSans
-TextLabel.Text = "︻デ═一"
-TextLabel.TextColor3 = Color3.fromRGB(0, 0, 0)
-TextLabel.TextScaled = true
-TextLabel.TextSize = 14
-TextLabel.TextWrapped = true
-
--- HÀNG DƯỚI
 down.Name = "down"
 down.Parent = Frame
 down.BackgroundColor3 = Color3.fromRGB(215, 255, 121)
-down.Size = UDim2.fromOffset(44, 28)
-down.Position = UDim2.fromOffset(0, 28)
+down.Position = UDim2.new(0, 0, 0.491228074, 0)
+down.Size = UDim2.new(0, 44, 0, 28)
 down.Font = Enum.Font.SourceSans
 down.Text = "DOWN"
 down.TextColor3 = Color3.fromRGB(0, 0, 0)
-down.TextSize = 15
-
-mine.Name = "mine"
-mine.Parent = Frame
-mine.BackgroundColor3 = Color3.fromRGB(123, 255, 247)
-mine.Size = UDim2.fromOffset(45, 28)  -- CHUẨN 28 (không 29)
-mine.Position = UDim2.fromOffset(44, 28)
-mine.Font = Enum.Font.SourceSans
-mine.Text = "-"
-mine.TextColor3 = Color3.fromRGB(0, 0, 0)
-mine.TextScaled = true
-mine.TextSize = 14.5
-mine.TextWrapped = true
-
-speed.Name = "speed"
-speed.Parent = Frame
-speed.BackgroundColor3 = Color3.fromRGB(255, 85, 0)
-speed.Size = UDim2.fromOffset(44, 28)
-speed.Position = UDim2.fromOffset(89, 28)
-speed.Font = Enum.Font.SourceSans
-speed.Text = "16"
-speed.TextColor3 = Color3.fromRGB(0, 0, 0)
-speed.TextScaled = true
-speed.TextSize = 14
-speed.TextWrapped = true
+down.TextSize = 15.000
 
 onof.Name = "onof"
 onof.Parent = Frame
 onof.BackgroundColor3 = Color3.fromRGB(255, 249, 74)
-onof.Size = UDim2.fromOffset(56, 28)         -- 100 - 44 = 56
-onof.Position = UDim2.fromOffset(133, 28)    -- 89 + 44
+onof.Position = UDim2.new(0.702823281, 0, 0.491228074, 0)
+onof.Size = UDim2.new(0, 56, 0, 28)
 onof.Font = Enum.Font.SourceSans
 onof.Text = "FLY"
 onof.TextColor3 = Color3.fromRGB(0, 0, 0)
-onof.TextSize = 16
-onof.BorderSizePixel = 1                      -- viền mặc định đen
+onof.TextSize = 16.000
+onof.BorderSizePixel = 1
 onof.BorderColor3 = Color3.fromRGB(0, 0, 0)
+
+local onofDefaultTextColor = onof.TextColor3
+local onofDefaultBG        = onof.BackgroundColor3
+local onofDefaultText      = onof.Text
+
+local onofStroke = onof:FindFirstChild("FlyStroke") or Instance.new("UIStroke")
+onofStroke.Name = "FlyStroke"
+onofStroke.Parent = onof
+onofStroke.Thickness = 2
+onofStroke.Transparency = 0
+onofStroke.Color = Color3.fromRGB(255,255,255)
+onofStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+onofStroke.Enabled = false
+
+onof.BorderSizePixel = 0
+
+local flyRainbowConn = nil
+local flyHueTime     = 0
+
+local function startFlyVisuals()
+onof.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+onof.Text = "FLY"
+onof.TextStrokeTransparency = 0
+onof.TextStrokeColor3 = Color3.fromRGB(255, 255, 255)
+onofStroke.Enabled = true
+
+if flyRainbowConn then flyRainbowConn:Disconnect() end  
+flyRainbowConn = RS.RenderStepped:Connect(function(dt)  
+	flyHueTime += dt  
+	local hue = (flyHueTime * 0.3) % 1  
+	local rainbow = Color3.fromHSV(hue, 1, 1)  
+	onof.TextColor3  = rainbow  
+	onofStroke.Color = rainbow  
+end)
+
+end
+
+local function stopFlyVisuals()
+if flyRainbowConn then
+flyRainbowConn:Disconnect()
+flyRainbowConn = nil
+end
+
+onof.BackgroundColor3 = onofDefaultBG  
+onof.TextColor3       = onofDefaultTextColor  
+onof.Text             = onofDefaultText  
+onof.TextStrokeTransparency = 1  
+onofStroke.Enabled = false  
+onofStroke.Color = Color3.fromRGB(255,255,255)  
+onof.BorderColor3 = Color3.fromRGB(0, 0, 0)
+
+end
+
+TextLabel.Parent = Frame
+TextLabel.BackgroundColor3 = Color3.fromRGB(242, 60, 255)
+TextLabel.Position = UDim2.new(0.469327301, 0, 0, 0)
+TextLabel.Size = UDim2.new(0, 100, 0, 28)
+TextLabel.Font = Enum.Font.SourceSans
+TextLabel.Text = "︻デ═一"
+TextLabel.TextColor3 = Color3.fromRGB(0, 0, 0)
+TextLabel.TextScaled = true
+TextLabel.TextSize = 14.000
+TextLabel.TextWrapped = true
+
+plus.Name = "plus"
+plus.Parent = Frame
+plus.BackgroundColor3 = Color3.fromRGB(133, 145, 255)
+plus.Position = UDim2.new(0.231578946, 0, 0, 0)
+plus.Size = UDim2.new(0, 45, 0, 28)
+plus.Font = Enum.Font.SourceSans
+plus.Text = "+"
+plus.TextColor3 = Color3.fromRGB(0, 0, 0)
+plus.TextScaled = true
+plus.TextSize = 14.500
+plus.TextWrapped = true
+
+speed.Name = "speed"
+speed.Parent = Frame
+speed.BackgroundColor3 = Color3.fromRGB(255, 85, 0)
+speed.Position = UDim2.new(0.468421042, 0, 0.491228074, 0)
+speed.Size = UDim2.new(0, 44, 0, 28)
+speed.Font = Enum.Font.SourceSans
+speed.Text = "16"
+speed.TextColor3 = Color3.fromRGB(0, 0, 0)
+speed.TextScaled = true
+speed.TextSize = 14.000
+speed.TextWrapped = true
+
+mine.Name = "mine"
+mine.Parent = Frame
+mine.BackgroundColor3 = Color3.fromRGB(123, 255, 247)
+mine.Position = UDim2.new(0.231578946, 0, 0.491228074, 0)
+mine.Size = UDim2.new(0, 45, 0, 29)
+mine.Font = Enum.Font.SourceSans
+mine.Text = "-"
+mine.TextColor3 = Color3.fromRGB(0, 0, 0)
+mine.TextScaled = true
+mine.TextSize = 14.500
+mine.TextWrapped = true
+
+closebutton.Name = "Close"
+closebutton.Parent = main.Frame
+closebutton.BackgroundColor3 = Color3.fromRGB(225, 25, 0)
+closebutton.Font = Enum.Font.SourceSans
+closebutton.Size = UDim2.new(0, 45, 0, 28)
+closebutton.Text = "X"
+closebutton.TextSize = 30
+closebutton.Position =  UDim2.new(0, 0, -1, 27)
+
+mini.Name = "minimize"
+mini.Parent = main.Frame
+mini.BackgroundColor3 = Color3.fromRGB(192, 150, 230)
+mini.Font = Enum.Font.SourceSans
+mini.Size = UDim2.new(0, 45, 0, 28)
+mini.Text = "-"
+mini.TextSize = 40
+mini.Position = UDim2.new(0, 44, -1, 27)
+
+mini2.Name = "minimize2"
+mini2.Parent = main.Frame
+mini2.BackgroundColor3 = Color3.fromRGB(192, 150, 230)
+mini2.Font = Enum.Font.SourceSans
+mini2.Size = UDim2.new(0, 45, 0, 28)
+mini2.Text = "+"
+mini2.TextSize = 40
+mini2.Position = UDim2.new(0, 44, -1, 57)
 
 speeds = 16
 
