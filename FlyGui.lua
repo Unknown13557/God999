@@ -38,8 +38,8 @@ main.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 main.ResetOnSpawn = false
 
 Frame.Parent = main
-Frame.BackgroundColor3 = Color3.fromRGB(163, 255, 137)
-Frame.BorderColor3 = Color3.fromRGB(103, 221, 213)
+Frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+Frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 Frame.Position = UDim2.new(0.100320168, 0, 0.379746825, 0)
 Frame.Size = UDim2.new(0, 190, 0, 57)
 
@@ -71,6 +71,7 @@ onof.Font = Enum.Font.SourceSans
 onof.Text = "FLY"
 onof.TextColor3 = Color3.fromRGB(0, 0, 0)
 onof.TextSize = 15.000
+onof.ZIndex = 50
 
 local onofDefaultTextColor = onof.TextColor3
 local onofDefaultBG        = onof.BackgroundColor3
@@ -85,7 +86,7 @@ onofStroke.Color = Color3.fromRGB(255,255,255)
 onofStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 onofStroke.Enabled = false
 
-onof.BorderSizePixel = 0
+onof.BorderSizePixel = 1
 
 local flyRainbowConn = nil
 local flyHueTime     = 0
