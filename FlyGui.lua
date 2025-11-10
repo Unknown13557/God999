@@ -146,6 +146,7 @@ local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
 
 nowe = false
 
+local _flyWaterConn = nil	
 local noclipConn = nil
 local noclipCache = {}
 
@@ -290,6 +291,7 @@ onof.MouseButton1Down:connect(function()
 		nowe = false
 	
 	pcall(function() stopNoclip() end)
+	if _flyWaterConn then _flyWaterConn:Disconnect() _flyWaterConn = nil end
 
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Climbing,true)
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown,true)
@@ -336,6 +338,27 @@ onof.MouseButton1Down:connect(function()
 		end
 		
  pcall(function() startNoclip() end)
+ 
+local hum = speaker.Character and speaker.Character:FindFirstChildOfClass("Humanoid")
+if hum then
+	if _flyWaterConn then
+		_flyWaterConn:Disconnect()
+		_flyWaterConn = nil
+	end
+	_flyWaterConn = hum.StateChanged:Connect(function(_, new)
+		if nowe and new == Enum.HumanoidStateType.Swimming then
+			task.defer(function()
+				if nowe then
+					pcall(function() stopNoclip() end)
+					nowe = false
+					task.wait(0.05)
+					nowe = true
+					pcall(function() startNoclip() end)
+				end
+			end)
+		end
+	end)
+end
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Climbing,false)
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown,false)
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Flying,false)
