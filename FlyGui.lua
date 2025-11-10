@@ -146,7 +146,6 @@ local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
 
 nowe = false
 
-local flyStateConn = nil
 local noclipConn = nil
 local noclipCache = {}
 
@@ -291,7 +290,6 @@ onof.MouseButton1Down:connect(function()
 		nowe = false
 	
 	pcall(function() stopNoclip() end)
-	if flyStateConn then flyStateConn:Disconnect() flyStateConn = nil end
 
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Climbing,true)
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown,true)
@@ -340,6 +338,7 @@ onof.MouseButton1Down:connect(function()
  pcall(function() startNoclip() end)
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Climbing,false)
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown,false)
+		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Flying,false)
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Freefall,false)
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp,false)
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping,false)
@@ -352,23 +351,9 @@ onof.MouseButton1Down:connect(function()
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated,false)
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.StrafingNoPhysics,false)
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Swimming,false)
- local hum = speaker.Character.Humanoid
-
--- Không cho bơi, cho phép bay
-hum:SetStateEnabled(Enum.HumanoidStateType.Swimming, false)
-hum:SetStateEnabled(Enum.HumanoidStateType.Flying, true)
-
--- Ép sang trạng thái Flying ngay bây giờ
-hum:ChangeState(Enum.HumanoidStateType.Flying)
-
--- Gác cổng: nếu engine đẩy về Swimming (do chạm nước), lập tức kéo lại Flying
-if flyStateConn then flyStateConn:Disconnect() end
-flyStateConn = hum.StateChanged:Connect(function(_, new)
-	if nowe and new == Enum.HumanoidStateType.Swimming then
-		hum:ChangeState(Enum.HumanoidStateType.Flying)
+        speaker.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Swimming)
 	end
-end)
-end
+				
 	if game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid").RigType == Enum.HumanoidRigType.R6 then
 
 		local plr = game.Players.LocalPlayer
@@ -519,7 +504,6 @@ end)
 
 game:GetService("Players").LocalPlayer.CharacterAdded:Connect(function(char)
 	wait(0.7)
-if flyStateConn then flyStateConn:Disconnect() flyStateConn = nil end
 	pcall(function() stopNoclip() end)
 	game.Players.LocalPlayer.Character.Humanoid.PlatformStand = false
 	game.Players.LocalPlayer.Character.Animate.Disabled = false
