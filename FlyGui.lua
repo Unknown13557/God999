@@ -71,6 +71,8 @@ onof.Font = Enum.Font.SourceSans
 onof.Text = "FLY"
 onof.TextColor3 = Color3.fromRGB(0, 0, 0)
 onof.TextSize = 14.000
+local onofDefaultText = onof.TextColor3
+local FLY_ACTIVE_COLOR = Color3.fromRGB(242, 60, 255)
 
 TextLabel.Parent = Frame
 TextLabel.BackgroundColor3 = Color3.fromRGB(242, 60, 255)
@@ -298,7 +300,8 @@ onof.MouseButton1Down:connect(function()
 
 	if nowe == true then
 		nowe = false
-	
+onof.TextColor3 = onofDefaultText
+				
 		pcall(function() stopNoclip() end)
 
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Climbing,true)
@@ -319,7 +322,8 @@ onof.MouseButton1Down:connect(function()
 		speaker.Character.Humanoid:ChangeState(Enum.HumanoidStateType.RunningNoPhysics)
 	else 
 		nowe = true
-
+				
+		onof.TextColor3 = FLY_ACTIVE_COLOR
 		for i = 1, speeds do
 			spawn(function()
 				local hb = RS.Heartbeat	
@@ -512,6 +516,7 @@ Players.LocalPlayer.CharacterAdded:Connect(function(char)
 	pcall(function() stopNoclip() end)
 	LocalPlayer.Character.Humanoid.PlatformStand = false
 	LocalPlayer.Character.Animate.Disabled = false
+    onof.TextColor3 = onofDefaultText
 end)
 
 plus.MouseButton1Down:connect(function()
