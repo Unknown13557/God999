@@ -146,7 +146,6 @@ local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
 
 nowe = false
 
-local _flyWaterConn = nil	
 local noclipConn = nil
 local noclipCache = {}
 
@@ -285,13 +284,12 @@ end
 if workspace.CurrentCamera then hookViewportChanged() end
 workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(hookViewportChanged)
 
-local function __toggleFly()
+onof.MouseButton1Down:connect(function()
 
 	if nowe == true then
 		nowe = false
 	
 	pcall(function() stopNoclip() end)
-	if _flyWaterConn then _flyWaterConn:Disconnect() _flyWaterConn = nil end
 
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Climbing,true)
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown,true)
@@ -338,27 +336,7 @@ local function __toggleFly()
 		end
 		
  pcall(function() startNoclip() end)
- 
--- Auto reboot fly khi vào Swimming (gọi đúng luồng tắt/bật cũ)
-local hum = speaker.Character and speaker.Character:FindFirstChildOfClass("Humanoid")
-if hum then
-	if _flyWaterConn then
-		_flyWaterConn:Disconnect()
-		_flyWaterConn = nil
-	end
-	_flyWaterConn = hum.StateChanged:Connect(function(_, new)
-		if nowe and new == Enum.HumanoidStateType.Swimming then
-			task.defer(function()
-				if nowe then
-					__toggleFly()      -- tắt (nhánh if nowe==true then ...)
-					task.wait(0.05)    -- nhịp ngắn cho an toàn
-					__toggleFly()      -- bật lại (nhánh else ...)
-				end
-			end)
-		end
-	end)
-end
-		
+ 	
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Climbing,false)
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown,false)
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Flying,false)
@@ -487,8 +465,7 @@ end
 		game.Players.LocalPlayer.Character.Animate.Disabled = false
 		tpwalking = false
 	end
-end
-onof.MouseButton1Down:Connect(__toggleFly)
+end)
 
 local tis
 
