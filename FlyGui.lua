@@ -285,7 +285,7 @@ end
 if workspace.CurrentCamera then hookViewportChanged() end
 workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(hookViewportChanged)
 
-onof.MouseButton1Down:connect(function()
+local function __toggleFly()
 
 	if nowe == true then
 		nowe = false
@@ -339,6 +339,7 @@ onof.MouseButton1Down:connect(function()
 		
  pcall(function() startNoclip() end)
  
+-- Auto reboot fly khi vào Swimming (gọi đúng luồng tắt/bật cũ)
 local hum = speaker.Character and speaker.Character:FindFirstChildOfClass("Humanoid")
 if hum then
 	if _flyWaterConn then
@@ -349,16 +350,15 @@ if hum then
 		if nowe and new == Enum.HumanoidStateType.Swimming then
 			task.defer(function()
 				if nowe then
-					pcall(function() stopNoclip() end)
-					nowe = false
-					task.wait(0.05)
-					nowe = true
-					pcall(function() startNoclip() end)
+					__toggleFly()      -- tắt (nhánh if nowe==true then ...)
+					task.wait(0.05)    -- nhịp ngắn cho an toàn
+					__toggleFly()      -- bật lại (nhánh else ...)
 				end
 			end)
 		end
 	end)
 end
+		
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Climbing,false)
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown,false)
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Flying,false)
@@ -487,7 +487,8 @@ end
 		game.Players.LocalPlayer.Character.Animate.Disabled = false
 		tpwalking = false
 	end
-end)
+end
+onof.MouseButton1Down:Connect(__toggleFly)
 
 local tis
 
