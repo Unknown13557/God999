@@ -50,7 +50,7 @@ up.Size = UDim2.new(0, 44, 0, 28)
 up.Font = Enum.Font.SourceSans
 up.Text = "UP"
 up.TextColor3 = Color3.fromRGB(0, 0, 0)
-up.TextSize = 14.000
+up.TextSize = 16.000
 
 down.Name = "down"
 down.Parent = Frame
@@ -60,7 +60,7 @@ down.Size = UDim2.new(0, 44, 0, 28)
 down.Font = Enum.Font.SourceSans
 down.Text = "DOWN"
 down.TextColor3 = Color3.fromRGB(0, 0, 0)
-down.TextSize = 14.000
+down.TextSize = 16.000
 
 onof.Name = "onof"
 onof.Parent = Frame
@@ -122,28 +122,26 @@ local function stopFlyVisuals()
 	onofStroke.Color = Color3.fromRGB(255,255,255)
 end
 
---=== UP: Tween lên 2,100,000,000 (2.1e9) @ 450 stud/s; chỉ đổi màu TEXT; DOWN tạm bỏ trống ===
+--=== UP ONLY: bay mượt lên 100,000,000 @ 450 stud/s; chỉ đổi màu CHỮ; DOWN bỏ trống ===
 
--- Lưu màu chữ/nền gốc để khôi phục
+-- Lưu màu gốc để khôi phục khi OFF
 local upBG0, upText0 = up.BackgroundColor3, up.TextColor3
-local downBG0, downText0 = down.BackgroundColor3, down.TextColor3
 
--- KHÔNG dùng UIStroke/Glow cho UP nữa (nếu có FlyStroke cũ thì tắt)
+-- Tắt mọi stroke/glow cũ của UP (nếu có)
 do
-	local old = up:FindFirstChild("FlyStroke")
-	if old then old.Enabled = false end
+	local s = up:FindFirstChild("FlyStroke")
+	if s then s.Enabled = false end
 end
 
--- Rainbow cho CHỮ (không viền)
+-- Visual: chỉ rainbow CHỮ (không viền)
 local upRainbowConn
 local function startUpTextVisual()
-	up.BackgroundColor3 = Color3.fromRGB(45,45,45) -- nền tối nhẹ cho nổi chữ
-	up.TextStrokeTransparency = 0                   -- outline chữ (cho dễ đọc)
+	up.BackgroundColor3 = Color3.fromRGB(45,45,45)
+	up.TextStrokeTransparency = 0
 	if upRainbowConn then upRainbowConn:Disconnect() end
 	upRainbowConn = RS.RenderStepped:Connect(function(dt)
 		flyHueTime += dt
-		local hue = (flyHueTime * 0.30) % 1
-		up.TextColor3 = Color3.fromHSV(hue, 1, 1)
+		up.TextColor3 = Color3.fromHSV((flyHueTime * 0.30) % 1, 1, 1)
 	end)
 end
 local function stopUpTextVisual()
@@ -155,19 +153,19 @@ end
 
 -- Tham số
 local ASCEND_SPEED = 450
-local TARGET_Y = 2100000000 -- 2.1e9
+local TARGET_Y = 100000000 -- 1e8
 
--- Trạng thái & tween
+-- Trạng thái
 local isAscending = false
-local ascendTween
+local ascendConn
 
 local function stopAscending()
 	if not isAscending then return end
 	isAscending = false
-	if ascendTween then ascendTween:Cancel(); ascendTween = nil end
+	if ascendConn then ascendConn:Disconnect(); ascendConn = nil end
 	stopUpTextVisual()
 
-	-- Nếu FLY đang TẮT, trả stance & noclip về bình thường
+	-- Nếu FLY đang tắt, trả stance & noclip về bình thường
 	if not nowe then
 		local chr = LocalPlayer.Character
 		local hum = chr and chr:FindFirstChildOfClass("Humanoid")
@@ -176,16 +174,15 @@ local function stopAscending()
 	end
 end
 
--- Cho nơi khác gọi khi cần (respawn/…)
+-- Cho respawn gọi nhanh
 _G.__FlyGui_StopVertical = function()
 	stopAscending()
-	-- (DOWN đang để trống nên không cần stopDescending)
 end
 
--- Handler UP = Tween lên TARGET_Y
+-- NÚT UP: bay mượt kiểu Lerp mỗi frame (không dùng TweenService để tránh giật)
 up.MouseButton1Click:Connect(function()
 	if isAscending then
-		-- Đang chạy → bấm lần nữa để tắt chủ động
+		-- bấm lần 2 để tắt chủ động
 		stopAscending()
 		return
 	end
@@ -195,40 +192,47 @@ up.MouseButton1Click:Connect(function()
 	local hum = chr and chr:FindFirstChildOfClass("Humanoid")
 	if not hrp or not hum then return end
 
-	-- Nếu FLY chưa bật → bật noclip + giữ đứng yên để tween không bị gravity kéo
+	-- Nếu FLY chưa bật → bật noclip; luôn giữ PlatformStand khi UP chạy để không bị rơi
 	if not nowe then
 		pcall(function() startNoclip() end)
 	end
 	hum.PlatformStand = true
 	hrp.AssemblyLinearVelocity = Vector3.new(0,0,0)
 
-	-- Visual chỉ đổi màu CHỮ
+	-- Visual chữ rainbow
 	startUpTextVisual()
 
-	-- Tính thời gian tween theo khoảng cách / tốc
-	local currentY = hrp.Position.Y
-	local dist = math.max(0, TARGET_Y - currentY)
-	if dist == 0 then
-		-- Đã ở hoặc vượt TARGET → coi như xong, tắt luôn
+	-- Tính hành trình
+	local startPos = hrp.Position
+	local targetPos = Vector3.new(startPos.X, TARGET_Y, startPos.Z)
+	local distance = TARGET_Y - startPos.Y
+	if distance <= 0 then
+		-- đã ở/vượt đích
 		stopAscending()
 		return
 	end
-	local t = dist / ASCEND_SPEED
-	local goal = { CFrame = CFrame.new(hrp.Position.X, TARGET_Y, hrp.Position.Z) }
-	local info = TweenInfo.new(t, Enum.EasingStyle.Linear)
+	local travelTime = distance / ASCEND_SPEED
+	local elapsed = 0
 
 	isAscending = true
-	ascendTween = game:GetService("TweenService"):Create(hrp, info, goal)
+	ascendConn = RS.RenderStepped:Connect(function(dt)
+		if not isAscending then return end
+		elapsed += dt
+		-- chặn rơi / tích lũy vận tốc
+		hrp.AssemblyLinearVelocity = Vector3.new(0,0,0)
 
-	ascendTween.Completed:Connect(function()
-		-- Chạm đích → tự tắt
-		stopAscending()
+		local alpha = math.clamp(elapsed / travelTime, 0, 1)
+		local newPos = startPos:Lerp(targetPos, alpha)
+		hrp:PivotTo(CFrame.new(newPos))
+
+		if alpha >= 1 then
+			-- tới 100,000,000 → tự tắt
+			stopAscending()
+		end
 	end)
-
-	ascendTween:Play()
 end)
 
--- DOWN: tạm bỏ trống theo yêu cầu
+-- NÚT DOWN: bỏ trống theo yêu cầu
 down.MouseButton1Click:Connect(function()
 	-- reserved (no-op)
 end)
