@@ -114,6 +114,7 @@ end
 
 local upBG0, upText0 = up.BackgroundColor3, up.TextColor3
 local upRainbowConn
+local upHueTime = 0
 local function startUpTextVisual()
 	up.TextColor3 = Color3.fromRGB(0,0,0)
 	up.TextStrokeTransparency = 1
@@ -133,7 +134,7 @@ local function stopUpTextVisual()
 	up.TextColor3 = upText0
 	up.TextStrokeTransparency = 1
 	local s = up:FindFirstChild("FlyStroke")
-	if s then s.Enabled = false
+	if s then s.Enabled = false end
 end
 
 local ASCEND_SPEED = 450
@@ -666,7 +667,7 @@ Players.LocalPlayer.CharacterAdded:Connect(function(char)
 end)
 
 plus.MouseButton1Down:connect(function()
-	speeds = flySpeed + 1
+	flySpeed = flySpeed + 1
 	speed.Text = flySpeed
 	if nowe == true then
 
