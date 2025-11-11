@@ -70,7 +70,7 @@ onof.Size = UDim2.new(0, 57, 0, 28)
 onof.Font = Enum.Font.SourceSans
 onof.Text = "FLY"
 onof.TextColor3 = Color3.fromRGB(0, 0, 0)
-onof.TextSize = 16.000
+onof.TextSize = 17.000
 onof.ZIndex = 50
 
 local onofDefaultTextColor = onof.TextColor3
@@ -132,8 +132,6 @@ TextLabel.TextColor3 = Color3.fromRGB(0, 0, 0)
 TextLabel.TextScaled = true
 TextLabel.TextSize = 14.000
 TextLabel.TextWrapped = true
-TextLabel.ZIndex = 40
-	
 	
 plus.Name = "plus"
 plus.Parent = Frame
