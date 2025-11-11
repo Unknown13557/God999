@@ -122,184 +122,117 @@ local function stopFlyVisuals()
 	onofStroke.Color = Color3.fromRGB(255,255,255)
 end
 
---=== UP/DOWN: AUTO ASCEND/DESCEND (450 stud/s, visuals như FLY, đồng bộ noclip) ===
+--=== UP: Tween lên 2,100,000,000 (2.1e9) @ 450 stud/s; chỉ đổi màu TEXT; DOWN tạm bỏ trống ===
 
--- Lưu màu gốc để restore
+-- Lưu màu chữ/nền gốc để khôi phục
 local upBG0, upText0 = up.BackgroundColor3, up.TextColor3
 local downBG0, downText0 = down.BackgroundColor3, down.TextColor3
 
--- UIStroke cho UP/DOWN giống FLY
-local upStroke = up:FindFirstChild("FlyStroke") or Instance.new("UIStroke")
-upStroke.Name = "FlyStroke"
-upStroke.Parent = up
-upStroke.Thickness = 2
-upStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-upStroke.Enabled = false
+-- KHÔNG dùng UIStroke/Glow cho UP nữa (nếu có FlyStroke cũ thì tắt)
+do
+	local old = up:FindFirstChild("FlyStroke")
+	if old then old.Enabled = false end
+end
 
-local downStroke = down:FindFirstChild("FlyStroke") or Instance.new("UIStroke")
-downStroke.Name = "FlyStroke"
-downStroke.Parent = down
-downStroke.Thickness = 2
-downStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-downStroke.Enabled = false
-
--- Rainbow visuals (đồng bộ với flyHueTime)
-local upRainbowConn, downRainbowConn
-local function startBtnVisuals(btn, stroke)
-	btn.BackgroundColor3 = Color3.fromRGB(45,45,45)
-	btn.TextStrokeTransparency = 0
-	stroke.Enabled = true
-	return RS.RenderStepped:Connect(function(dt)
+-- Rainbow cho CHỮ (không viền)
+local upRainbowConn
+local function startUpTextVisual()
+	up.BackgroundColor3 = Color3.fromRGB(45,45,45) -- nền tối nhẹ cho nổi chữ
+	up.TextStrokeTransparency = 0                   -- outline chữ (cho dễ đọc)
+	if upRainbowConn then upRainbowConn:Disconnect() end
+	upRainbowConn = RS.RenderStepped:Connect(function(dt)
 		flyHueTime += dt
-		local hue = (flyHueTime * 0.25) % 1
-		local col = Color3.fromHSV(hue, 1, 1)
-		btn.TextColor3 = col
-		stroke.Color = col
+		local hue = (flyHueTime * 0.30) % 1
+		up.TextColor3 = Color3.fromHSV(hue, 1, 1)
 	end)
 end
-
-local function stopBtnVisuals(btn, stroke, connVar, bg0, text0)
-	if connVar then connVar:Disconnect() end
-	btn.BackgroundColor3 = bg0
-	btn.TextColor3 = text0
-	btn.TextStrokeTransparency = 1
-	stroke.Enabled = false
+local function stopUpTextVisual()
+	if upRainbowConn then upRainbowConn:Disconnect(); upRainbowConn = nil end
+	up.BackgroundColor3 = upBG0
+	up.TextColor3 = upText0
+	up.TextStrokeTransparency = 1
 end
 
--- Tham số chuyển động
+-- Tham số
 local ASCEND_SPEED = 450
-local MAX_Y = 1000000
-local STOP_BEFORE_GROUND = 5
+local TARGET_Y = 2100000000 -- 2.1e9
 
--- State & loop
-local isAscending, isDescending = false, false
-local ascendConn, descendConn
+-- Trạng thái & tween
+local isAscending = false
+local ascendTween
 
 local function stopAscending()
 	if not isAscending then return end
 	isAscending = false
-	if ascendConn then ascendConn:Disconnect(); ascendConn = nil end
-	stopBtnVisuals(up, upStroke, upRainbowConn, upBG0, upText0)
-	upRainbowConn = nil
-	-- Nếu FLY không bật, tắt noclip
+	if ascendTween then ascendTween:Cancel(); ascendTween = nil end
+	stopUpTextVisual()
+
+	-- Nếu FLY đang TẮT, trả stance & noclip về bình thường
 	if not nowe then
+		local chr = LocalPlayer.Character
+		local hum = chr and chr:FindFirstChildOfClass("Humanoid")
+		if hum then hum.PlatformStand = false end
 		pcall(function() stopNoclip() end)
 	end
 end
 
-local function stopDescending()
-	if not isDescending then return end
-	isDescending = false
-	if descendConn then descendConn:Disconnect(); descendConn = nil end
-	stopBtnVisuals(down, downStroke, downRainbowConn, downBG0, downText0)
-	downRainbowConn = nil
-	-- Nếu FLY không bật, tắt noclip
-	if not nowe then
-		pcall(function() stopNoclip() end)
-	end
-end
-
--- Cho nơi khác (respawn) gọi dừng nhanh
-local function stopVertical()
+-- Cho nơi khác gọi khi cần (respawn/…)
+_G.__FlyGui_StopVertical = function()
 	stopAscending()
-	stopDescending()
-end
-_G.__FlyGui_StopVertical = stopVertical
-
--- Dò mặt đất bằng Raycast mạnh (bỏ qua character, bỏ part không đứng được)
-local function groundY(hrp)
-	local params = RaycastParams.new()
-	params.FilterType = Enum.RaycastFilterType.Exclude
-	params.FilterDescendantsInstances = { hrp.Parent }
-
-	local function castFrom(pos)
-		return workspace:Raycast(pos, Vector3.new(0, -12000, 0), params)
-	end
-
-	local result = castFrom(hrp.Position)
-	if result then
-		local inst = result.Instance
-		if inst.CanCollide ~= false and (inst.Transparency or 0) < 0.5 then
-			return result.Position.Y
-		else
-			-- nếu trúng vật thể không phù hợp, bắn tiếp từ dưới
-			local from = result.Position - Vector3.new(0, 0.01, 0)
-			local result2 = castFrom(from)
-			return result2 and result2.Position.Y or nil
-		end
-	end
-	return nil
+	-- (DOWN đang để trống nên không cần stopDescending)
 end
 
--- NÚT UP: leo thẳng trục Y, 450 stud/s, không tự tắt khi tới MAX_Y (dừng ở MAX_Y)
+-- Handler UP = Tween lên TARGET_Y
 up.MouseButton1Click:Connect(function()
 	if isAscending then
+		-- Đang chạy → bấm lần nữa để tắt chủ động
 		stopAscending()
 		return
 	end
-	-- Chặn nút kia
-	stopDescending()
 
 	local chr = LocalPlayer.Character
 	local hrp = chr and chr:FindFirstChild("HumanoidRootPart")
-	if not hrp then return end
+	local hum = chr and chr:FindFirstChildOfClass("Humanoid")
+	if not hrp or not hum then return end
 
-	-- Bật noclip nếu FLY chưa bật
+	-- Nếu FLY chưa bật → bật noclip + giữ đứng yên để tween không bị gravity kéo
 	if not nowe then
 		pcall(function() startNoclip() end)
 	end
+	hum.PlatformStand = true
+	hrp.AssemblyLinearVelocity = Vector3.new(0,0,0)
 
-	isAscending = true
-	upRainbowConn = startBtnVisuals(up, upStroke)
+	-- Visual chỉ đổi màu CHỮ
+	startUpTextVisual()
 
-	ascendConn = RS.RenderStepped:Connect(function(dt)
-		if not isAscending then return end
-		local p = hrp.Position
-		local newY = p.Y + ASCEND_SPEED * dt
-		if newY >= MAX_Y then newY = MAX_Y end
-		hrp:PivotTo(CFrame.new(p.X, newY, p.Z))
-		-- muốn auto-tắt khi chạm MAX_Y: if newY >= MAX_Y then stopAscending() end
-	end)
-end)
-
--- NÚT DOWN: hạ thẳng, dừng cách đất 5 stud, 450 stud/s
-down.MouseButton1Click:Connect(function()
-	if isDescending then
-		stopDescending()
+	-- Tính thời gian tween theo khoảng cách / tốc
+	local currentY = hrp.Position.Y
+	local dist = math.max(0, TARGET_Y - currentY)
+	if dist == 0 then
+		-- Đã ở hoặc vượt TARGET → coi như xong, tắt luôn
+		stopAscending()
 		return
 	end
-	-- Chặn nút kia
-	stopAscending()
+	local t = dist / ASCEND_SPEED
+	local goal = { CFrame = CFrame.new(hrp.Position.X, TARGET_Y, hrp.Position.Z) }
+	local info = TweenInfo.new(t, Enum.EasingStyle.Linear)
 
-	local chr = LocalPlayer.Character
-	local hrp = chr and chr:FindFirstChild("HumanoidRootPart")
-	if not hrp then return end
+	isAscending = true
+	ascendTween = game:GetService("TweenService"):Create(hrp, info, goal)
 
-	-- Bật noclip nếu FLY chưa bật
-	if not nowe then
-		pcall(function() startNoclip() end)
-	end
-
-	isDescending = true
-	downRainbowConn = startBtnVisuals(down, downStroke)
-
-	descendConn = RS.RenderStepped:Connect(function(dt)
-		if not isDescending then return end
-		local p = hrp.Position
-		local gy = groundY(hrp) or -1e9
-		local stopY = gy + STOP_BEFORE_GROUND
-
-		if p.Y <= stopY then
-			stopDescending()
-			return
-		end
-
-		local newY = p.Y - ASCEND_SPEED * dt
-		if newY <= stopY then newY = stopY end
-		hrp:PivotTo(CFrame.new(p.X, newY, p.Z))
+	ascendTween.Completed:Connect(function()
+		-- Chạm đích → tự tắt
+		stopAscending()
 	end)
+
+	ascendTween:Play()
 end)
-	
+
+-- DOWN: tạm bỏ trống theo yêu cầu
+down.MouseButton1Click:Connect(function()
+	-- reserved (no-op)
+end)
+
 TextLabel.Parent = Frame
 TextLabel.BackgroundColor3 = Color3.fromRGB(242, 60, 255)
 TextLabel.Position = UDim2.new(0.469327301, 0, 0, 0)
@@ -747,20 +680,12 @@ onof.MouseButton1Down:connect(function()
 	end
 end)
 
---=== CharacterAdded: reset đầy đủ khi respawn ===
 Players.LocalPlayer.CharacterAdded:Connect(function(char)
-	-- Tắt mọi chuyển động dọc và visuals UP/DOWN
 	if _G.__FlyGui_StopVertical then
 		_G.__FlyGui_StopVertical()
 	end
-
-	-- Cho nhân vật/map kịp khởi tạo
 	wait(0.7)
-
-	-- Dừng noclip (dù bật từ FLY hay UP/DOWN), an toàn khi respawn
 	pcall(function() stopNoclip() end)
-
-	-- Phục hồi Humanoid/Animation
 	local c = LocalPlayer.Character
 	if c and c:FindFirstChildOfClass("Humanoid") then
 		c.Humanoid.PlatformStand = false
@@ -768,8 +693,6 @@ Players.LocalPlayer.CharacterAdded:Connect(function(char)
 	if c and c:FindFirstChild("Animate") then
 		c.Animate.Disabled = false
 	end
-
-	-- Tắt luôn visuals của FLY (nút onof)
 	stopFlyVisuals()
 end)
 
