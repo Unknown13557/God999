@@ -322,7 +322,7 @@ mini2.MouseButton1Click:Connect(function()
 	closebutton.Position =  UDim2.new(0, 0, -1, 27)
 end)
 
-local Speed = 16
+local flySpeed = 16
 
 local speaker = LocalPlayer
 
@@ -498,7 +498,7 @@ onof.MouseButton1Down:connect(function()
 		nowe = true
 				
 		startFlyVisuals()
-		for i = 1, speeds do
+		for i = 1, flySpeed do
 			spawn(function()
 				local hb = RS.Heartbeat	
 				tpwalking = true
@@ -614,7 +614,7 @@ onof.MouseButton1Down:connect(function()
 			plr.Character.Humanoid.PlatformStand = true
 		end
 		while nowe == true or LocalPlayer.Character.Humanoid.Health == 0 do
-			wait()
+			task.wait()
 
 			if ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0 then
 				speed = speed+.5+(speed/maxspeed)
@@ -653,7 +653,7 @@ Players.LocalPlayer.CharacterAdded:Connect(function(char)
 	if _G.__FlyGui_StopVertical then
 		_G.__FlyGui_StopVertical()
 	end
-	wait(0.7)
+	task.wait(0.7)
 	pcall(function() stopNoclip() end)
 	local c = LocalPlayer.Character
 	if c and c:FindFirstChildOfClass("Humanoid") then
@@ -666,12 +666,12 @@ Players.LocalPlayer.CharacterAdded:Connect(function(char)
 end)
 
 plus.MouseButton1Down:connect(function()
-	speeds = speeds + 1
-	speed.Text = speeds
+	speeds = flySpeed + 1
+	speed.Text = flySpeed
 	if nowe == true then
 
 		tpwalking = false
-		for i = 1, speeds do
+		for i = 1, flySpeed do
 			spawn(function()
 				local hb = RS.Heartbeat	
 				tpwalking = true
@@ -688,16 +688,16 @@ plus.MouseButton1Down:connect(function()
 end)
 	
 mine.MouseButton1Down:connect(function()
-	if speeds == 1 then
+	if flySpeed == 1 then
 		speed.Text = 'cannot be less than 1'
-		wait(1)
-		speed.Text = speeds
+		task.wait(1)
+		speed.Text = flySpeed
 	else
-		speeds = speeds - 1
-		speed.Text = speeds
+		flySpeed = flySpeed - 1
+		speed.Text = flySpeed
 		if nowe == true then
 			tpwalking = false
-			for i = 1, speeds do
+			for i = 1, flySpeed do
 				spawn(function()
 					local hb = RS.Heartbeat	
 					tpwalking = true
