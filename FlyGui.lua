@@ -101,7 +101,7 @@ local function startFlyVisuals()
 	if flyRainbowConn then flyRainbowConn:Disconnect() end
 	flyRainbowConn = RS.RenderStepped:Connect(function(dt)
 		flyHueTime += dt
-		local hue = (flyHueTime * 0.2) % 1
+		local hue = (flyHueTime * 0.25) % 1
 		local rainbow = Color3.fromHSV(hue, 1, 1)
 		onof.TextColor3  = rainbow
 		onofStroke.Color = rainbow
