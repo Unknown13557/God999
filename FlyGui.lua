@@ -70,6 +70,7 @@ onof.Size = UDim2.new(0, 57, 0, 28)
 onof.Font = Enum.Font.SourceSans
 onof.Text = "FLY"
 onof.TextColor3 = Color3.fromRGB(0, 0, 0)
+onof.BorderSizePixel = 1
 onof.TextSize = 17.000
 onof.ZIndex = 50
 
@@ -86,25 +87,17 @@ onofStroke.Color = Color3.fromRGB(255,255,255)
 onofStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 onofStroke.Enabled = false
 
-onof.BorderSizePixel = 1
-
 local flyRainbowConn = nil
 local flyHueTime     = 0
-
 local function startFlyVisuals()
-	onof.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-	onof.Text = "FLY"
-	onof.TextStrokeTransparency = 0
-	onof.TextStrokeColor3 = Color3.fromRGB(255, 255, 255)
-	onofStroke.Enabled = true
-
+	onof.TextColor3 = Color3.fromRGB(0,0,0)
+	onof.TextStrokeTransparency = 1
+	if onofStroke then onofStroke.Enabled = false end
 	if flyRainbowConn then flyRainbowConn:Disconnect() end
 	flyRainbowConn = RS.RenderStepped:Connect(function(dt)
 		flyHueTime += dt
 		local hue = (flyHueTime * 0.25) % 1
-		local rainbow = Color3.fromHSV(hue, 1, 1)
-		onof.TextColor3  = rainbow
-		onofStroke.Color = rainbow
+		onof.BackgroundColor3 = Color3.fromHSV(hue, 1, 1)
 	end)
 end
 
@@ -118,44 +111,37 @@ local function stopFlyVisuals()
 	onof.TextColor3       = onofDefaultTextColor
 	onof.Text             = onofDefaultText
 	onof.TextStrokeTransparency = 1
-	onofStroke.Enabled = false
-	onofStroke.Color = Color3.fromRGB(255,255,255)
+	if onofStroke then
+		onofStroke.Enabled = false
+		onofStroke.Color = Color3.fromRGB(255,255,255)
+	end
 end
 
---=== UP ONLY: bay mượt lên 100,000,000 @ 450 stud/s; chỉ đổi màu CHỮ; DOWN bỏ trống ===
-
--- Lưu màu gốc để khôi phục khi OFF
 local upBG0, upText0 = up.BackgroundColor3, up.TextColor3
-
--- Tắt mọi stroke/glow cũ của UP (nếu có)
-do
-	local s = up:FindFirstChild("FlyStroke")
-	if s then s.Enabled = false end
-end
-
--- Visual: chỉ rainbow CHỮ (không viền)
 local upRainbowConn
 local function startUpTextVisual()
-	up.BackgroundColor3 = Color3.fromRGB(45,45,45)
-	up.TextStrokeTransparency = 0
+	up.TextColor3 = Color3.fromRGB(0,0,0)
+	up.TextStrokeTransparency = 1
+	local s = up:FindFirstChild("FlyStroke")
+	if s then s.Enabled = false end
 	if upRainbowConn then upRainbowConn:Disconnect() end
 	upRainbowConn = RS.RenderStepped:Connect(function(dt)
 		flyHueTime += dt
-		up.TextColor3 = Color3.fromHSV((flyHueTime * 0.30) % 1, 1, 1)
+		local hue = (flyHueTime * 0.30) % 1
+		up.BackgroundColor3 = Color3.fromHSV(hue, 1, 1)
 	end)
 end
+
 local function stopUpTextVisual()
 	if upRainbowConn then upRainbowConn:Disconnect(); upRainbowConn = nil end
 	up.BackgroundColor3 = upBG0
 	up.TextColor3 = upText0
 	up.TextStrokeTransparency = 1
-end
-
--- Tham số
+	local s = up:FindFirstChild("FlyStroke")
+	if s then s.Enabled = false end
+	end
 local ASCEND_SPEED = 450
-local TARGET_Y = 100000000 -- 1e8
-
--- Trạng thái
+local TARGET_Y = 100000000
 local isAscending = false
 local ascendConn
 
@@ -164,8 +150,6 @@ local function stopAscending()
 	isAscending = false
 	if ascendConn then ascendConn:Disconnect(); ascendConn = nil end
 	stopUpTextVisual()
-
-	-- Nếu FLY đang tắt, trả stance & noclip về bình thường
 	if not nowe then
 		local chr = LocalPlayer.Character
 		local hum = chr and chr:FindFirstChildOfClass("Humanoid")
@@ -173,16 +157,11 @@ local function stopAscending()
 		pcall(function() stopNoclip() end)
 	end
 end
-
--- Cho respawn gọi nhanh
 _G.__FlyGui_StopVertical = function()
 	stopAscending()
 end
-
--- NÚT UP: bay mượt kiểu Lerp mỗi frame (không dùng TweenService để tránh giật)
 up.MouseButton1Click:Connect(function()
 	if isAscending then
-		-- bấm lần 2 để tắt chủ động
 		stopAscending()
 		return
 	end
@@ -191,23 +170,16 @@ up.MouseButton1Click:Connect(function()
 	local hrp = chr and chr:FindFirstChild("HumanoidRootPart")
 	local hum = chr and chr:FindFirstChildOfClass("Humanoid")
 	if not hrp or not hum then return end
-
-	-- Nếu FLY chưa bật → bật noclip; luôn giữ PlatformStand khi UP chạy để không bị rơi
 	if not nowe then
 		pcall(function() startNoclip() end)
 	end
 	hum.PlatformStand = true
 	hrp.AssemblyLinearVelocity = Vector3.new(0,0,0)
 
-	-- Visual chữ rainbow
-	startUpTextVisual()
-
-	-- Tính hành trình
 	local startPos = hrp.Position
 	local targetPos = Vector3.new(startPos.X, TARGET_Y, startPos.Z)
 	local distance = TARGET_Y - startPos.Y
 	if distance <= 0 then
-		-- đã ở/vượt đích
 		stopAscending()
 		return
 	end
@@ -218,7 +190,6 @@ up.MouseButton1Click:Connect(function()
 	ascendConn = RS.RenderStepped:Connect(function(dt)
 		if not isAscending then return end
 		elapsed += dt
-		-- chặn rơi / tích lũy vận tốc
 		hrp.AssemblyLinearVelocity = Vector3.new(0,0,0)
 
 		local alpha = math.clamp(elapsed / travelTime, 0, 1)
@@ -226,15 +197,12 @@ up.MouseButton1Click:Connect(function()
 		hrp:PivotTo(CFrame.new(newPos))
 
 		if alpha >= 1 then
-			-- tới 100,000,000 → tự tắt
 			stopAscending()
 		end
 	end)
 end)
 
--- NÚT DOWN: bỏ trống theo yêu cầu
 down.MouseButton1Click:Connect(function()
-	-- reserved (no-op)
 end)
 
 TextLabel.Parent = Frame
