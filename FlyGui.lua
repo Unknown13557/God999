@@ -1,4 +1,3 @@
-do
 local UserInputService = game:GetService("UserInputService")
 local GuiService       = game:GetService("GuiService")
 local Players          = game:GetService("Players")
@@ -31,10 +30,6 @@ local closebutton = Instance.new("TextButton")
 local mini = Instance.new("TextButton")
 local mini2 = Instance.new("TextButton")
 
-main.Name = "main"
-main.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-main.IgnoreGuiInset = true
-main.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 main.ResetOnSpawn = false
 
 Frame.Parent = main
@@ -126,8 +121,8 @@ local function startUpTextVisual()
 	if s then s.Enabled = false end
 	if upRainbowConn then upRainbowConn:Disconnect() end
 	upRainbowConn = RS.RenderStepped:Connect(function(dt)
-		flyHueTime += dt
-		local hue = (flyHueTime * 0.30) % 1
+		upHueTime += dt
+		local hue = (upHueTime * 0.25) % 1
 		up.BackgroundColor3 = Color3.fromHSV(hue, 1, 1)
 	end)
 end
@@ -138,8 +133,9 @@ local function stopUpTextVisual()
 	up.TextColor3 = upText0
 	up.TextStrokeTransparency = 1
 	local s = up:FindFirstChild("FlyStroke")
-	if s then s.Enabled = false end
-	end
+	if s then s.Enabled = false
+end
+
 local ASCEND_SPEED = 450
 local TARGET_Y = 100000000
 local isAscending = false
@@ -326,7 +322,7 @@ mini2.MouseButton1Click:Connect(function()
 	closebutton.Position =  UDim2.new(0, 0, -1, 27)
 end)
 
-speeds = 16
+local Speed = 16
 
 local speaker = LocalPlayer
 
@@ -473,6 +469,7 @@ end
 if WS.CurrentCamera then hookViewportChanged() end
 WS:GetPropertyChangedSignal("CurrentCamera"):Connect(hookViewportChanged)
 
+local tpwalking = false
 onof.MouseButton1Down:connect(function()
 
 	if nowe == true then
@@ -716,4 +713,3 @@ mine.MouseButton1Down:connect(function()
 		end
 	end
 end)
-end
