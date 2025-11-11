@@ -197,6 +197,52 @@ mini2.TextSize = 40
 mini2.Position = UDim2.new(0, 44, -1, 57)
 mini2.Visible = false
 
+local lastClick = 0
+local doubleClickWindow = 1
+
+local originalTextColor = closebutton.TextColor3
+closebutton.MouseButton1Click:Connect(function()
+	local now = tick()
+	if now - lastClick <= doubleClickWindow then
+		main:Destroy()
+	else
+		lastClick = now
+		closebutton.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+		task.delay(doubleClickWindow, function()
+			if tick() - lastClick >= doubleClickWindow then
+				closebutton.TextColor3 = originalTextColor
+			end
+		end)
+	end
+end)
+
+mini.MouseButton1Click:Connect(function()
+	up.Visible = false
+	down.Visible = false
+	onof.Visible = false
+	plus.Visible = false
+	speed.Visible = false
+	mine.Visible = false
+	mini.Visible = false
+	mini2.Visible = true
+	main.Frame.BackgroundTransparency = 1
+	closebutton.Position =  UDim2.new(0, 0, -1, 57)
+end)
+
+mini2.MouseButton1Click:Connect(function()
+	up.Visible = true
+	down.Visible = true
+	onof.Visible = true
+	plus.Visible = true
+	speed.Visible = true
+	mine.Visible = true
+	mini.Visible = true
+	mini2.Visible = false
+	main.Frame.BackgroundTransparency = 0 
+	closebutton.Position =  UDim2.new(0, 0, -1, 27)
+end)
+
 speeds = 16
 
 local speaker = LocalPlayer
@@ -614,51 +660,5 @@ mine.MouseButton1Down:connect(function()
 			end
 		end
 	end
-end)
-
-local lastClick = 0
-local doubleClickWindow = 1
-
-local originalTextColor = closebutton.TextColor3
-closebutton.MouseButton1Click:Connect(function()
-	local now = tick()
-	if now - lastClick <= doubleClickWindow then
-		main:Destroy()
-	else
-		lastClick = now
-		closebutton.TextColor3 = Color3.fromRGB(255, 255, 255)
-
-		task.delay(doubleClickWindow, function()
-			if tick() - lastClick >= doubleClickWindow then
-				closebutton.TextColor3 = originalTextColor
-			end
-		end)
-	end
-end)
-
-mini.MouseButton1Click:Connect(function()
-	up.Visible = false
-	down.Visible = false
-	onof.Visible = false
-	plus.Visible = false
-	speed.Visible = false
-	mine.Visible = false
-	mini.Visible = false
-	mini2.Visible = true
-	main.Frame.BackgroundTransparency = 1
-	closebutton.Position =  UDim2.new(0, 0, -1, 57)
-end)
-
-mini2.MouseButton1Click:Connect(function()
-	up.Visible = true
-	down.Visible = true
-	onof.Visible = true
-	plus.Visible = true
-	speed.Visible = true
-	mine.Visible = true
-	mini.Visible = true
-	mini2.Visible = false
-	main.Frame.BackgroundTransparency = 0 
-	closebutton.Position =  UDim2.new(0, 0, -1, 27)
 end)
 end
