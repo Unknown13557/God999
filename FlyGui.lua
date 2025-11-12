@@ -66,7 +66,7 @@ onof.Font = Enum.Font.SourceSans
 onof.Text = "FLY"
 onof.TextColor3 = Color3.fromRGB(0, 0, 0)
 onof.BorderSizePixel = 1
-onof.TextSize = 18.000
+onof.TextSize = 20.000
 onof.ZIndex = 50
 
 local onofDefaultTextColor = onof.TextColor3
@@ -188,7 +188,9 @@ local function beginAscendingIfNeeded()
 	hum.PlatformStand = true
 	hrp.AssemblyLinearVelocity = Vector3.new(0,0,0)
 
+	if not isEmergency then
 	startUpTextVisual()
+end
 
 	local startPos = hrp.Position
 	local targetPos = Vector3.new(startPos.X, TARGET_Y, startPos.Z)
@@ -217,7 +219,8 @@ local healthConn
 local function bindHealthWatcher(hum)
 	if healthConn then healthConn:Disconnect(); healthConn=nil end
 	if not hum then return end
-	healthConn = hum.HealthChanged:Connect(function(h)
+
+	local function onHealthChanged(h)
 		local mh = hum.MaxHealth
 		if mh <= 0 then return end
 		local p = h / mh
@@ -229,7 +232,10 @@ local function bindHealthWatcher(hum)
 			setEmergencyVisuals(false)
 			stopAscending()
 		end
-	end)
+	end
+
+	healthConn = hum.HealthChanged:Connect(onHealthChanged)
+	onHealthChanged(hum.Health)
 end
 
 local ASCEND_SPEED = 450
@@ -273,7 +279,9 @@ end
 	end
 	hum.PlatformStand = true
 	hrp.AssemblyLinearVelocity = Vector3.new(0,0,0)
+	if not isEmergency then
 	startUpTextVisual()
+end
 
 	local startPos = hrp.Position
 	local targetPos = Vector3.new(startPos.X, TARGET_Y, startPos.Z)
@@ -763,6 +771,9 @@ if c and c:FindFirstChild("Animate") then
 	c.Animate.Disabled = false
 end
 setEmergencyVisuals(false)
+isEmergency = false
+upLockoutUntil = 0
+stopUpTextVisual()
 stopFlyVisuals()
 end)
 
