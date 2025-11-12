@@ -712,7 +712,10 @@ end
 		if nowe == true then
 			plr.Character.Humanoid.PlatformStand = true
 		end
-		while nowe == true or LocalPlayer.Character.Humanoid.Health == 0 do
+		while nowe == true do
+        local char = LocalPlayer.Character
+        local hum  = char and char:FindFirstChildOfClass("Humanoid")
+        if not hum or hum.Health <= 0 then break end
 			RS.RenderStepped:Wait()
 
 			if ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0 then
@@ -766,7 +769,10 @@ end
 		if nowe == true then
 			plr.Character.Humanoid.PlatformStand = true
 		end
-		while nowe == true or LocalPlayer.Character.Humanoid.Health == 0 do
+		while nowe == true do
+        local char = LocalPlayer.Character
+        local hum  = char and char:FindFirstChildOfClass("Humanoid")
+        if not hum or hum.Health <= 0 then break end
 			task.wait()
 
 			if ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0 then
@@ -817,8 +823,6 @@ if c and c:FindFirstChild("Animate") then
 end
 stopUpTextVisual()
 stopFlyVisuals()
-isManualNoclip = false
-	stopNoclipVisuals()
 end)
 
 plus.MouseButton1Down:Connect(function()
@@ -853,7 +857,7 @@ end)
 	
 mine.MouseButton1Down:Connect(function()
 	if flySpeed == 1 then
-		speed.Text = 'cant be less than 1'
+		speed.Text = 'cannot be less than 1'
 		task.wait(1)
 		speed.Text = flySpeed
 		return
