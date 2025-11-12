@@ -326,12 +326,7 @@ end)
 local flySpeed = 16
 
 local speaker = LocalPlayer
-
-local chr = LocalPlayer.Character
-local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
-
-nowe = false
-
+local nowe = false
 local noclipConn = nil
 local noclipCache = {}
 
@@ -471,7 +466,7 @@ if WS.CurrentCamera then hookViewportChanged() end
 WS:GetPropertyChangedSignal("CurrentCamera"):Connect(hookViewportChanged)
 
 local tpwalking = false
-onof.MouseButton1Down:connect(function()
+onof.MouseButton1Down:Connect(function()
 
 	if nowe == true then
 		nowe = false
@@ -666,7 +661,7 @@ Players.LocalPlayer.CharacterAdded:Connect(function(char)
 	stopFlyVisuals()
 end)
 
-plus.MouseButton1Down:connect(function()
+plus.MouseButton1Down:Connect(function()
 	flySpeed = flySpeed + 1
 	speed.Text = flySpeed
 	if nowe == true then
@@ -688,7 +683,7 @@ plus.MouseButton1Down:connect(function()
 	end
 end)
 	
-mine.MouseButton1Down:connect(function()
+mine.MouseButton1Down:Connect(function()
 	if flySpeed == 1 then
 		speed.Text = 'cannot be less than 1'
 		task.wait(1)
