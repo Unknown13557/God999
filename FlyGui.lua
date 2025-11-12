@@ -82,17 +82,17 @@ onofStroke.Color = Color3.fromRGB(255,255,255)
 onofStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 onofStroke.Enabled = false
 
-local flyRainbowConn = nil
-local flyHueTime     = 0
+local flyRainbowConn = flyRainbowConn or nil
+local flyHueTime     = flyHueTime or 0
 local function startFlyVisuals()
-	onof.TextColor3 = Color3.fromRGB(0,0,0)
-	onof.TextStrokeTransparency = 1
 	if onofStroke then onofStroke.Enabled = false end
+	onof.BackgroundColor3 = Color3.fromRGB(50,50,50)
+	onof.TextStrokeTransparency = 1
 	if flyRainbowConn then flyRainbowConn:Disconnect() end
 	flyRainbowConn = RS.RenderStepped:Connect(function(dt)
 		flyHueTime += dt
 		local hue = (flyHueTime * 0.25) % 1
-		onof.BackgroundColor3 = Color3.fromHSV(hue, 1, 1)
+		onof.TextColor3 = Color3.fromHSV(hue, 1, 1)
 	end)
 end
 
@@ -106,32 +106,30 @@ local function stopFlyVisuals()
 	onof.TextColor3       = onofDefaultTextColor
 	onof.Text             = onofDefaultText
 	onof.TextStrokeTransparency = 1
-	if onofStroke then
-		onofStroke.Enabled = false
-		onofStroke.Color = Color3.fromRGB(255,255,255)
-	end
+	if onofStroke then onofStroke.Enabled = false end
 end
 
-local upBG0, upText0 = up.BackgroundColor3, up.TextColor3
-local upRainbowConn
-local upHueTime = 0
+local upRainbowConn = upRainbowConn or nil
+local upHueTime     = upHueTime or 0
+
 local function startUpTextVisual()
-	up.TextColor3 = Color3.fromRGB(0,0,0)
+	up.BackgroundColor3 = Color3.fromRGB(50,50,50)
 	up.TextStrokeTransparency = 1
 	local s = up:FindFirstChild("FlyStroke")
 	if s then s.Enabled = false end
+
 	if upRainbowConn then upRainbowConn:Disconnect() end
 	upRainbowConn = RS.RenderStepped:Connect(function(dt)
 		upHueTime += dt
 		local hue = (upHueTime * 0.25) % 1
-		up.BackgroundColor3 = Color3.fromHSV(hue, 1, 1)
+		up.TextColor3 = Color3.fromHSV(hue, 1, 1)
 	end)
 end
 
 local function stopUpTextVisual()
 	if upRainbowConn then upRainbowConn:Disconnect(); upRainbowConn = nil end
 	up.BackgroundColor3 = upBG0
-	up.TextColor3 = upText0
+	up.TextColor3       = upText0
 	up.TextStrokeTransparency = 1
 	local s = up:FindFirstChild("FlyStroke")
 	if s then s.Enabled = false end
@@ -324,6 +322,7 @@ mini2.MouseButton1Click:Connect(function()
 end)
 
 local flySpeed = 16
+speed.Text = tostring(flySpeed)
 
 local speaker = LocalPlayer
 local nowe = false
