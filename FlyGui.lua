@@ -254,8 +254,14 @@ end
 _G.__FlyGui_StopVertical = function()
 	stopAscending()
 end
+
 up.MouseButton1Click:Connect(function()
 	if isAscending then
+		if isEmergency and os.clock() < upLockoutUntil then
+			return
+		end
+
+		setEmergencyVisuals(false)
 		stopAscending()
 		return
 	end
