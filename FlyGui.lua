@@ -20,7 +20,8 @@ main.Name = "main"
 main.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 local Frame = Instance.new("Frame")
 local up = Instance.new("TextButton")
-local noclip = Instance.new("TextButton")
+local autoBg = Instance.new("Frame")
+local aeToggle = Instance.new("TextButton")
 local onof = Instance.new("TextButton")
 local TextLabel = Instance.new("TextLabel")
 local plus = Instance.new("TextButton")
@@ -47,15 +48,37 @@ up.Text = "UP"
 up.TextColor3 = Color3.fromRGB(0, 0, 0)
 up.TextSize = 17
 
-noclip.Name = "noclip"
-noclip.Parent = Frame
-noclip.BackgroundColor3 = Color3.fromRGB(215, 255, 121)
-noclip.Position = UDim2.new(0, 0, 0.50500074, 0)
-noclip.Size = UDim2.new(0, 44, 0, 28)
-noclip.Font = Enum.Font.SourceSans
-noclip.Text = "NO CLIP"
-noclip.TextColor3 = Color3.fromRGB(0, 0, 0)
-noclip.TextSize = 14
+autoBg.Name = "AutoEscapeBG"
+autoBg.Parent = Frame
+autoBg.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+autoBg.Position = UDim2.new(0, 0, 0.50500074, 0)
+autoBg.Size = UDim2.new(0, 44, 0, 28)
+autoBg.BorderSizePixel = 0
+
+aeToggle.Name = "AutoEscapeToggle"
+aeToggle.Parent = autoBg
+aeToggle.Size = UDim2.new(0, 38, 0, 16)
+aeToggle.Position = UDim2.new(0.5, -19, 0.5, -8)
+aeToggle.BackgroundColor3 = Color3.fromRGB(88, 200, 120)
+aeToggle.AutoButtonColor = false
+aeToggle.Text = ""
+aeToggle.BorderSizePixel = 0
+
+local aeCorner = Instance.new("UICorner")
+aeCorner.CornerRadius = UDim.new(1, 0)
+aeCorner.Parent = aeToggle
+
+local knob = Instance.new("Frame")
+knob.Name = "Knob"
+knob.Parent = aeToggle
+knob.Size = UDim2.new(0, 12, 0, 12)
+knob.Position = UDim2.new(0, 2, 0.5, -6)
+knob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+knob.BorderSizePixel = 0
+
+local knobCorner = Instance.new("UICorner")
+knobCorner.CornerRadius = UDim.new(1, 0)
+knobCorner.Parent = knob
 
 onof.Name = "onof"
 onof.Parent = Frame
@@ -166,7 +189,8 @@ end)
 
 mini.MouseButton1Click:Connect(function()
 	up.Visible = false
-	noclip.Visible = false
+	autoBg.Visible = false
+    aeToggle.Visible = false
 	onof.Visible = false
 	plus.Visible = false
 	speed.Visible = false
@@ -179,7 +203,8 @@ end)
 
 mini2.MouseButton1Click:Connect(function()
 	up.Visible = true
-	noclip.Visible = true
+	autoBg.Visible = true
+    aeToggle.Visible = true
 	onof.Visible = true
 	plus.Visible = true
 	speed.Visible = true
@@ -244,50 +269,6 @@ local function stopUpTextVisual()
     local s = up:FindFirstChild("FlyStroke")
     if s then s.Enabled = false end
 end
-
-local noclipBtn = noclip
-local noclipBG0, noclipText0 = noclipBtn.BackgroundColor3, noclipBtn.TextColor3
-local noclipHue, noclipConnUI = 0, nil
-local isManualNoclip = false
-
-local function startNoclipVisuals()
-	noclipBtn.BackgroundColor3 = Color3.fromRGB(50,50,50)
-	noclipBtn.TextStrokeTransparency = 1
-	if noclipConnUI then noclipConnUI:Disconnect() end
-	noclipConnUI = RS.RenderStepped:Connect(function(dt)
-		noclipHue += dt
-		noclipBtn.TextColor3 = Color3.fromHSV((noclipHue*0.25)%1, 1, 1)
-	end)
-end
-
-local function stopNoclipVisuals()
-	if noclipConnUI then noclipConnUI:Disconnect(); noclipConnUI = nil end
-	noclipBtn.BackgroundColor3 = noclipBG0
-	noclipBtn.TextColor3       = noclipText0
-	noclipBtn.TextStrokeTransparency = 1
-end
-
-local function startManualNoclip()
-	pcall(function() startNoclip() end)
-	startNoclipVisuals()
-	isManualNoclip = true
-end
-
-local function stopManualNoclip()
-	if not nowe then
-		pcall(function() stopNoclip() end)
-	end
-	stopNoclipVisuals()
-	isManualNoclip = false
-end
-
-noclipBtn.MouseButton1Click:Connect(function()
-	if isManualNoclip then
-		stopManualNoclip()
-	else
-		startManualNoclip()
-	end
-end)
 
 local ASCEND_SPEED = 450
 local TARGET_Y = 100000000
@@ -359,6 +340,146 @@ local speaker = LocalPlayer
 local nowe = false
 local noclipConn = nil
 local noclipCache = {}
+
+--===== AUTO ESCAPE CONFIG =====
+local AE_LOW_HP  = 0.40
+local AE_SAFE_HP = 0.90
+local AE_TARGET_Y = 1000000
+local AE_SPEED   = 450
+
+local aeEnabled = true
+local aeIsOn    = true 
+local aeFlying  = false
+local aeConn    = nil
+local aeHum     = nil
+local aeRoot    = nil
+
+local function ae_stopFlight()
+    if aeConn then
+        aeConn:Disconnect()
+        aeConn = nil
+    end
+    aeFlying = false
+end
+
+local aeHealthConn
+
+local function ae_onHealthChanged(h)
+    if not aeHum or not aeEnabled then return end
+    local mh = aeHum.MaxHealth
+    if mh <= 0 then return end
+
+    local p = h / mh
+
+    if (not aeFlying) and p < AE_LOW_HP then
+        aeRoot = aeRoot or (aeHum.Parent and aeHum.Parent:FindFirstChild("HumanoidRootPart"))
+        if aeRoot then
+            ae_startFlight()
+        end
+    elseif aeFlying and p >= AE_SAFE_HP then
+        ae_stopFlight()
+    end
+end
+
+local function ae_bindCharacter(char)
+    aeHum = char:FindFirstChildOfClass("Humanoid")
+    aeRoot = char:FindFirstChild("HumanoidRootPart")
+
+    if aeHealthConn then
+        aeHealthConn:Disconnect()
+        aeHealthConn = nil
+    end
+
+    if aeHum and aeEnabled then
+        aeHealthConn = aeHum.HealthChanged:Connect(ae_onHealthChanged)
+        ae_onHealthChanged(aeHum.Health)
+    end
+end
+
+-- bind khi mới join / respawn
+if LocalPlayer.Character then
+    ae_bindCharacter(LocalPlayer.Character)
+end
+
+LocalPlayer.CharacterAdded:Connect(function(char)
+    ae_stopFlight()
+    ae_bindCharacter(char)
+end)
+
+local aeOnColor  = Color3.fromRGB(88, 200, 120)
+local aeOffColor = Color3.fromRGB(220, 50, 50)
+
+local function ae_setToggle(state)
+    aeIsOn = state
+    aeEnabled = state
+
+    if aeToggle then
+        aeToggle.BackgroundColor3 = state and aeOnColor or aeOffColor
+    end
+
+    if knob then
+        if state then
+            knob.Position = UDim2.new(0, 2, 0.5, -6)      -- nút lệch trái (ON)
+        else
+            knob.Position = UDim2.new(1, -14, 0.5, -6)    -- nút lệch phải (OFF)
+        end
+    end
+
+    if not state then
+        ae_stopFlight()
+        if aeHealthConn then
+            aeHealthConn:Disconnect()
+            aeHealthConn = nil
+        end
+    else
+        if LocalPlayer.Character then
+            ae_bindCharacter(LocalPlayer.Character)
+        end
+    end
+end
+
+-- mặc định bật
+ae_setToggle(true)
+
+if aeToggle then
+    aeToggle.MouseButton1Click:Connect(function()
+        ae_setToggle(not aeIsOn)
+    end)
+end
+
+
+local function ae_startFlight()
+    if not aeEnabled or aeFlying or not aeRoot then return end
+
+    local yNow = aeRoot.Position.Y
+    if yNow >= AE_TARGET_Y - 1 then return end
+
+    local startPos = aeRoot.Position
+    local targetPos = Vector3.new(startPos.X, AE_TARGET_Y, startPos.Z)
+    local distance = AE_TARGET_Y - startPos.Y
+    if distance <= 0 then return end
+
+    local travelTime = distance / AE_SPEED
+    local elapsed = 0
+
+    aeFlying = true
+
+    aeConn = RS.RenderStepped:Connect(function(dt)
+        if not aeFlying or not aeRoot or not aeRoot.Parent then
+            ae_stopFlight()
+            return
+        end
+
+        elapsed += dt
+        local alpha = math.clamp(elapsed / travelTime, 0, 1)
+        local newPos = startPos:Lerp(targetPos, alpha)
+        aeRoot:PivotTo(CFrame.new(newPos))
+
+        if alpha >= 1 then
+            ae_stopFlight()
+        end
+    end)
+end
 
 local function cacheAndDisablePart(part)
 	if not part or not part:IsA("BasePart") then return end
