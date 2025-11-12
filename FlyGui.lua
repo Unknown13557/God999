@@ -260,7 +260,8 @@ up.MouseButton1Click:Connect(function()
 		if isEmergency and os.clock() < upLockoutUntil then
 			return
 		end
-
+			
+    if isEmergency then setEmergencyVisuals(false) end
 		setEmergencyVisuals(false)
 		stopAscending()
 		return
@@ -757,13 +758,14 @@ Players.LocalPlayer.CharacterAdded:Connect(function(char)
 	task.wait(0.7)
 	pcall(function() stopNoclip() end)
 	local c = LocalPlayer.Character
-	if c and c:FindFirstChildOfClass("Humanoid") then
-		c.Humanoid.PlatformStand = false
-	end
-	if c and c:FindFirstChild("Animate") then
-		c.Animate.Disabled = false
-	end
-	stopFlyVisuals()
+if c and c:FindFirstChildOfClass("Humanoid") then
+	c.Humanoid.PlatformStand = false
+	bindHealthWatcher(c:FindFirstChildOfClass("Humanoid"))
+end
+if c and c:FindFirstChild("Animate") then
+	c.Animate.Disabled = false
+end
+stopFlyVisuals()
 end)
 
 plus.MouseButton1Down:Connect(function()
