@@ -135,22 +135,6 @@ local function stopUpTextVisual()
     if s then s.Enabled = false end
 end
 
-local LOW_HP, SAFE_HP = 0.40, 0.90
-local isEmergency      = false
-
-local function setEmergencyVisuals(on)
-	isEmergency = on and true or false
-	if on then
-		startUpTextVisual()
-	else
-		if isAscending then
-			startUpTextVisual()
-		else
-			stopUpTextVisual()
-		end
-	end
-end
-
 local ASCEND_SPEED = 450
 local TARGET_Y = 100000000
 local isAscending = false
@@ -195,28 +179,6 @@ end
 			stopAscending()
 		end
 	end)
-end
-
-local healthConn
-local function bindHealthWatcher(hum)
-	if healthConn then healthConn:Disconnect(); healthConn=nil end
-	if not hum then return end
-
-	local function onHealthChanged(h)
-		local mh = hum.MaxHealth
-		if mh <= 0 then return end
-		local p = h / mh
-		if (not isEmergency) and p < LOW_HP then
-		setEmergencyVisuals(true)
-        beginAscendingIfNeeded()	
-		elseif isEmergency and p >= SAFE_HP then
-			setEmergencyVisuals(false)
-			stopAscending()
-		end
-	end
-
-	healthConn = hum.HealthChanged:Connect(onHealthChanged)
-	onHealthChanged(hum.Health)
 end
 
 local function stopAscending()
@@ -734,13 +696,10 @@ Players.LocalPlayer.CharacterAdded:Connect(function(char)
 	local c = LocalPlayer.Character
 if c and c:FindFirstChildOfClass("Humanoid") then
 	c.Humanoid.PlatformStand = false
-	bindHealthWatcher(c:FindFirstChildOfClass("Humanoid"))
 end
 if c and c:FindFirstChild("Animate") then
 	c.Animate.Disabled = false
 end
-setEmergencyVisuals(false)
-isEmergency = false
 stopUpTextVisual()
 stopFlyVisuals()
 end)
