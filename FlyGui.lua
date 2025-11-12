@@ -73,19 +73,9 @@ local onofDefaultTextColor = onof.TextColor3
 local onofDefaultBG        = onof.BackgroundColor3
 local onofDefaultText      = onof.Text
 
-local onofStroke = onof:FindFirstChild("FlyStroke") or Instance.new("UIStroke")
-onofStroke.Name = "FlyStroke"
-onofStroke.Parent = onof
-onofStroke.Thickness = 2
-onofStroke.Transparency = 0
-onofStroke.Color = Color3.fromRGB(255,255,255)
-onofStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-onofStroke.Enabled = false
-
 local flyRainbowConn
 local flyHueTime = 0
 local function startFlyVisuals()
-	if onofStroke then onofStroke.Enabled = false end
 	onof.BackgroundColor3 = Color3.fromRGB(50,50,50)
 	onof.TextStrokeTransparency = 1
 	if flyRainbowConn then flyRainbowConn:Disconnect() end
@@ -101,12 +91,11 @@ local function stopFlyVisuals()
 		flyRainbowConn:Disconnect()
 		flyRainbowConn = nil
 	end
-
+	
 	onof.BackgroundColor3 = onofDefaultBG
 	onof.TextColor3       = onofDefaultTextColor
 	onof.Text             = onofDefaultText
 	onof.TextStrokeTransparency = 1
-	if onofStroke then onofStroke.Enabled = false end
 end
 
 local upBG0, upText0 = up.BackgroundColor3, up.TextColor3
@@ -139,42 +128,6 @@ local ASCEND_SPEED = 450
 local TARGET_Y = 100000000
 local isAscending = false
 local ascendConn
-
-	local chr = LocalPlayer.Character
-	local hrp = chr and chr:FindFirstChild("HumanoidRootPart")
-	local hum = chr and chr:FindFirstChildOfClass("Humanoid")
-	if not hrp or not hum then return end
-
-	if not nowe then
-		pcall(function() startNoclip() end)
-	end
-	hum.PlatformStand = true
-	hrp.AssemblyLinearVelocity = Vector3.new(0,0,0)
-
-	startUpTextVisual()
-
-	local startPos = hrp.Position
-	local targetPos = Vector3.new(startPos.X, TARGET_Y, startPos.Z)
-	local distance = TARGET_Y - startPos.Y
-	if distance <= 0 then
-		stopAscending()
-		return
-	end
-	local travelTime, elapsed = distance / ASCEND_SPEED, 0
-
-	isAscending = true
-	ascendConn = RS.RenderStepped:Connect(function(dt)
-		if not isAscending then return end
-		elapsed += dt
-		hrp.AssemblyLinearVelocity = Vector3.new(0,0,0)
-		local alpha = math.clamp(elapsed / travelTime, 0, 1)
-		local newPos = startPos:Lerp(targetPos, alpha)
-		hrp:PivotTo(CFrame.new(newPos))
-		if alpha >= 1 then
-			stopAscending()
-		end
-	end)
-end
 
 local function stopAscending()
 	if not isAscending then return end
