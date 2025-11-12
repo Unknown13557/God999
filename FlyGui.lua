@@ -144,35 +144,33 @@ local isEmergency      = false
 local upLockoutUntil   = 0
 local emergencyConn    = nil
 
-local upStroke = up:FindFirstChild("EmergencyStroke") or Instance.new("UIStroke")
-upStroke.Name = "EmergencyStroke"
-upStroke.Parent = up
-upStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-upStroke.Thickness = 2
-upStroke.Enabled = false
-
 local function setEmergencyVisuals(on)
 	if on then
 		isEmergency = true
-		up.TextColor3 = Color3.fromRGB(40,40,40)
-		upStroke.Enabled = true
+		stopUpTextVisual()
+		up.TextColor3 = Color3.fromRGB(0,0,0)
+		local s = up:FindFirstChild("EmergencyStroke") or up:FindFirstChild("FlyStroke")
+		if s then s.Enabled = false end
 		if emergencyConn then emergencyConn:Disconnect() end
 		local t = 0
 		emergencyConn = RS.RenderStepped:Connect(function(dt)
 			t += dt * 6
 			local a = (math.sin(t) + 1) * 0.5
-			local r1,g1,b1 = 1, 0.2, 0
-			local r2,g2,b2 = 1, 0.65, 0
-			local r = r1 + (r2-r1)*a
-			local g = g1 + (g2-g1)*a
-			local b = b1 + (b2-b1)*a
-			upStroke.Color = Color3.new(r,g,b)
+			local r1,g1,b1 = 1.0, 0.20, 0.00
+			local r2,g2,b2 = 1.0, 0.65, 0.00
+			local r = r1 + (r2 - r1) * a
+			local g = g1 + (g2 - g1) * a
+			local b = b1 + (b2 - b1) * a
+			up.BackgroundColor3 = Color3.new(r,g,b)
 		end)
 	else
 		isEmergency = false
-		if emergencyConn then emergencyConn:Disconnect(); emergencyConn=nil end
-		upStroke.Enabled = false
-		stopUpTextVisual()
+		if emergencyConn then emergencyConn:Disconnect(); emergencyConn = nil end
+		if isAscending then
+			startUpTextVisual()
+		else
+			stopUpTextVisual()
+		end
 	end
 end
 
@@ -257,15 +255,14 @@ end
 
 up.MouseButton1Click:Connect(function()
 	if isAscending then
-		if isEmergency and os.clock() < upLockoutUntil then
-			return
-		end
-			
-    if isEmergency then setEmergencyVisuals(false) end
-		setEmergencyVisuals(false)
-		stopAscending()
+	if isEmergency and os.clock() < upLockoutUntil then
 		return
 	end
+	
+setEmergencyVisuals(false)
+	stopAscending()
+	return
+end
 
 	local chr = LocalPlayer.Character
 	local hrp = chr and chr:FindFirstChild("HumanoidRootPart")
@@ -765,6 +762,7 @@ end
 if c and c:FindFirstChild("Animate") then
 	c.Animate.Disabled = false
 end
+setEmergencyVisuals(false)
 stopFlyVisuals()
 end)
 
