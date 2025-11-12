@@ -47,7 +47,7 @@ up.Text = "UP"
 up.TextColor3 = Color3.fromRGB(0, 0, 0)
 up.TextSize = 17
 
-noclip = "noclip"
+noclip.Name = "noclip"
 noclip.Parent = Frame
 noclip.BackgroundColor3 = Color3.fromRGB(215, 255, 121)
 noclip.Position = UDim2.new(0, 0, 0.50500074, 0)
@@ -245,6 +245,49 @@ local function stopUpTextVisual()
     if s then s.Enabled = false end
 end
 
+local noclipBtn = noclip
+local noclipBG0, noclipText0 = noclipBtn.BackgroundColor3, noclipBtn.TextColor3
+local noclipHue, noclipConnUI = 0, nil
+local isManualNoclip = false
+
+local function startNoclipVisuals()
+	noclipBtn.BackgroundColor3 = Color3.fromRGB(50,50,50)
+	noclipBtn.TextStrokeTransparency = 1
+	if noclipConnUI then noclipConnUI:Disconnect() end
+	noclipConnUI = RS.RenderStepped:Connect(function(dt)
+		noclipHue += dt
+		noclipBtn.TextColor3 = Color3.fromHSV((noclipHue*0.25)%1, 1, 1)
+	end)
+end
+
+local function stopNoclipVisuals()
+	if noclipConnUI then noclipConnUI:Disconnect(); noclipConnUI = nil end
+	noclipBtn.BackgroundColor3 = noclipBG0
+	noclipBtn.TextColor3       = noclipText0
+	noclipBtn.TextStrokeTransparency = 1
+end
+
+local function startManualNoclip()
+	pcall(function() startNoclip() end)
+	startNoclipVisuals()
+	isManualNoclip = true
+end
+
+local function stopManualNoclip()
+	if not nowe then
+		pcall(function() stopNoclip() end)
+	end
+	stopNoclipVisuals()
+	isManualNoclip = false
+end
+
+noclipBtn.MouseButton1Click:Connect(function()
+	if isManualNoclip then
+		stopManualNoclip()
+	else
+		startManualNoclip()
+	end
+end)
 
 local ASCEND_SPEED = 450
 local TARGET_Y = 100000000
@@ -653,6 +696,8 @@ if c and c:FindFirstChild("Animate") then
 end
 stopUpTextVisual()
 stopFlyVisuals()
+isManualNoclip = false
+	stopNoclipVisuals()
 end)
 
 plus.MouseButton1Down:Connect(function()
