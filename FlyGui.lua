@@ -174,6 +174,11 @@ local function setEmergencyVisuals(on)
 	end
 end
 
+local ASCEND_SPEED = 450
+local TARGET_Y = 100000000
+local isAscending = false
+local ascendConn
+
 local function beginAscendingIfNeeded()
 	if isAscending then return end
 
@@ -237,11 +242,6 @@ local function bindHealthWatcher(hum)
 	healthConn = hum.HealthChanged:Connect(onHealthChanged)
 	onHealthChanged(hum.Health)
 end
-
-local ASCEND_SPEED = 450
-local TARGET_Y = 100000000
-local isAscending = false
-local ascendConn
 
 local function stopAscending()
 	if not isAscending then return end
@@ -774,6 +774,8 @@ setEmergencyVisuals(false)
 isEmergency = false
 upLockoutUntil = 0
 stopUpTextVisual()
+up.BackgroundColor3 = upBG0
+up.TextColor3 = upText0
 stopFlyVisuals()
 end)
 
