@@ -140,9 +140,6 @@ local TARGET_Y = 100000000
 local isAscending = false
 local ascendConn
 
-local function beginAscendingIfNeeded()
-	if isAscending then return end
-
 	local chr = LocalPlayer.Character
 	local hrp = chr and chr:FindFirstChild("HumanoidRootPart")
 	local hum = chr and chr:FindFirstChildOfClass("Humanoid")
@@ -154,9 +151,7 @@ local function beginAscendingIfNeeded()
 	hum.PlatformStand = true
 	hrp.AssemblyLinearVelocity = Vector3.new(0,0,0)
 
-	if not isEmergency then
 	startUpTextVisual()
-end
 
 	local startPos = hrp.Position
 	local targetPos = Vector3.new(startPos.X, TARGET_Y, startPos.Z)
