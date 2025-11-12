@@ -20,7 +20,7 @@ main.Name = "main"
 main.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 local Frame = Instance.new("Frame")
 local up = Instance.new("TextButton")
-local teleport = Instance.new("TextButton")
+local noclip = Instance.new("TextButton")
 local onof = Instance.new("TextButton")
 local TextLabel = Instance.new("TextLabel")
 local plus = Instance.new("TextButton")
@@ -47,15 +47,16 @@ up.Text = "UP"
 up.TextColor3 = Color3.fromRGB(0, 0, 0)
 up.TextSize = 17
 
-teleport.Name = "teleport"
-teleport.Parent = Frame
-teleport.BackgroundColor3 = Color3.fromRGB(215, 255, 121)
-teleport.Position = UDim2.new(0, 0, 0.50500074, 0)
-teleport.Size = UDim2.new(0, 44, 0, 28)
-teleport.Font = Enum.Font.SourceSans
-teleport.Text = "TELEPORT"
-teleport.TextColor3 = Color3.fromRGB(0, 0, 0)
-teleport.TextSize = 14
+noclip = "noclip"
+noclip.Parent = Frame
+noclip.BackgroundColor3 = Color3.fromRGB(215, 255, 121)
+noclip.Position = UDim2.new(0, 0, 0.50500074, 0)
+noclip.Size = UDim2.new(0, 44, 0, 28)
+noclip.Font = Enum.Font.SourceSans
+noclip.Text = "NO CLIP"
+noclip.TextColor3 = Color3.fromRGB(0, 0, 0)
+noclip.TextSize = 14
+
 onof.Name = "onof"
 onof.Parent = Frame
 onof.BackgroundColor3 = Color3.fromRGB(255, 249, 74)
@@ -165,7 +166,7 @@ end)
 
 mini.MouseButton1Click:Connect(function()
 	up.Visible = false
-	teleport.Visible = false
+	noclip.Visible = false
 	onof.Visible = false
 	plus.Visible = false
 	speed.Visible = false
@@ -178,7 +179,7 @@ end)
 
 mini2.MouseButton1Click:Connect(function()
 	up.Visible = true
-	teleport.Visible = true
+	noclip.Visible = true
 	onof.Visible = true
 	plus.Visible = true
 	speed.Visible = true
@@ -244,8 +245,7 @@ local function stopUpTextVisual()
     if s then s.Enabled = false end
 end
 
-    teleport.MouseButton1Click:Connect(function()
-end
+
 local ASCEND_SPEED = 450
 local TARGET_Y = 100000000
 local isAscending = false
