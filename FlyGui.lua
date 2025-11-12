@@ -109,30 +109,32 @@ local function stopFlyVisuals()
 	if onofStroke then onofStroke.Enabled = false end
 end
 
+local upBG0, upText0 = up.BackgroundColor3, up.TextColor3
+
 local upRainbowConn = upRainbowConn or nil
 local upHueTime     = upHueTime or 0
 
 local function startUpTextVisual()
-	up.BackgroundColor3 = Color3.fromRGB(50,50,50)
-	up.TextStrokeTransparency = 1
-	local s = up:FindFirstChild("FlyStroke")
-	if s then s.Enabled = false end
+    up.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    up.TextStrokeTransparency = 1
+    local s = up:FindFirstChild("FlyStroke")
+    if s then s.Enabled = false end
 
-	if upRainbowConn then upRainbowConn:Disconnect() end
-	upRainbowConn = RS.RenderStepped:Connect(function(dt)
-		upHueTime += dt
-		local hue = (upHueTime * 0.25) % 1
-		up.TextColor3 = Color3.fromHSV(hue, 1, 1)
-	end)
+    if upRainbowConn then upRainbowConn:Disconnect() end
+    upRainbowConn = RS.RenderStepped:Connect(function(dt)
+        upHueTime += dt
+        local hue = (upHueTime * 0.25) % 1
+        up.TextColor3 = Color3.fromHSV(hue, 1, 1)
+    end)
 end
 
 local function stopUpTextVisual()
-	if upRainbowConn then upRainbowConn:Disconnect(); upRainbowConn = nil end
-	up.BackgroundColor3 = upBG0
-	up.TextColor3       = upText0
-	up.TextStrokeTransparency = 1
-	local s = up:FindFirstChild("FlyStroke")
-	if s then s.Enabled = false end
+    if upRainbowConn then upRainbowConn:Disconnect(); upRainbowConn = nil end
+    up.BackgroundColor3 = upBG0
+    up.TextColor3       = upText0
+    up.TextStrokeTransparency = 1
+    local s = up:FindFirstChild("FlyStroke")
+    if s then s.Enabled = false end
 end
 
 local ASCEND_SPEED = 450
@@ -170,6 +172,7 @@ up.MouseButton1Click:Connect(function()
 	end
 	hum.PlatformStand = true
 	hrp.AssemblyLinearVelocity = Vector3.new(0,0,0)
+	startUpTextVisual()
 
 	local startPos = hrp.Position
 	local targetPos = Vector3.new(startPos.X, TARGET_Y, startPos.Z)
