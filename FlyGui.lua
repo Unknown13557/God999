@@ -244,99 +244,8 @@ local function stopUpTextVisual()
     if s then s.Enabled = false end
 end
 
----------------------------[ TELEPORT FIX PACK ]---------------------------
--- forward declare để các nơi khác nhìn thấy
-local startTeleport, stopTeleport
 
--- visual: nền đen + chữ rainbow
-local teleBG0, teleText0 = teleport.BackgroundColor3, teleport.TextColor3
-local teleRainbowConn, teleHueTime = nil, 0
-local function startTeleportVisuals()
-	teleport.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-	teleport.TextStrokeTransparency = 1
-	if teleRainbowConn then teleRainbowConn:Disconnect() end
-	teleRainbowConn = RS.RenderStepped:Connect(function(dt)
-		teleHueTime += dt
-		teleport.TextColor3 = Color3.fromHSV((teleHueTime * 0.25) % 1, 1, 1)
-	end)
-end
-local function stopTeleportVisuals()
-	if teleRainbowConn then teleRainbowConn:Disconnect(); teleRainbowConn = nil end
-	teleport.BackgroundColor3 = teleBG0
-	teleport.TextColor3 = teleText0
-	teleport.TextStrokeTransparency = 1
-end
 
--- state
-local isTeleporting, teleportConn = false, nil
-
-stopTeleport = function()
-	if not isTeleporting then return end
-	isTeleporting = false
-	if teleportConn then teleportConn:Disconnect(); teleportConn = nil end
-	stopTeleportVisuals()
-	local chr = LocalPlayer.Character
-	local hrp = chr and chr:FindFirstChild("HumanoidRootPart")
-	local hum = chr and chr:FindFirstChildOfClass("Humanoid")
-	if hum then hum.AutoRotate = true end
-	if hrp and hrp:FindFirstChild("__tele_dir") then hrp.__tele_dir:Destroy() end
-	if not nowe then pcall(function() stopNoclip() end) end
-end
-
-local TELEPORT_SPEED = 450
-local SMOOTHNESS     = 0.15 -- 0.1..0.2
-
-startTeleport = function()
-	if isTeleporting then return end
-	-- ép tắt UP để không xung đột
-	if typeof(stopAscending) == "function" then stopAscending() end
-
-	local chr = LocalPlayer.Character
-	local hrp = chr and chr:FindFirstChild("HumanoidRootPart")
-	local hum = chr and chr:FindFirstChildOfClass("Humanoid")
-	if not hrp or not hum then return end
-
-	-- nếu FLY đang tắt → bật noclip; nếu FLY đang bật (nowe==true) thì không bật lại
-	if not nowe then pcall(function() startNoclip() end) end
-
-	hum.AutoRotate = false
-	startTeleportVisuals()
-	isTeleporting = true
-
-	-- cache hướng hiện tại
-	local dirVal = hrp:FindFirstChild("__tele_dir") or Instance.new("Vector3Value", hrp)
-	dirVal.Name, dirVal.Value = "__tele_dir", WS.CurrentCamera.CFrame.LookVector
-
-	teleportConn = RS.RenderStepped:Connect(function(dt)
-		if not isTeleporting then return end
-		local cam = WS.CurrentCamera
-		if not cam or not hrp or not hrp.Parent then stopTeleport(); return end
-
-		-- hướng camera phẳng
-		local forward = cam.CFrame.LookVector
-		forward = Vector3.new(forward.X, 0, forward.Z)
-		if forward.Magnitude < 1e-6 then return end
-		forward = forward.Unit
-
-		-- mượt hướng
-		dirVal.Value = dirVal.Value:Lerp(forward, math.clamp(dt / SMOOTHNESS, 0, 1))
-		local smoothDir = dirVal.Value.Unit
-
-		-- di chuyển + quay mặt đúng hướng (shift-lock ảo)
-		local newPos = hrp.Position + smoothDir * (TELEPORT_SPEED * dt)
-		hrp:PivotTo(CFrame.lookAt(newPos, newPos + smoothDir, Vector3.yAxis))
-	end)
-end
-
--- handler click (sau khi có start/stop)
-teleport.MouseButton1Click:Connect(function()
-	if isTeleporting then stopTeleport() else startTeleport() end
-end)
-
--- export để CharacterAdded gọi an toàn dù function định nghĩa ở dưới
-_G.__StopTeleport = stopTeleport
-------------------------[ END TELEPORT FIX PACK ]------------------------
-	
 local ASCEND_SPEED = 450
 local TARGET_Y = 100000000
 local isAscending = false
@@ -402,7 +311,6 @@ end
 end)
 
 local flySpeed = 16
-speed.Text = tostring(flySpeed)
 
 local speaker = LocalPlayer
 local nowe = false
