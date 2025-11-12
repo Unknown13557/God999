@@ -692,120 +692,150 @@ end
 	end
 
 	if LocalPlayer.Character:FindFirstChildOfClass("Humanoid").RigType == Enum.HumanoidRigType.R6 then
+    local plr = LocalPlayer
+    local torso = plr.Character.Torso
+    local ctrl = {f = 0, b = 0, l = 0, r = 0}
+    local lastctrl = {f = 0, b = 0, l = 0, r = 0}
+    local maxspeed = flySpeed
+    local speed = 0
 
-		local plr = LocalPlayer
-		local torso = plr.Character.Torso
-		local flying = true
-		local deb = true
-		local ctrl = {f = 0, b = 0, l = 0, r = 0}
-		local lastctrl = {f = 0, b = 0, l = 0, r = 0}
-		local maxspeed = 50
-		local speed = 0
+    local bg = Instance.new("BodyGyro", torso)
+    bg.P = 9e4
+    bg.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+    bg.CFrame = torso.CFrame
 
-		local bg = Instance.new("BodyGyro", torso)
-		bg.P = 9e4
-		bg.maxTorque = Vector3.new(9e9, 9e9, 9e9)
-		bg.cframe = torso.CFrame
-		local bv = Instance.new("BodyVelocity", torso)
-		bv.velocity = Vector3.new(0,0.1,0)
-		bv.maxForce = Vector3.new(9e9, 9e9, 9e9)
-		if nowe == true then
-			plr.Character.Humanoid.PlatformStand = true
-		end
-		while nowe == true do
-        local char = LocalPlayer.Character
-        local hum  = char and char:FindFirstChildOfClass("Humanoid")
-        if not hum or hum.Health <= 0 then break end
-			RS.RenderStepped:Wait()
+    local bv = Instance.new("BodyVelocity", torso)
+    bv.Velocity = Vector3.new(0, 0.1, 0)
+    bv.MaxForce = Vector3.new(9e9, 9e9, 9e9)
 
-			if ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0 then
-				speed = speed+.5+(speed/maxspeed)
-				if speed > maxspeed then
-					speed = maxspeed
-				end
-			elseif not (ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0) and speed ~= 0 then
-				speed = speed-1
-				if speed < 0 then
-					speed = 0
-				end
-			end
-			if (ctrl.l + ctrl.r) ~= 0 or (ctrl.f + ctrl.b) ~= 0 then
-				bv.velocity = ((WS.CurrentCamera.CoordinateFrame.lookVector * (ctrl.f+ctrl.b)) + ((WS.CurrentCamera.CoordinateFrame * CFrame.new(ctrl.l+ctrl.r,(ctrl.f+ctrl.b)*.2,0).p) - WS.CurrentCamera.CoordinateFrame.p))*speed
-				lastctrl = {f = ctrl.f, b = ctrl.b, l = ctrl.l, r = ctrl.r}
-			elseif (ctrl.l + ctrl.r) == 0 and (ctrl.f + ctrl.b) == 0 and speed ~= 0 then
-				bv.velocity = ((WS.CurrentCamera.CoordinateFrame.lookVector * (lastctrl.f+lastctrl.b)) + ((WS.CurrentCamera.CoordinateFrame * CFrame.new(lastctrl.l+lastctrl.r,(lastctrl.f+lastctrl.b)*.2,0).p) - WS.CurrentCamera.CoordinateFrame.p))*speed
-			else
-				bv.velocity = Vector3.new(0,0,0)
-			end
+    if nowe == true then
+        plr.Character.Humanoid.PlatformStand = true
+    end
 
-			bg.cframe = WS.CurrentCamera.CoordinateFrame * CFrame.Angles(-math.rad((ctrl.f+ctrl.b)*50*speed/maxspeed),0,0)
-		end
-		ctrl = {f = 0, b = 0, l = 0, r = 0}
-		lastctrl = {f = 0, b = 0, l = 0, r = 0}
-		speed = 0
-		bg:Destroy()
-		bv:Destroy()
-		plr.Character.Humanoid.PlatformStand = false
-		LocalPlayer.Character.Animate.Disabled = false
-		tpwalking = false
+    while nowe == true do
+        RS.RenderStepped:Wait()
 
-	else
-		local plr = LocalPlayer
-		local UpperTorso = plr.Character.UpperTorso
-		local flying = true
-		local deb = true
-		local ctrl = {f = 0, b = 0, l = 0, r = 0}
-		local lastctrl = {f = 0, b = 0, l = 0, r = 0}
-		local maxspeed = 50
-		local speed = 0
+        local cam = WS.CurrentCamera
+        if not cam then
+            bv.Velocity = Vector3.new(0,0,0)
+            bg.CFrame = torso.CFrame
+        else
+            local camCF = cam.CFrame
 
-		local bg = Instance.new("BodyGyro", UpperTorso)
-		bg.P = 9e4
-		bg.maxTorque = Vector3.new(9e9, 9e9, 9e9)
-		bg.cframe = UpperTorso.CFrame
-		local bv = Instance.new("BodyVelocity", UpperTorso)
-		bv.velocity = Vector3.new(0,0.1,0)
-		bv.maxForce = Vector3.new(9e9, 9e9, 9e9)
-		if nowe == true then
-			plr.Character.Humanoid.PlatformStand = true
-		end
-		while nowe == true do
-        local char = LocalPlayer.Character
-        local hum  = char and char:FindFirstChildOfClass("Humanoid")
-        if not hum or hum.Health <= 0 then break end
-			task.wait()
+            if ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0 then
+                speed = speed + 0.5 + (speed / maxspeed)
+                if speed > maxspeed then speed = maxspeed end
+            elseif speed ~= 0 then
+                speed -= 1
+                if speed < 0 then speed = 0 end
+            end
 
-			if ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0 then
-				speed = speed+.5+(speed/maxspeed)
-				if speed > maxspeed then
-					speed = maxspeed
-				end
-			elseif not (ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0) and speed ~= 0 then
-				speed = speed-1
-				if speed < 0 then
-					speed = 0
-				end
-			end
-			if (ctrl.l + ctrl.r) ~= 0 or (ctrl.f + ctrl.b) ~= 0 then
-				bv.velocity = ((WS.CurrentCamera.CoordinateFrame.lookVector * (ctrl.f+ctrl.b)) + ((WS.CurrentCamera.CoordinateFrame * CFrame.new(ctrl.l+ctrl.r,(ctrl.f+ctrl.b)*.2,0).p) - WS.CurrentCamera.CoordinateFrame.p))*speed
-				lastctrl = {f = ctrl.f, b = ctrl.b, l = ctrl.l, r = ctrl.r}
-			elseif (ctrl.l + ctrl.r) == 0 and (ctrl.f + ctrl.b) == 0 and speed ~= 0 then
-				bv.velocity = ((WS.CurrentCamera.CoordinateFrame.lookVector * (lastctrl.f+lastctrl.b)) + ((WS.CurrentCamera.CoordinateFrame * CFrame.new(lastctrl.l+lastctrl.r,(lastctrl.f+lastctrl.b)*.2,0).p) - WS.CurrentCamera.CoordinateFrame.p))*speed
-			else
-				bv.velocity = Vector3.new(0,0,0)
-			end
+            if (ctrl.l + ctrl.r) ~= 0 or (ctrl.f + ctrl.b) ~= 0 then
+                bv.Velocity =
+                    (camCF.LookVector * (ctrl.f + ctrl.b))
+                    + ((camCF * CFrame.new(ctrl.l + ctrl.r, (ctrl.f + ctrl.b) * .2, 0)).Position - camCF.Position)
+                bv.Velocity *= speed
+                lastctrl = {f = ctrl.f, b = ctrl.b, l = ctrl.l, r = ctrl.r}
+            elseif speed ~= 0 then
+                bv.Velocity =
+                    (camCF.LookVector * (lastctrl.f + lastctrl.b))
+                    + ((camCF * CFrame.new(lastctrl.l + lastctrl.r, (lastctrl.f + lastctrl.b) * .2, 0)).Position - camCF.Position)
+                bv.Velocity *= speed
+            else
+                bv.Velocity = Vector3.new(0, 0, 0)
+            end
 
-			bg.cframe = WS.CurrentCamera.CoordinateFrame * CFrame.Angles(-math.rad((ctrl.f+ctrl.b)*50*speed/maxspeed),0,0)
-		end
-		ctrl = {f = 0, b = 0, l = 0, r = 0}
-		lastctrl = {f = 0, b = 0, l = 0, r = 0}
-		speed = 0
-		bg:Destroy()
-		bv:Destroy()
-		plr.Character.Humanoid.PlatformStand = false
-		LocalPlayer.Character.Animate.Disabled = false
-		tpwalking = false
-	end
+            bg.CFrame = camCF * CFrame.Angles(-math.rad((ctrl.f + ctrl.b) * 50 * speed / maxspeed), 0, 0)
+        end
+    end
+
+    ctrl = {f = 0, b = 0, l = 0, r = 0}
+    lastctrl = {f = 0, b = 0, l = 0, r = 0}
+    speed = 0
+    bg:Destroy()
+    bv:Destroy()
+    plr.Character.Humanoid.PlatformStand = false
+    LocalPlayer.Character.Animate.Disabled = false
+    tpwalking = false
+end
+		
+else
+    local plr = LocalPlayer
+    local char = plr.Character
+    local hum = char and char:FindFirstChildOfClass("Humanoid")
+    local root = char and char:FindFirstChild("UpperTorso")
+
+    if hum and root then
+        local ctrl = {f = 0, b = 0, l = 0, r = 0}
+        local lastctrl = {f = 0, b = 0, l = 0, r = 0}
+        local maxspeed = flySpeed
+        local speed = 0
+
+        local bg = Instance.new("BodyGyro", root)
+        bg.P = 9e4
+        bg.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+        bg.CFrame = root.CFrame
+			
+        local bv = Instance.new("BodyVelocity", root)
+        bv.Velocity = Vector3.new(0, 0.1, 0)
+        bv.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+
+        if nowe == true then
+            hum.PlatformStand = true
+        end
+
+        while nowe == true do
+            RS.RenderStepped:Wait()
+
+            local cam = WS.CurrentCamera
+            if not cam then
+                bv.Velocity = Vector3.new(0,0,0)
+                bg.CFrame = root.CFrame
+            else
+                local camCF = cam.CFrame
+                if ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0 then
+                    speed = speed + 0.5 + (speed / maxspeed)
+                    if speed > maxspeed then speed = maxspeed end
+                elseif speed ~= 0 then
+                    speed -= 1
+                    if speed < 0 then speed = 0 end
+                end
+					
+                if (ctrl.l + ctrl.r) ~= 0 or (ctrl.f + ctrl.b) ~= 0 then
+                    bv.Velocity =
+                        (camCF.LookVector * (ctrl.f + ctrl.b))
+                        + ((camCF * CFrame.new(ctrl.l + ctrl.r,
+                            (ctrl.f + ctrl.b)*0.2, 0)).Position - camCF.Position)
+                    bv.Velocity *= speed
+
+                    lastctrl = {f = ctrl.f, b = ctrl.b, l = ctrl.l, r = ctrl.r}
+                elseif speed ~= 0 then
+                    bv.Velocity =
+                        (camCF.LookVector * (lastctrl.f + lastctrl.b))
+                        + ((camCF * CFrame.new(lastctrl.l + lastctrl.r,
+                            (lastctrl.f + lastctrl.b)*0.2, 0)).Position - camCF.Position)
+                    bv.Velocity *= speed
+                else
+                    bv.Velocity = Vector3.new(0,0,0)
+                end
+                bg.CFrame = camCF * CFrame.Angles(
+                    -math.rad((ctrl.f+ctrl.b)*50*speed/maxspeed),
+                    0,
+                    0
+                )
+            end
+        end
+
+        ctrl = {f = 0, b = 0, l = 0, r = 0}
+        lastctrl = {f = 0, b = 0, l = 0, r = 0}
+        speed = 0
+        bg:Destroy()
+        bv:Destroy()
+        hum.PlatformStand = false
+        char.Animate.Disabled = false
+        tpwalking = false
+    end
+end
 end)
 
 Players.LocalPlayer.CharacterAdded:Connect(function(char)
