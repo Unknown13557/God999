@@ -47,15 +47,15 @@ up.Text = "UP"
 up.TextColor3 = Color3.fromRGB(0, 0, 0)
 up.TextSize = 17.000
 
-down.Name = "down"
-down.Parent = Frame
-down.BackgroundColor3 = Color3.fromRGB(215, 255, 121)
-down.Position = UDim2.new(0, 0, 0.50500074, 0)
-down.Size = UDim2.new(0, 44, 0, 28)
-down.Font = Enum.Font.SourceSans
-down.Text = "DOWN"
-down.TextColor3 = Color3.fromRGB(0, 0, 0)
-down.TextSize = 17.000
+teleport = "teleport"
+teleport.Parent = Frame
+teleport.BackgroundColor3 = Color3.fromRGB(215, 255, 121)
+teleport.Position = UDim2.new(0, 0, 0.50500074, 0)
+teleport.Size = UDim2.new(0, 44, 0, 28)
+Teleport.Font = Enum.Font.SourceSans
+teleport.Text = "TELEPORT"
+teleport.TextColor3 = Color3.fromRGB(0, 0, 0)
+teleport.TextSize = 14.000
 
 onof.Name = "onof"
 onof.Parent = Frame
@@ -188,7 +188,7 @@ end
 	end)
 end)
 
-down.MouseButton1Click:Connect(function()
+teleport.MouseButton1Click:Connect(function()
 end)
 
 TextLabel.Parent = Frame
