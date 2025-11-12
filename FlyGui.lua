@@ -143,6 +143,52 @@ mini2.TextSize = 40
 mini2.Position = UDim2.new(0, 44, -1, 57)
 mini2.Visible = false
 
+local lastClick = 0
+local doubleClickWindow = 1
+
+local originalTextColor = closebutton.TextColor3
+closebutton.MouseButton1Click:Connect(function()
+	local now = tick()
+	if now - lastClick <= doubleClickWindow then
+		main:Destroy()
+	else
+		lastClick = now
+		closebutton.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+		task.delay(doubleClickWindow, function()
+			if tick() - lastClick >= doubleClickWindow then
+				closebutton.TextColor3 = originalTextColor
+			end
+		end)
+	end
+end)
+
+mini.MouseButton1Click:Connect(function()
+	up.Visible = false
+	teleport.Visible = false
+	onof.Visible = false
+	plus.Visible = false
+	speed.Visible = false
+	mine.Visible = false
+	mini.Visible = false
+	mini2.Visible = true
+	main.Frame.BackgroundTransparency = 1
+	closebutton.Position =  UDim2.new(0, 0, -1, 57)
+end)
+
+mini2.MouseButton1Click:Connect(function()
+	up.Visible = true
+	teleport.Visible = true
+	onof.Visible = true
+	plus.Visible = true
+	speed.Visible = true
+	mine.Visible = true
+	mini.Visible = true
+	mini2.Visible = false
+	main.Frame.BackgroundTransparency = 0 
+	closebutton.Position =  UDim2.new(0, 0, -1, 27)
+end)
+
 local onofDefaultTextColor = onof.TextColor3
 local onofDefaultBG        = onof.BackgroundColor3
 local onofDefaultText      = onof.Text
@@ -198,13 +244,13 @@ local function stopUpTextVisual()
     if s then s.Enabled = false end
 end
 
----------------------------[ TELEPORT SECTION ]---------------------------
+---------------------------[ TELEPORT FIX PACK ]---------------------------
+-- forward declare để các nơi khác nhìn thấy
+local startTeleport, stopTeleport
 
--- nút TELEPORT: nền đen + chữ cầu vồng
+-- visual: nền đen + chữ rainbow
 local teleBG0, teleText0 = teleport.BackgroundColor3, teleport.TextColor3
-local teleRainbowConn
-local teleHueTime = 0
-
+local teleRainbowConn, teleHueTime = nil, 0
 local function startTeleportVisuals()
 	teleport.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 	teleport.TextStrokeTransparency = 1
@@ -214,7 +260,6 @@ local function startTeleportVisuals()
 		teleport.TextColor3 = Color3.fromHSV((teleHueTime * 0.25) % 1, 1, 1)
 	end)
 end
-
 local function stopTeleportVisuals()
 	if teleRainbowConn then teleRainbowConn:Disconnect(); teleRainbowConn = nil end
 	teleport.BackgroundColor3 = teleBG0
@@ -222,93 +267,76 @@ local function stopTeleportVisuals()
 	teleport.TextStrokeTransparency = 1
 end
 
--- trạng thái TELEPORT
-local isTeleporting = false
-local teleportConn
+-- state
+local isTeleporting, teleportConn = false, nil
 
--- dừng teleport
-local function stopTeleport()
+stopTeleport = function()
 	if not isTeleporting then return end
 	isTeleporting = false
 	if teleportConn then teleportConn:Disconnect(); teleportConn = nil end
 	stopTeleportVisuals()
-
 	local chr = LocalPlayer.Character
 	local hrp = chr and chr:FindFirstChild("HumanoidRootPart")
 	local hum = chr and chr:FindFirstChildOfClass("Humanoid")
-
 	if hum then hum.AutoRotate = true end
 	if hrp and hrp:FindFirstChild("__tele_dir") then hrp.__tele_dir:Destroy() end
-
-	if not nowe then
-		pcall(function() stopNoclip() end)
-	end
+	if not nowe then pcall(function() stopNoclip() end) end
 end
 
--- bật teleport
 local TELEPORT_SPEED = 450
-local SMOOTHNESS = 0.15 -- nhỏ hơn = bám hướng chặt hơn
+local SMOOTHNESS     = 0.15 -- 0.1..0.2
 
-local function startTeleport()
+startTeleport = function()
 	if isTeleporting then return end
-	stopAscending() -- tắt UP nếu đang bay
+	-- ép tắt UP để không xung đột
+	if typeof(stopAscending) == "function" then stopAscending() end
 
 	local chr = LocalPlayer.Character
 	local hrp = chr and chr:FindFirstChild("HumanoidRootPart")
 	local hum = chr and chr:FindFirstChildOfClass("Humanoid")
 	if not hrp or not hum then return end
 
-	-- nếu FLY chưa bật thì bật noclip
-	if not nowe then
-		pcall(function() startNoclip() end)
-	end
+	-- nếu FLY đang tắt → bật noclip; nếu FLY đang bật (nowe==true) thì không bật lại
+	if not nowe then pcall(function() startNoclip() end) end
 
 	hum.AutoRotate = false
 	startTeleportVisuals()
 	isTeleporting = true
 
 	-- cache hướng hiện tại
-	local dirVal = Instance.new("Vector3Value", hrp)
-	dirVal.Name = "__tele_dir"
-	dirVal.Value = WS.CurrentCamera.CFrame.LookVector
+	local dirVal = hrp:FindFirstChild("__tele_dir") or Instance.new("Vector3Value", hrp)
+	dirVal.Name, dirVal.Value = "__tele_dir", WS.CurrentCamera.CFrame.LookVector
 
 	teleportConn = RS.RenderStepped:Connect(function(dt)
 		if not isTeleporting then return end
-
 		local cam = WS.CurrentCamera
-		if not cam or not hrp or not hrp.Parent then
-			stopTeleport()
-			return
-		end
+		if not cam or not hrp or not hrp.Parent then stopTeleport(); return end
 
-		-- hướng nhìn phẳng (không theo trục Y)
+		-- hướng camera phẳng
 		local forward = cam.CFrame.LookVector
 		forward = Vector3.new(forward.X, 0, forward.Z)
 		if forward.Magnitude < 1e-6 then return end
 		forward = forward.Unit
 
-		-- mượt hướng xoay (tránh khựng khi bẻ cua)
+		-- mượt hướng
 		dirVal.Value = dirVal.Value:Lerp(forward, math.clamp(dt / SMOOTHNESS, 0, 1))
 		local smoothDir = dirVal.Value.Unit
 
-		-- vị trí mới, tốc độ 450 stud/s
+		-- di chuyển + quay mặt đúng hướng (shift-lock ảo)
 		local newPos = hrp.Position + smoothDir * (TELEPORT_SPEED * dt)
-
-		-- shift-lock thật: quay mặt nhân vật cùng hướng camera
-		local lookCF = CFrame.lookAt(newPos, newPos + smoothDir, Vector3.yAxis)
-		hrp:PivotTo(lookCF)
+		hrp:PivotTo(CFrame.lookAt(newPos, newPos + smoothDir, Vector3.yAxis))
 	end)
 end
 
+-- handler click (sau khi có start/stop)
 teleport.MouseButton1Click:Connect(function()
-	if isTeleporting then
-		stopTeleport()
-	else
-		startTeleport()
-	end
+	if isTeleporting then stopTeleport() else startTeleport() end
 end)
-------------------------[ END TELEPORT SECTION ]------------------------
 
+-- export để CharacterAdded gọi an toàn dù function định nghĩa ở dưới
+_G.__StopTeleport = stopTeleport
+------------------------[ END TELEPORT FIX PACK ]------------------------
+	
 local ASCEND_SPEED = 450
 local TARGET_Y = 100000000
 local isAscending = false
@@ -371,54 +399,6 @@ end
 			stopAscending()
 		end
 	end)
-end)
-
-
-
-local lastClick = 0
-local doubleClickWindow = 1
-
-local originalTextColor = closebutton.TextColor3
-closebutton.MouseButton1Click:Connect(function()
-	local now = tick()
-	if now - lastClick <= doubleClickWindow then
-		main:Destroy()
-	else
-		lastClick = now
-		closebutton.TextColor3 = Color3.fromRGB(255, 255, 255)
-
-		task.delay(doubleClickWindow, function()
-			if tick() - lastClick >= doubleClickWindow then
-				closebutton.TextColor3 = originalTextColor
-			end
-		end)
-	end
-end)
-
-mini.MouseButton1Click:Connect(function()
-	up.Visible = false
-	teleport.Visible = false
-	onof.Visible = false
-	plus.Visible = false
-	speed.Visible = false
-	mine.Visible = false
-	mini.Visible = false
-	mini2.Visible = true
-	main.Frame.BackgroundTransparency = 1
-	closebutton.Position =  UDim2.new(0, 0, -1, 57)
-end)
-
-mini2.MouseButton1Click:Connect(function()
-	up.Visible = true
-	teleport.Visible = true
-	onof.Visible = true
-	plus.Visible = true
-	speed.Visible = true
-	mine.Visible = true
-	mini.Visible = true
-	mini2.Visible = false
-	main.Frame.BackgroundTransparency = 0 
-	closebutton.Position =  UDim2.new(0, 0, -1, 27)
 end)
 
 local flySpeed = 16
