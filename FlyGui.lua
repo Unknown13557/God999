@@ -124,6 +124,117 @@ local function stopUpTextVisual()
     if s then s.Enabled = false end
 end
 
+---------------------------[ TELEPORT SECTION ]---------------------------
+
+-- nút TELEPORT: nền đen + chữ cầu vồng
+local teleBG0, teleText0 = teleport.BackgroundColor3, teleport.TextColor3
+local teleRainbowConn
+local teleHueTime = 0
+
+local function startTeleportVisuals()
+	teleport.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+	teleport.TextStrokeTransparency = 1
+	if teleRainbowConn then teleRainbowConn:Disconnect() end
+	teleRainbowConn = RS.RenderStepped:Connect(function(dt)
+		teleHueTime += dt
+		teleport.TextColor3 = Color3.fromHSV((teleHueTime * 0.25) % 1, 1, 1)
+	end)
+end
+
+local function stopTeleportVisuals()
+	if teleRainbowConn then teleRainbowConn:Disconnect(); teleRainbowConn = nil end
+	teleport.BackgroundColor3 = teleBG0
+	teleport.TextColor3 = teleText0
+	teleport.TextStrokeTransparency = 1
+end
+
+-- trạng thái TELEPORT
+local isTeleporting = false
+local teleportConn
+
+-- dừng teleport
+local function stopTeleport()
+	if not isTeleporting then return end
+	isTeleporting = false
+	if teleportConn then teleportConn:Disconnect(); teleportConn = nil end
+	stopTeleportVisuals()
+
+	local chr = LocalPlayer.Character
+	local hrp = chr and chr:FindFirstChild("HumanoidRootPart")
+	local hum = chr and chr:FindFirstChildOfClass("Humanoid")
+
+	if hum then hum.AutoRotate = true end
+	if hrp and hrp:FindFirstChild("__tele_dir") then hrp.__tele_dir:Destroy() end
+
+	if not nowe then
+		pcall(function() stopNoclip() end)
+	end
+end
+
+-- bật teleport
+local TELEPORT_SPEED = 450
+local SMOOTHNESS = 0.15 -- nhỏ hơn = bám hướng chặt hơn
+
+local function startTeleport()
+	if isTeleporting then return end
+	stopAscending() -- tắt UP nếu đang bay
+
+	local chr = LocalPlayer.Character
+	local hrp = chr and chr:FindFirstChild("HumanoidRootPart")
+	local hum = chr and chr:FindFirstChildOfClass("Humanoid")
+	if not hrp or not hum then return end
+
+	-- nếu FLY chưa bật thì bật noclip
+	if not nowe then
+		pcall(function() startNoclip() end)
+	end
+
+	hum.AutoRotate = false
+	startTeleportVisuals()
+	isTeleporting = true
+
+	-- cache hướng hiện tại
+	local dirVal = Instance.new("Vector3Value", hrp)
+	dirVal.Name = "__tele_dir"
+	dirVal.Value = WS.CurrentCamera.CFrame.LookVector
+
+	teleportConn = RS.RenderStepped:Connect(function(dt)
+		if not isTeleporting then return end
+
+		local cam = WS.CurrentCamera
+		if not cam or not hrp or not hrp.Parent then
+			stopTeleport()
+			return
+		end
+
+		-- hướng nhìn phẳng (không theo trục Y)
+		local forward = cam.CFrame.LookVector
+		forward = Vector3.new(forward.X, 0, forward.Z)
+		if forward.Magnitude < 1e-6 then return end
+		forward = forward.Unit
+
+		-- mượt hướng xoay (tránh khựng khi bẻ cua)
+		dirVal.Value = dirVal.Value:Lerp(forward, math.clamp(dt / SMOOTHNESS, 0, 1))
+		local smoothDir = dirVal.Value.Unit
+
+		-- vị trí mới, tốc độ 450 stud/s
+		local newPos = hrp.Position + smoothDir * (TELEPORT_SPEED * dt)
+
+		-- shift-lock thật: quay mặt nhân vật cùng hướng camera
+		local lookCF = CFrame.lookAt(newPos, newPos + smoothDir, Vector3.yAxis)
+		hrp:PivotTo(lookCF)
+	end)
+end
+
+teleport.MouseButton1Click:Connect(function()
+	if isTeleporting then
+		stopTeleport()
+	else
+		startTeleport()
+	end
+end)
+------------------------[ END TELEPORT SECTION ]------------------------
+
 local ASCEND_SPEED = 450
 local TARGET_Y = 100000000
 local isAscending = false
@@ -186,9 +297,6 @@ end
 			stopAscending()
 		end
 	end)
-end)
-
-teleport.MouseButton1Click:Connect(function()
 end)
 
 TextLabel.Parent = Frame
@@ -288,7 +396,7 @@ end)
 
 mini.MouseButton1Click:Connect(function()
 	up.Visible = false
-	down.Visible = false
+	teleport.Visible = false
 	onof.Visible = false
 	plus.Visible = false
 	speed.Visible = false
@@ -301,7 +409,7 @@ end)
 
 mini2.MouseButton1Click:Connect(function()
 	up.Visible = true
-	down.Visible = true
+	teleport.Visible = true
 	onof.Visible = true
 	plus.Visible = true
 	speed.Visible = true
@@ -641,6 +749,7 @@ Players.LocalPlayer.CharacterAdded:Connect(function(char)
 	end
 	task.wait(0.7)
 	pcall(function() stopNoclip() end)
+	pcall(function() stopTeleport() end)
 	local c = LocalPlayer.Character
 if c and c:FindFirstChildOfClass("Humanoid") then
 	c.Humanoid.PlatformStand = false
