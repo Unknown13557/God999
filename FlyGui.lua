@@ -138,34 +138,14 @@ local function stopUpTextVisual()
 end
 
 local LOW_HP, SAFE_HP = 0.40, 0.90
-local EMERGENCY_LOCK  = 3
-
 local isEmergency      = false
-local upLockoutUntil   = 0
 local emergencyConn    = nil
 
 local function setEmergencyVisuals(on)
+	isEmergency = on and true or false
 	if on then
-		isEmergency = true
-		stopUpTextVisual()
-		up.TextColor3 = Color3.fromRGB(0,0,0)
-		local s = up:FindFirstChild("EmergencyStroke") or up:FindFirstChild("FlyStroke")
-		if s then s.Enabled = false end
-		if emergencyConn then emergencyConn:Disconnect() end
-		local t = 0
-		emergencyConn = RS.RenderStepped:Connect(function(dt)
-			t += dt * 6
-			local a = (math.sin(t) + 1) * 0.5
-			local r1,g1,b1 = 1.0, 0.20, 0.00
-			local r2,g2,b2 = 1.0, 0.65, 0.00
-			local r = r1 + (r2 - r1) * a
-			local g = g1 + (g2 - g1) * a
-			local b = b1 + (b2 - b1) * a
-			up.BackgroundColor3 = Color3.new(r,g,b)
-		end)
+		startUpTextVisual()
 	else
-		isEmergency = false
-		if emergencyConn then emergencyConn:Disconnect(); emergencyConn = nil end
 		if isAscending then
 			startUpTextVisual()
 		else
@@ -230,9 +210,8 @@ local function bindHealthWatcher(hum)
 		if mh <= 0 then return end
 		local p = h / mh
 		if (not isEmergency) and p < LOW_HP then
-			setEmergencyVisuals(true)
-			upLockoutUntil = os.clock() + EMERGENCY_LOCK
-			beginAscendingIfNeeded()
+		setEmergencyVisuals(true)
+        beginAscendingIfNeeded()	
 		elseif isEmergency and p >= SAFE_HP then
 			setEmergencyVisuals(false)
 			stopAscending()
@@ -261,11 +240,6 @@ end
 
 up.MouseButton1Click:Connect(function()
 	if isAscending then
-	if isEmergency and os.clock() < upLockoutUntil then
-		return
-	end
-	
-setEmergencyVisuals(false)
 	stopAscending()
 	return
 end
@@ -279,7 +253,6 @@ end
 	end
 	hum.PlatformStand = true
 	hrp.AssemblyLinearVelocity = Vector3.new(0,0,0)
-	if not isEmergency then
 	startUpTextVisual()
 end
 
@@ -772,10 +745,7 @@ if c and c:FindFirstChild("Animate") then
 end
 setEmergencyVisuals(false)
 isEmergency = false
-upLockoutUntil = 0
 stopUpTextVisual()
-up.BackgroundColor3 = upBG0
-up.TextColor3 = upText0
 stopFlyVisuals()
 end)
 
