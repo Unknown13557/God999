@@ -500,7 +500,7 @@ onof.MouseButton1Down:connect(function()
 				
 		startFlyVisuals()
 		for i = 1, flySpeed do
-			spawn(function()
+			task.spawn(function()
 				local hb = RS.Heartbeat	
 				tpwalking = true
 				local chr = LocalPlayer.Character
@@ -673,7 +673,7 @@ plus.MouseButton1Down:connect(function()
 
 		tpwalking = false
 		for i = 1, flySpeed do
-			spawn(function()
+			task.spawn(function()
 				local hb = RS.Heartbeat	
 				tpwalking = true
 				local chr = LocalPlayer.Character
@@ -699,7 +699,7 @@ mine.MouseButton1Down:connect(function()
 		if nowe == true then
 			tpwalking = false
 			for i = 1, flySpeed do
-				spawn(function()
+				task.spawn(function()
 					local hb = RS.Heartbeat	
 					tpwalking = true
 					local chr = LocalPlayer.Character
