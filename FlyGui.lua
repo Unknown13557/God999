@@ -45,7 +45,7 @@ up.Size = UDim2.new(0, 44, 0, 28)
 up.Font = Enum.Font.SourceSans
 up.Text = "UP"
 up.TextColor3 = Color3.fromRGB(0, 0, 0)
-up.TextSize = 16.000
+up.TextSize = 17.000
 
 down.Name = "down"
 down.Parent = Frame
@@ -55,7 +55,7 @@ down.Size = UDim2.new(0, 44, 0, 28)
 down.Font = Enum.Font.SourceSans
 down.Text = "DOWN"
 down.TextColor3 = Color3.fromRGB(0, 0, 0)
-down.TextSize = 16.000
+down.TextSize = 17.000
 
 onof.Name = "onof"
 onof.Parent = Frame
@@ -66,7 +66,7 @@ onof.Font = Enum.Font.SourceSans
 onof.Text = "FLY"
 onof.TextColor3 = Color3.fromRGB(0, 0, 0)
 onof.BorderSizePixel = 1
-onof.TextSize = 17.000
+onof.TextSize = 18.000
 onof.ZIndex = 50
 
 local onofDefaultTextColor = onof.TextColor3
@@ -135,6 +135,103 @@ local function stopUpTextVisual()
     up.TextStrokeTransparency = 1
     local s = up:FindFirstChild("FlyStroke")
     if s then s.Enabled = false end
+end
+
+local LOW_HP, SAFE_HP = 0.40, 0.90
+local EMERGENCY_LOCK  = 3
+
+local isEmergency      = false
+local upLockoutUntil   = 0
+local emergencyConn    = nil
+
+local upStroke = up:FindFirstChild("EmergencyStroke") or Instance.new("UIStroke")
+upStroke.Name = "EmergencyStroke"
+upStroke.Parent = up
+upStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+upStroke.Thickness = 2
+upStroke.Enabled = false
+
+local function setEmergencyVisuals(on)
+	if on then
+		isEmergency = true
+		up.TextColor3 = Color3.fromRGB(40,40,40)
+		upStroke.Enabled = true
+		if emergencyConn then emergencyConn:Disconnect() end
+		local t = 0
+		emergencyConn = RS.RenderStepped:Connect(function(dt)
+			t += dt * 6
+			local a = (math.sin(t) + 1) * 0.5
+			local r1,g1,b1 = 1, 0.2, 0
+			local r2,g2,b2 = 1, 0.65, 0
+			local r = r1 + (r2-r1)*a
+			local g = g1 + (g2-g1)*a
+			local b = b1 + (b2-b1)*a
+			upStroke.Color = Color3.new(r,g,b)
+		end)
+	else
+		isEmergency = false
+		if emergencyConn then emergencyConn:Disconnect(); emergencyConn=nil end
+		upStroke.Enabled = false
+		stopUpTextVisual()
+	end
+end
+
+local function beginAscendingIfNeeded()
+	if isAscending then return end
+
+	local chr = LocalPlayer.Character
+	local hrp = chr and chr:FindFirstChild("HumanoidRootPart")
+	local hum = chr and chr:FindFirstChildOfClass("Humanoid")
+	if not hrp or not hum then return end
+
+	if not nowe then
+		pcall(function() startNoclip() end)
+	end
+	hum.PlatformStand = true
+	hrp.AssemblyLinearVelocity = Vector3.new(0,0,0)
+
+	startUpTextVisual()
+
+	local startPos = hrp.Position
+	local targetPos = Vector3.new(startPos.X, TARGET_Y, startPos.Z)
+	local distance = TARGET_Y - startPos.Y
+	if distance <= 0 then
+		stopAscending()
+		return
+	end
+	local travelTime, elapsed = distance / ASCEND_SPEED, 0
+
+	isAscending = true
+	ascendConn = RS.RenderStepped:Connect(function(dt)
+		if not isAscending then return end
+		elapsed += dt
+		hrp.AssemblyLinearVelocity = Vector3.new(0,0,0)
+		local alpha = math.clamp(elapsed / travelTime, 0, 1)
+		local newPos = startPos:Lerp(targetPos, alpha)
+		hrp:PivotTo(CFrame.new(newPos))
+		if alpha >= 1 then
+			stopAscending()
+		end
+	end)
+end
+
+local healthConn
+local function bindHealthWatcher(hum)
+	if healthConn then healthConn:Disconnect(); healthConn=nil end
+	if not hum then return end
+	healthConn = hum.HealthChanged:Connect(function(h)
+		local mh = hum.MaxHealth
+		if mh <= 0 then return end
+		local p = h / mh
+		if (not isEmergency) and p < LOW_HP then
+			setEmergencyVisuals(true)
+			upLockoutUntil = os.clock() + EMERGENCY_LOCK
+			beginAscendingIfNeeded()
+		elseif isEmergency and p >= SAFE_HP then
+			setEmergencyVisuals(false)
+			stopAscending()
+		end
+	end)
 end
 
 local ASCEND_SPEED = 450
@@ -223,7 +320,7 @@ plus.Font = Enum.Font.SourceSans
 plus.Text = "+"
 plus.TextColor3 = Color3.fromRGB(0, 0, 0)
 plus.TextScaled = true
-plus.TextSize = 14.000
+plus.TextSize = 17.000
 plus.TextWrapped = true
 
 speed.Name = "speed"
@@ -247,7 +344,7 @@ mine.Font = Enum.Font.SourceSans
 mine.Text = "-"
 mine.TextColor3 = Color3.fromRGB(0, 0, 0)
 mine.TextScaled = true
-mine.TextSize = 15.000
+mine.TextSize = 17.000
 mine.TextWrapped = true
 
 closebutton.Name = "Close"
