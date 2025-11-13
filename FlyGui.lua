@@ -48,6 +48,14 @@ up.Text = "UP"
 up.TextColor3 = Color3.fromRGB(0, 0, 0)
 up.TextSize = 17
 
+autoBg.Name = "AutoEscapeBG"
+autoBg.Parent = Frame
+autoBg.BackgroundColor3 = Color3.fromRGB(215, 255, 121)
+autoBg.Position = UDim2.new(0, 0, 0.50500074, 0)
+autoBg.Size = UDim2.new(0, 44, 0, 28)
+autoBg.BorderSizePixel = 1
+autoBg.BorderColor3 = Color3.fromRGB(0, 0, 0)
+
 aeToggle.Name = "AutoEscapeToggle"
 aeToggle.Parent = autoBg
 aeToggle.Size = UDim2.new(0, 38, 0, 16)
@@ -56,15 +64,7 @@ aeToggle.BackgroundColor3 = Color3.fromRGB(88, 200, 120)
 aeToggle.AutoButtonColor = false
 aeToggle.Text = ""
 aeToggle.BorderSizePixel = 1
-aeToggle.BorderColor3 = Color3.fromRGB(0,0,0)
-
-autoBg.Name = "AutoEscapeBG"
-autoBg.Parent = Frame
-autoBg.BackgroundColor3 = Color3.fromRGB(225, 255, 151)
-autoBg.Position = UDim2.new(0, 0, 0.50500074, 0)
-autoBg.Size = UDim2.new(0, 44, 0, 28)
-autoBg.BorderSizePixel = 1
-autoBg.BorderColor3 = Color3.fromRGB(0,0,0)
+aeToggle.BorderColor3 = Color3.fromRGB(0, 0, 0)
 
 local aeCorner = Instance.new("UICorner")
 aeCorner.CornerRadius = UDim.new(1, 0)
@@ -77,7 +77,7 @@ knob.Size = UDim2.new(0, 12, 0, 12)
 knob.Position = UDim2.new(0, 2, 0.5, -6)
 knob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 knob.BorderSizePixel = 1
-knob.BorderColor3 = Color3.fromRGB(0,0,0)
+knob.BorderColor3 = Color3.fromRGB(0, 0, 0)
 
 local knobCorner = Instance.new("UICorner")
 knobCorner.CornerRadius = UDim.new(1, 0)
@@ -454,6 +454,7 @@ aeToggle.MouseButton1Click:Connect(function()
 end)
 
 -------------------------[ END AUTO ESCAPE MODULE ]-------------------------
+    
 
 
 local function cacheAndDisablePart(part)
