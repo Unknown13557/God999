@@ -20,8 +20,7 @@ main.Name = "main"
 main.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 local Frame = Instance.new("Frame")
 local up = Instance.new("TextButton")
-local autoBg = Instance.new("Frame")
-local aeToggle = Instance.new("TextButton")
+local down = Instance.new("TextButton")
 local onof = Instance.new("TextButton")
 local TextLabel = Instance.new("TextLabel")
 local plus = Instance.new("TextButton")
@@ -48,44 +47,15 @@ up.Text = "UP"
 up.TextColor3 = Color3.fromRGB(0, 0, 0)
 up.TextSize = 17
 
-autoBg.Name = "AutoEscapeBG"
-autoBg.Parent = Frame
-autoBg.BackgroundColor3 = Color3.fromRGB(215, 255, 121)
-autoBg.Position = UDim2.new(0, 0, 0.50500074, 0)
-autoBg.Size = UDim2.new(0, 44, 0, 28)
-autoBg.BorderSizePixel = 1
-autoBg.BorderColor3 = Color3.fromRGB(0, 0, 0)
-
-aeToggle.Name = "AutoEscapeToggle"
-aeToggle.Parent = autoBg
-aeToggle.Size = UDim2.new(0, 38, 0, 16)
-aeToggle.Position = UDim2.new(0.5, -19, 0.5, -8)
-aeToggle.BackgroundColor3 = Color3.fromRGB(88, 200, 120)
-aeToggle.AutoButtonColor = false
-aeToggle.Text = ""
-
-local aeStroke = Instance.new("UIStroke")
-aeStroke.Parent = aeToggle
-aeStroke.Color = Color3.fromRGB(60,60,60)
-aeStroke.Thickness = 1
-aeStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-
-local aeCorner = Instance.new("UICorner")
-aeCorner.CornerRadius = UDim.new(1, 0)
-aeCorner.Parent = aeToggle
-
-local knob = Instance.new("Frame")
-knob.Name = "Knob"
-knob.Parent = aeToggle
-knob.Size = UDim2.new(0, 12, 0, 12)
-knob.Position = UDim2.new(0, 2, 0.5, -6)
-knob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-knob.BorderSizePixel = 1
-knob.BorderColor3 = Color3.fromRGB(0, 0, 0)
-
-local knobCorner = Instance.new("UICorner")
-knobCorner.CornerRadius = UDim.new(1, 0)
-knobCorner.Parent = knob
+down.Name = "down"
+down.Parent = Frame
+down.BackgroundColor3 = Color3.fromRGB(215, 255, 121)
+down.Position = UDim2.new(0, 0, 0.50500074, 0)
+down.Size = UDim2.new(0, 44, 0, 28)
+down.Font = Enum.Font.SourceSans
+down.Text = "DOWN"
+down.TextColor3 = Color3.fromRGB(0, 0, 0)
+down.TextSize = 16
 
 onof.Name = "onof"
 onof.Parent = Frame
@@ -196,8 +166,7 @@ end)
 
 mini.MouseButton1Click:Connect(function()
 	up.Visible = false
-	autoBg.Visible = false
-    aeToggle.Visible = false
+	down.Visible = false
 	onof.Visible = false
 	plus.Visible = false
 	speed.Visible = false
@@ -210,8 +179,7 @@ end)
 
 mini2.MouseButton1Click:Connect(function()
 	up.Visible = true
-	autoBg.Visible = true
-    aeToggle.Visible = true
+	down.Visible = true
 	onof.Visible = true
 	plus.Visible = true
 	speed.Visible = true
@@ -300,118 +268,9 @@ end
 
 local TweenService = game:GetService("TweenService")
 
-local AE_SPEED    = 450
-local AE_TARGET_Y = 100000
-local AE_LOW_HP   = 0.40
-local AE_SAFE_HP  = 0.90
 
-local AE_Enabled    = true
-local AE_Flying     = false
-local AE_Tween      = nil
-local AE_Humanoid   = nil
-local AE_RootPart   = nil
-local AE_HealthConn = nil
 
-local function AE_Stop()
-	if AE_Tween then
-		AE_Tween:Cancel()
-		AE_Tween = nil
-	end
-	AE_Flying = false
-end
-
-local function AE_Start()
-	if not AE_Enabled or AE_Flying or not AE_RootPart then return end
-	local yNow = AE_RootPart.Position.Y
-	local dist = AE_TARGET_Y - yNow
-	if dist <= 1 then return end
-
-	AE_Flying = true
-	local duration = dist / AE_SPEED
-	local cf = AE_RootPart.CFrame
-
-	AE_Tween = TweenService:Create(
-		AE_RootPart,
-		TweenInfo.new(duration, Enum.EasingStyle.Linear),
-		{CFrame = CFrame.new(cf.X, AE_TARGET_Y, cf.Z)}
-	)
-
-	AE_Tween.Completed:Connect(AE_Stop)
-	AE_Tween:Play()
-end
-
-local function AE_Health(hp)
-	if not AE_Humanoid or not AE_Enabled then return end
-
-	local max = AE_Humanoid.MaxHealth
-	if max <= 0 then return end
-
-	local r = hp / max
-
-	if (not AE_Flying) and r < AE_LOW_HP then
-		AE_Start()
-	elseif AE_Flying and r >= AE_SAFE_HP then
-		AE_Stop()
-	end
-end
-
-local function AE_Bind(char)
-	AE_Humanoid = char:WaitForChild("Humanoid")
-	AE_RootPart = char:WaitForChild("HumanoidRootPart")
-
-	if AE_HealthConn then
-		AE_HealthConn:Disconnect()
-	end
-
-	if AE_Enabled then
-		AE_HealthConn = AE_Humanoid.HealthChanged:Connect(AE_Health)
-		AE_Health(AE_Humanoid.Health)
-	end
-end
-
-local function AE_UI(state)
-	if not aeToggle or not knob then return end
-
-	aeToggle.BackgroundColor3 = state
-		and Color3.fromRGB(88,200,120)
-		or  Color3.fromRGB(200,80,80)
-
-	knob.Position = state
-		and UDim2.new(0,2, 0.5,-6)
-		or  UDim2.new(1,-14,0.5,-6)
-end
-
-local function AE_Set(state)
-	AE_Enabled = state
-	AE_UI(state)
-
-	if not state then
-		AE_Stop()
-		if AE_HealthConn then
-			AE_HealthConn:Disconnect()
-			AE_HealthConn = nil
-		end
-	else
-		local char = LocalPlayer.Character
-		if char and char:FindFirstChild("Humanoid") then
-			AE_Bind(char)
-		end
-	end
-end
-
-if LocalPlayer.Character then
-	task.defer(function() AE_Bind(LocalPlayer.Character) end)
-end
-
-if aeToggle then
-	aeToggle.MouseButton1Click:Connect(function()
-		AE_Set(not AE_Enabled)
-	end)
-end
-
-task.defer(function()
-	AE_Set(true)
-end)
+	
 
 local upBG0, upText0 = up.BackgroundColor3, up.TextColor3
 local upRainbowConn
