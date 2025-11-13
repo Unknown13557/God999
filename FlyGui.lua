@@ -199,6 +199,7 @@ local noclipCache = {}
 local flyActive = false
 local downHolding = false
 local downConn = nil
+local downFactor = 1.5
 
 downConn = RS.Heartbeat:Connect(function(dt)
 	if not downHolding then return end
@@ -211,11 +212,10 @@ downConn = RS.Heartbeat:Connect(function(dt)
 	local hrp = char:FindFirstChild("HumanoidRootPart") or char:FindFirstChild("Torso") or char:FindFirstChild("UpperTorso")
 	if not hrp then return end
 
-	local step = flySpeed * dt
-	hrp.CFrame = hrp.CFrame + Vector3.new(0, -step, 0)
-end)
-
+	local step = flySpeed * downFactor
+hrp.CFrame = hrp.CFrame + Vector3.new(0, -step, 0)
 local function cacheAndDisablePart(part)
+			
 	if not part or not part:IsA("BasePart") then return end
 	if noclipCache[part] == nil then
 		noclipCache[part] = part.CanCollide
