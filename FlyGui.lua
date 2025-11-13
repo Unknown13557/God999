@@ -622,7 +622,7 @@ local function bindFlyKeys()
 	if flyKeyConns.began then return end
 
 	flyKeyConns.began = UIS.InputBegan:Connect(function(input, gpe)
-		if gpe or not nowe then return end
+		if not nowe then return end
 		if input.KeyCode == Enum.KeyCode.W then
 			flyCtrl.f = 1
 		elseif input.KeyCode == Enum.KeyCode.S then
@@ -635,7 +635,6 @@ local function bindFlyKeys()
 	end)
 
 	flyKeyConns.ended = UIS.InputEnded:Connect(function(input, gpe)
-		if gpe then return end
 		if input.KeyCode == Enum.KeyCode.W then
 			flyCtrl.f = 0
 		elseif input.KeyCode == Enum.KeyCode.S then
