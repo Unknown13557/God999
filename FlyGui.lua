@@ -610,102 +610,41 @@ local function hookViewportChanged()
 	end)
 end
 	
-if WS.CurrentCamera then hookViewportChanged() end
-WS:GetPropertyChangedSignal("CurrentCamera"):Connect(hookViewportChanged)
-
-		
-local flyCtrl = {f = 0, b = 0, l = 0, r = 0}
-local flyLastCtrl = {f = 0, b = 0, l = 0, r = 0}
-local flyKeyConns = {}
-
-local function bindFlyKeys()
-	if flyKeyConns.began then return end
-
-	flyKeyConns.began = UIS.InputBegan:Connect(function(input, gpe)
-		if not nowe then return end
-		if input.KeyCode == Enum.KeyCode.W then
-			flyCtrl.f = 1
-		elseif input.KeyCode == Enum.KeyCode.S then
-			flyCtrl.b = -1
-		elseif input.KeyCode == Enum.KeyCode.A then
-			flyCtrl.l = -1
-		elseif input.KeyCode == Enum.KeyCode.D then
-			flyCtrl.r = 1
-		end
-	end)
-
-	flyKeyConns.ended = UIS.InputEnded:Connect(function(input, gpe)
-		if input.KeyCode == Enum.KeyCode.W then
-			flyCtrl.f = 0
-		elseif input.KeyCode == Enum.KeyCode.S then
-			flyCtrl.b = 0
-		elseif input.KeyCode == Enum.KeyCode.A then
-			flyCtrl.l = 0
-		elseif input.KeyCode == Enum.KeyCode.D then
-			flyCtrl.r = 0
-		end
-	end)
-end
-
-local function unbindFlyKeys()
-	for k, conn in pairs(flyKeyConns) do
-		if conn then conn:Disconnect() end
-		flyKeyConns[k] = nil
-	end
-	flyCtrl = {f = 0, b = 0, l = 0, r = 0}
-	flyLastCtrl = {f = 0, b = 0, l = 0, r = 0}
-end
-
 onof.MouseButton1Down:Connect(function()
 	if nowe then
 		nowe = false
-		flyActive = false
 		stopFlyVisuals()
-		unbindFlyKeys()
-
 		local char = LocalPlayer.Character
 		local hum = char and char:FindFirstChildOfClass("Humanoid")
-
 		if hum then
 			hum.PlatformStand = false
 			hum.AutoRotate = true
-			hum:ChangeState(Enum.HumanoidStateType.RunningNoPhysics)
 		end
-
+		local anim = char and char:FindFirstChild("Animate")
+		if anim then
+			anim.Disabled = false
+		end
 		pcall(function() stopNoclip() end)
-
-		if char and char:FindFirstChild("Animate") then
-			char.Animate.Disabled = false
-		end
-
 		return
 	end
 
 	nowe = true
-	flyActive = true
 	startFlyVisuals()
-	bindFlyKeys()
+	pcall(function() startNoclip() end)
 
 	local char = LocalPlayer.Character
 	if not char then return end
 	local hum = char:FindFirstChildOfClass("Humanoid")
 	if not hum then return end
+	local root = char:FindFirstChild("HumanoidRootPart") or char:FindFirstChild("Torso") or char:FindFirstChild("UpperTorso")
+	if not root then return end
 
+	hum.PlatformStand = true
+	hum.AutoRotate = false
 	local anim = char:FindFirstChild("Animate")
 	if anim then
 		anim.Disabled = true
 	end
-	hum.AutoRotate = false
-	hum.PlatformStand = true
-	pcall(function() startNoclip() end)
-
-	local root
-	if hum.RigType == Enum.HumanoidRigType.R6 then
-		root = char:FindFirstChild("Torso")
-	else
-		root = char:FindFirstChild("HumanoidRootPart") or char:FindFirstChild("UpperTorso")
-	end
-	if not root then return end
 
 	local bg = Instance.new("BodyGyro")
 	bg.P = 9e4
@@ -714,107 +653,128 @@ onof.MouseButton1Down:Connect(function()
 	bg.Parent = root
 
 	local bv = Instance.new("BodyVelocity")
-	bv.Velocity = Vector3.new(0, 0.1, 0)
 	bv.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+	bv.Velocity = Vector3.new(0, 0, 0)
 	bv.Parent = root
 
+	local ctrl = {f = 0, b = 0, l = 0, r = 0}
+	local lastctrl = {f = 0, b = 0, l = 0, r = 0}
 	local speed = 0
 	local maxspeed = flySpeed
 
-	while nowe and hum and hum.Parent and root.Parent do
-		RS.RenderStepped:Wait()
-		hum:ChangeState(Enum.HumanoidStateType.Physics)
-
-		local cam = WS.CurrentCamera
-		if not cam then
-			bv.Velocity = Vector3.new(0,0,0)
-			bg.CFrame = root.CFrame
-		else
-			local cf = cam.CFrame
-			local moveH = flyCtrl.l + flyCtrl.r
-			local moveV = flyCtrl.f + flyCtrl.b
-
-			if moveH ~= 0 or moveV ~= 0 then
-				speed = speed + 0.5 + (speed / maxspeed)
-				if speed > maxspeed then speed = maxspeed end
-			elseif speed ~= 0 then
-				speed = speed - 1
-				if speed < 0 then speed = 0 end
-			end
-
-			if moveH ~= 0 or moveV ~= 0 then
-				local dir =
-					(cf.LookVector * moveV) +
-					((cf * CFrame.new(moveH, moveV * 0.2, 0)).Position - cf.Position)
-
-				bv.Velocity = dir * speed
-				flyLastCtrl = {f = flyCtrl.f, b = flyCtrl.b, l = flyCtrl.l, r = flyCtrl.r}
-			elseif speed ~= 0 then
-				local moveH2 = flyLastCtrl.l + flyLastCtrl.r
-				local moveV2 = flyLastCtrl.f + flyLastCtrl.b
-
-				local dir =
-					(cf.LookVector * moveV2) +
-					((cf * CFrame.new(moveH2, moveV2 * 0.2, 0)).Position - cf.Position)
-
-				bv.Velocity = dir * speed
-			else
-				bv.Velocity = Vector3.new(0,0,0)
-			end
-
-			bg.CFrame = cf * CFrame.Angles(
-				-math.rad((flyCtrl.f + flyCtrl.b) * 50 * (speed / (maxspeed > 0 and maxspeed or 1))),
-				0,
-				0
-			)
+	local conns = {}
+	conns[#conns + 1] = UIS.InputBegan:Connect(function(input, gpe)
+		if not nowe then return end
+		if input.KeyCode == Enum.KeyCode.W then
+			ctrl.f = 1
+			ctrl.b = 0
+		elseif input.KeyCode == Enum.KeyCode.S then
+			ctrl.b = 1
+			ctrl.f = 0
+		elseif input.KeyCode == Enum.KeyCode.A then
+			ctrl.l = 1
+			ctrl.r = 0
+		elseif input.KeyCode == Enum.KeyCode.D then
+			ctrl.r = 1
+			ctrl.l = 0
 		end
-	end
+	end)
 
-	bg:Destroy()
-	bv:Destroy()
-	unbindFlyKeys()
+	conns[#conns + 1] = UIS.InputEnded:Connect(function(input, gpe)
+		if input.KeyCode == Enum.KeyCode.W then
+			ctrl.f = 0
+		elseif input.KeyCode == Enum.KeyCode.S then
+			ctrl.b = 0
+		elseif input.KeyCode == Enum.KeyCode.A then
+			ctrl.l = 0
+		elseif input.KeyCode == Enum.KeyCode.D then
+			ctrl.r = 0
+		end
+	end)
 
-	if hum and hum.Parent then
-		hum.PlatformStand = false
-		hum.AutoRotate = true
-		hum:ChangeState(Enum.HumanoidStateType.RunningNoPhysics)
-	end
+	task.spawn(function()
+		while nowe and hum and hum.Parent and root.Parent do
+			task.wait()
+			hum:ChangeState(Enum.HumanoidStateType.Physics)
+			local cam = WS.CurrentCamera
+			if cam then
+				local move = hum.MoveDirection
+				if move.Magnitude > 0 then
+					if math.abs(move.Z) > math.abs(move.X) then
+						if move.Z < 0 then
+							ctrl.f = 1
+							ctrl.b = 0
+						elseif move.Z > 0 then
+							ctrl.b = 1
+							ctrl.f = 0
+						end
+					else
+						if move.X < 0 then
+							ctrl.l = 1
+							ctrl.r = 0
+						elseif move.X > 0 then
+							ctrl.r = 1
+							ctrl.l = 0
+						end
+					end
+				end
 
-	if char and char:FindFirstChild("Animate") then
-		char.Animate.Disabled = false
-	end
+				local cf = cam.CFrame
+				local mv = ctrl.f - ctrl.b
+				local mh = ctrl.r - ctrl.l
 
-	pcall(function() stopNoclip() end)
-	nowe = false
-	flyActive = false
-	stopFlyVisuals()
+				if mv ~= 0 or mh ~= 0 then
+					speed = speed + 0.5 + speed / maxspeed
+					if speed > maxspeed then
+						speed = maxspeed
+					end
+				elseif speed ~= 0 then
+					speed = speed - 1
+					if speed < 0 then
+						speed = 0
+					end
+				end
+
+				if speed ~= 0 then
+					local dir = (cf.LookVector * mv) + ((cf * CFrame.new(mh, mv * 0.2, 0)).Position - cf.Position)
+					if dir.Magnitude > 0 then
+						bv.Velocity = dir.Unit * speed
+					else
+						bv.Velocity = Vector3.new(0, 0, 0)
+					end
+					lastctrl.f = ctrl.f
+					lastctrl.b = ctrl.b
+					lastctrl.l = ctrl.l
+					lastctrl.r = ctrl.r
+				else
+					bv.Velocity = Vector3.new(0, 0, 0)
+				end
+
+				bg.CFrame = cf
+			end
+		end
+
+		nowe = false
+		bg:Destroy()
+		bv:Destroy()
+		for _, c in ipairs(conns) do
+			c:Disconnect()
+		end
+		local cchar = LocalPlayer.Character
+		local chum = cchar and cchar:FindFirstChildOfClass("Humanoid")
+		if chum then
+			chum.PlatformStand = false
+			chum.AutoRotate = true
+		end
+		local canim = cchar and cchar:FindFirstChild("Animate")
+		if canim then
+			canim.Disabled = false
+		end
+		pcall(function() stopNoclip() end)
+		stopFlyVisuals()
+	end)
 end)
 
-plus.MouseButton1Down:Connect(function()
-	if flySpeed >= 50 then
-		speed.Text = "Max speed reached"
-		task.wait(1)
-		speed.Text = tostring(flySpeed)
-		return
-	end
-
-	flySpeed += 1
-	speed.Text = tostring(flySpeed)
-end)
-
-mine.MouseButton1Down:Connect(function()
-	if flySpeed <= 1 then
-		speed.Text = "cannot be less than 1"
-		task.wait(1)
-		speed.Text = tostring(flySpeed)
-		return
-	end
-
-	flySpeed -= 1
-	speed.Text = tostring(flySpeed)
-end)
-
-		
 	Players.LocalPlayer.CharacterAdded:Connect(function(char)
 
 	if _G.__FlyGui_StopVertical then
