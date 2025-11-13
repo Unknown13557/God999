@@ -347,136 +347,134 @@ end
 	end)
 end)
 
-local AE_LOW_HP  = 0.40
-local AE_SAFE_HP = 0.90
+local TweenService = game:GetService("TweenService")
+
+local AE_SPEED    = 450
 local AE_TARGET_Y = 100000
-local AE_SPEED   = 450
+local AE_LOW_HP   = 0.40
+local AE_SAFE_HP  = 0.90
 
-local aeEnabled = true
-local aeIsOn = true
-local aeFlying = false
-local aeConn = nil
-local aeHum = nil
-local aeRoot = nil
-local aeChar = nil
-local aeHealthConn = nil
+local AE_Enabled    = true
+local AE_Flying     = false
+local AE_Tween      = nil
+local AE_Humanoid   = nil
+local AE_RootPart   = nil
+local AE_HealthConn = nil
 
-local function ae_stop()
-    if aeConn then
-        aeConn:Disconnect()
-        aeConn = nil
-    end
-    aeFlying = false
-end
+local AE_NoclipOwned = false
+local function AE_Stop()
+	if AE_Tween then
+		AE_Tween:Cancel()
+		AE_Tween = nil
+	end
 
-local function ae_start()
-    if not aeEnabled or aeFlying or not aeRoot then return end
-
-    local startY = aeRoot.Position.Y
-    if startY >= AE_TARGET_Y - 5 then return end
-
-    local startPos = aeRoot.Position
-    local targetPos = Vector3.new(startPos.X, AE_TARGET_Y, startPos.Z)
-    local distance = AE_TARGET_Y - startPos.Y
-    if distance <= 0 then return end
-
-    local travelTime = distance / AE_SPEED
-    local elapsed = 0
-    aeFlying = true
-
-    aeConn = RS.RenderStepped:Connect(function(dt)
-    if not aeChar or not aeChar.Parent or not aeRoot then
-        ae_stop()
-        return
-    end
-
-    elapsed += dt
-    local alpha = math.clamp(elapsed / travelTime, 0, 1)
-    local newPos = startPos:Lerp(targetPos, alpha)
-    aeChar:PivotTo(CFrame.new(newPos))
-
-    if alpha >= 1 then
-        ae_stop()
-    end
-end)
-end
-
-local function ae_hp_changed(h)
-    if not aeHum then return end
-    local max = aeHum.MaxHealth
-    if max == 0 then return end
-
-    local p = h / max
-    if aeFlying and p >= AE_SAFE_HP then
-        ae_stop()
-    elseif not aeFlying and p < AE_LOW_HP then
-    if aeHum and aeHum.Parent then
-        aeChar = aeHum.Parent
-        aeRoot = aeChar:FindFirstChild("HumanoidRootPart") or aeRoot
-    end
-    ae_start()
-end
-end
-
-local function ae_bind(char)
-    aeChar = char
-    local hum = char:FindFirstChildOfClass("Humanoid")
-        or char:FindFirstChild("Humanoid")
-        or char:WaitForChild("Humanoid", 5)
-
-    if not hum then
-        return
-    end
-
-    aeHum = hum
-    aeRoot = char:FindFirstChild("HumanoidRootPart") 
-        or char:WaitForChild("HumanoidRootPart", 5)
-
-    if aeHealthConn then
-        aeHealthConn:Disconnect()
-        aeHealthConn = nil
-    end
+	AE_Flying = false
 	
-    aeHealthConn = aeHum.HealthChanged:Connect(ae_hp_changed)
-    ae_hp_changed(aeHum.Health)
+	if AE_NoclipOwned and not nowe then
+		AE_NoclipOwned = false
+		pcall(function() stopNoclip() end)
+	end
+end
+
+local function AE_Start()
+	if not AE_Enabled or AE_Flying or not AE_RootPart then return end
+	if not nowe and not AE_NoclipOwned then
+		AE_NoclipOwned = true
+		pcall(function() startNoclip() end)
+	end
+
+	local yNow = AE_RootPart.Position.Y
+	local dist = AE_TARGET_Y - yNow
+	if dist <= 1 then return end
+
+	AE_Flying = true
+	local duration = dist / AE_SPEED
+	local cf = AE_RootPart.CFrame
+
+	AE_Tween = TweenService:Create(
+		AE_RootPart,
+		TweenInfo.new(duration, Enum.EasingStyle.Linear),
+		{CFrame = CFrame.new(cf.X, AE_TARGET_Y, cf.Z)}
+	)
+
+	AE_Tween.Completed:Connect(AE_Stop)
+	AE_Tween:Play()
+end
+
+local function AE_Health(hp)
+	if not AE_Humanoid or not AE_Enabled then return end
+	local r = hp / AE_Humanoid.MaxHealth
+
+	if (not AE_Flying) and r < AE_LOW_HP then
+		AE_Start()
+	elseif AE_Flying and r >= AE_SAFE_HP then
+		AE_Stop()
+	end
+end
+
+local function AE_Bind(char)
+	AE_Humanoid = char:WaitForChild("Humanoid")
+	AE_RootPart = char:WaitForChild("HumanoidRootPart")
+
+	if AE_HealthConn then
+		AE_HealthConn:Disconnect()
+	end
+
+	if AE_Enabled then
+		AE_HealthConn = AE_Humanoid.HealthChanged:Connect(AE_Health)
+		AE_Health(AE_Humanoid.Health)
+	end
+end
+
+local function AE_UI(state)
+	if not aeToggle or not knob then return end
+
+	aeToggle.BackgroundColor3 = state
+		and Color3.fromRGB(88,200,120)
+		or  Color3.fromRGB(200,80,80)
+
+	knob.Position = state
+		and UDim2.new(0,2, 0.5,-6)
+		or  UDim2.new(1,-14,0.5,-6)
+end
+
+local function AE_Set(state)
+	AE_Enabled = state
+	AE_UI(state)
+
+	if not state then
+		AE_Stop()
+		if AE_HealthConn then
+			AE_HealthConn:Disconnect()
+			AE_HealthConn = nil
+		end
+	else
+		local char = LocalPlayer.Character
+		if char and char:FindFirstChild("Humanoid") then
+			AE_Bind(char)
+		end
+	end
 end
 
 if LocalPlayer.Character then
-    ae_bind(LocalPlayer.Character)
+	task.defer(function() AE_Bind(LocalPlayer.Character) end)
 end
 
 LocalPlayer.CharacterAdded:Connect(function(char)
-    task.wait(0.05)
-    ae_stop()
-    ae_bind(char)
+	task.defer(function()
+		AE_Stop()
+		AE_Bind(char)
+	end)
 end)
 
-local function ae_set(state)
-    aeEnabled = state
-    aeIsOn    = state
-
-    if state then
-        aeToggle.BackgroundColor3 = Color3.fromRGB(88, 200, 120)
-        knob.Position = UDim2.new(0, 2, 0.5, -6)
-        if LocalPlayer.Character then
-            ae_bind(LocalPlayer.Character)
-        end
-    else
-        aeToggle.BackgroundColor3 = Color3.fromRGB(200, 80, 80)
-        knob.Position = UDim2.new(1, -14, 0.5, -6)
-
-        ae_stop()
-        if aeHealthConn then
-            aeHealthConn:Disconnect()
-            aeHealthConn = nil
-        end
-    end
+if aeToggle then
+	aeToggle.MouseButton1Click:Connect(function()
+		AE_Set(not AE_Enabled)
+	end)
 end
 
-ae_set(true)
-
-aeToggle.MouseButton1Click:Connect(function()
-    ae_set(not aeIsOn)
+task.defer(function()
+	AE_Set(true)
 end)
 
 local function cacheAndDisablePart(part)
@@ -852,20 +850,29 @@ onof.MouseButton1Down:Connect(function()
 end)
                 
 Players.LocalPlayer.CharacterAdded:Connect(function(char)
-	if _G.__FlyGui_StopVertical then
-		_G.__FlyGui_StopVertical()
-	end
-	task.wait(0.7)
-	pcall(function() stopNoclip() end)
-	local c = LocalPlayer.Character
-if c and c:FindFirstChildOfClass("Humanoid") then
-	c.Humanoid.PlatformStand = false
-end
-if c and c:FindFirstChild("Animate") then
-	c.Animate.Disabled = false
-end
-stopUpTextVisual()
-stopFlyVisuals()
+    if _G.__FlyGui_StopVertical then
+        _G.__FlyGui_StopVertical()
+    end
+
+    task.wait(0.7)
+    pcall(function() stopNoclip() end)
+    AE_NoclipOwned = false
+    tpwalking = false
+    tpGen = tpGen + 1
+
+    nowe = false
+    stopFlyVisuals()
+    stopUpTextVisual()
+    if AE_Flying then AE_CancelFlight() end
+    AE_Flying = false
+    if AE_Tween then AE_Tween:Cancel(); AE_Tween = nil end
+    local c = LocalPlayer.Character
+    if c and c:FindFirstChildOfClass("Humanoid") then
+        c.Humanoid.PlatformStand = false
+    end
+    if c and c:FindFirstChild("Animate") then
+        c.Animate.Disabled = false
+    end
 end)
 
 plus.MouseButton1Down:Connect(function()
