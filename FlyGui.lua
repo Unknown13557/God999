@@ -3,6 +3,7 @@ local GuiService       = game:GetService("GuiService")
 local Players          = game:GetService("Players")
 local RunService       = game:GetService("RunService")
 local Workspace        = game:GetService("Workspace")
+local TweenService     = game:GetService("TweenService")	
 
 local LocalPlayer = Players.LocalPlayer
 local RS          = RunService
@@ -18,6 +19,7 @@ main.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 main.DisplayOrder = 198282823
 main.Name = "main"
 main.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+main.IgnoreGuiInset = true
 local Frame = Instance.new("Frame")
 local up = Instance.new("TextButton")
 local down = Instance.new("TextButton")
@@ -190,6 +192,87 @@ mini2.MouseButton1Click:Connect(function()
 	closebutton.Position =  UDim2.new(0, 0, -1, 27)
 end)
 
+local function pointerPos(input)
+	return (input.UserInputType == Enum.UserInputType.Touch)
+		and Vector2.new(input.Position.X, input.Position.Y)
+		or UIS:GetMouseLocation()
+end
+
+local function over(inst, pos)
+	local p, s = inst.AbsolutePosition, inst.AbsoluteSize
+	return pos.X >= p.X and pos.X <= p.X + s.X and pos.Y >= p.Y and pos.Y <= p.Y + s.Y
+end
+
+local dragging = false
+local dragStart, startPos
+
+Frame.Active = true
+Frame.Draggable = false
+
+local function clampToViewport(x, y)
+	local cam = WS.CurrentCamera
+	if not cam then
+		return UDim2.fromOffset(x, y)
+	end
+
+	local vp = cam.ViewportSize
+	x = math.clamp(x, 0, math.max(0, vp.X - Frame.AbsoluteSize.X))
+	y = math.clamp(y, 0, math.max(0, vp.Y - Frame.AbsoluteSize.Y))
+	return UDim2.fromOffset(x, y)
+end
+
+Frame.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1
+		or input.UserInputType == Enum.UserInputType.Touch then
+
+		local pos = pointerPos(input)
+		if over(onof, pos) then return end
+
+		dragging = true
+		dragStart = input.Position
+		startPos = Frame.Position
+
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
+		end)
+	end
+end)
+
+Frame.InputChanged:Connect(function(input)
+	if not dragging then return end
+	if input.UserInputType == Enum.UserInputType.MouseMovement
+		or input.UserInputType == Enum.UserInputType.Touch then
+
+		local delta = input.Position - dragStart
+		local newX = startPos.X.Offset + delta.X
+		local newY = startPos.Y.Offset + delta.Y
+
+		Frame.Position = clampToViewport(newX, newY)
+	end
+end)
+
+task.defer(function()
+	local abs = Frame.AbsolutePosition
+	Frame.Position = clampToViewport(abs.X, abs.Y)
+end)
+
+local function hookViewportChanged()
+	local cam = WS.CurrentCamera
+	if not cam then return end
+
+	cam:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+		if not dragging then
+			local abs = Frame.AbsolutePosition
+			Frame.Position = clampToViewport(abs.X, abs.Y)
+		end
+	end)
+end
+
+if WS.CurrentCamera then hookViewportChanged() end
+WS:GetPropertyChangedSignal("CurrentCamera"):Connect(hookViewportChanged)
+
 local magiskk = {}
 local flySpeed = 16
 local speaker = LocalPlayer
@@ -288,12 +371,6 @@ local function stopFlyVisuals()
 	onof.TextStrokeTransparency = 1
 end
 
-local TweenService = game:GetService("TweenService")
-
-
-
-	
-
 local upBG0, upText0 = up.BackgroundColor3, up.TextColor3
 local upRainbowConn
 local upHueTime = 0
@@ -387,105 +464,6 @@ up.MouseButton1Click:Connect(function()
 
 	ascendTween:Play()
 end)	
-
-local RESPECT_COREGUI = false
-local TOP_MARGIN = 0
-
-local function pointerPos(input)
-	return (input.UserInputType == Enum.UserInputType.Touch)
-		and Vector2.new(input.Position.X, input.Position.Y)
-		or UIS:GetMouseLocation()
-end
-
-local function over(inst, pos)
-	local p, s = inst.AbsolutePosition, inst.AbsoluteSize
-	return pos.X >= p.X and pos.X <= p.X + s.X and pos.Y >= p.Y and pos.Y <= p.Y + s.Y
-end
-
-local dragging = false
-local dragStart, startPos
-
-Frame.Active = true
-Frame.Draggable = false
-
-Frame.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1
-		or input.UserInputType == Enum.UserInputType.Touch then
-		local pos = pointerPos(input)
-		if over(onof, pos) then return end
-		dragging = true
-		dragStart = input.Position
-		startPos = Frame.Position
-
-		input.Changed:Connect(function()
-			if input.UserInputState == Enum.UserInputState.End then
-				dragging = false
-			end
-		end)
-	end
-end)
-
-Frame.InputChanged:Connect(function(input)
-	if not dragging then return end
-	if input.UserInputType == Enum.UserInputType.MouseMovement
-		or input.UserInputType == Enum.UserInputType.Touch then
-
-		local delta = input.Position - dragStart
-		local newX = startPos.X.Offset + delta.X
-		local newY = startPos.Y.Offset + delta.Y
-
-		local cam = WS.CurrentCamera
-		if cam then
-			local vp = cam.ViewportSize
-			local topInset = GS:GetGuiInset().Y
-			local minY = (RESPECT_COREGUI and (topInset + TOP_MARGIN) or TOP_MARGIN)
-
-			newX = math.clamp(newX, 0, math.max(0, vp.X - Frame.AbsoluteSize.X))
-			newY = math.clamp(newY, minY, math.max(minY, vp.Y - Frame.AbsoluteSize.Y))
-		end
-
-		Frame.Position = UDim2.fromOffset(newX, newY)
-	end
-end)
-
-task.defer(function()
-	local abs = Frame.AbsolutePosition
-	Frame.Position = UDim2.fromOffset(abs.X, abs.Y)
-	
-	local cam = WS.CurrentCamera
-	if cam then
-		local vp = cam.ViewportSize
-		local topInset = GS:GetGuiInset().Y
-		local minY = (RESPECT_COREGUI and (topInset + TOP_MARGIN) or TOP_MARGIN)
-
-		local x = math.clamp(abs.X, 0, math.max(0, vp.X - Frame.AbsoluteSize.X))
-		local y = math.clamp(abs.Y, minY, math.max(minY, vp.Y - Frame.AbsoluteSize.Y))
-		Frame.Position = UDim2.fromOffset(x, y)
-	end
-end)
-
-local function hookViewportChanged()
-	local cam = WS.CurrentCamera
-	if not cam then return end
-	cam:GetPropertyChangedSignal("ViewportSize"):Connect(function()
-		if not dragging then
-			local abs = Frame.AbsolutePosition
-			local vp = cam.ViewportSize
-			local topInset = GS:GetGuiInset().Y
-			local minY = (RESPECT_COREGUI and (topInset + TOP_MARGIN) or TOP_MARGIN)
-
-			local x = math.clamp(abs.X, 0, math.max(0, vp.X - Frame.AbsoluteSize.X))
-			local y = math.clamp(abs.Y, minY, math.max(minY, vp.Y - Frame.AbsoluteSize.Y))
-			Frame.Position = UDim2.fromOffset(x, y)
-		end
-	end)
-end
-		
-if WS.CurrentCamera then hookViewportChanged() end
-WS:GetPropertyChangedSignal("CurrentCamera"):Connect(hookViewportChanged)
-
-
-
 
 local tpwalking = false
 local tpGen = 0
