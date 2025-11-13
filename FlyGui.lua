@@ -228,6 +228,7 @@ local speaker = LocalPlayer
 local nowe = false
 local noclipConn = nil
 local noclipCache = {}
+local flyActive = false
 
 local function cacheAndDisablePart(part)
 	if not part or not part:IsA("BasePart") then return end
@@ -859,40 +860,38 @@ mine.MouseButton1Down:Connect(function()
 end)
 
 Players.LocalPlayer.CharacterAdded:Connect(function(char)
-    if magiskk.StopVertical then
+    if magiskk and magiskk.StopVertical then
         pcall(function()
             magiskk.StopVertical()
         end)
     end
 
-    pcall(function()
-        AE_Stop()
-    end)
-
-    pcall(function()
-        stopNoclip()
-    end)
+    pcall(function() AE_Stop() end)
+    pcall(function() stopNoclip() end)
 
     nowe = false
     flyActive = false
     tpwalking = false
     isAscending = false
     AE_Flying = false
+
     stopFlyVisuals()
     stopUpTextVisual()
+
     task.wait(0.15)
-	local hum = char:FindFirstChildOfClass("Humanoid")
-	if hum then
-		hum.PlatformStand = false
-		hum.AutoRotate = true
-	end
 
-	local anim = char:FindFirstChild("Animate")
-	if anim then
-		anim.Disabled = false
-	end
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    if hum then
+        hum.PlatformStand = false
+        hum.AutoRotate = true
+    end
 
-	if AE_Enabled then
-		AE_Bind(char)
-	end
+    local anim = char:FindFirstChild("Animate")
+    if anim then
+        anim.Disabled = false
+    end
+
+    if AE_Enabled then
+        AE_Bind(char)
+    end
 end)
