@@ -66,8 +66,8 @@ aeToggle.Text = ""
 
 local aeStroke = Instance.new("UIStroke")
 aeStroke.Parent = aeToggle
-aeStroke.Color = Color3.fromRGB(0,0,0)
-aeStroke.Thickness = 0
+aeStroke.Color = Color3.fromRGB(60,60,60)
+aeStroke.Thickness = 1
 aeStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
 local aeCorner = Instance.new("UICorner")
@@ -312,28 +312,17 @@ local AE_Humanoid   = nil
 local AE_RootPart   = nil
 local AE_HealthConn = nil
 
-local AE_NoclipOwned = false
 local function AE_Stop()
 	if AE_Tween then
 		AE_Tween:Cancel()
 		AE_Tween = nil
 	end
 
-	AE_Flying = false
-	
-	if AE_NoclipOwned and not nowe then
-		AE_NoclipOwned = false
-		pcall(function() stopNoclip() end)
-	end
-end
+       AE_Flying = false
+    end	
 
 local function AE_Start()
 	if not AE_Enabled or AE_Flying or not AE_RootPart then return end
-	if not nowe and not AE_NoclipOwned then
-		AE_NoclipOwned = true
-		pcall(function() startNoclip() end)
-	end
-
 	local yNow = AE_RootPart.Position.Y
 	local dist = AE_TARGET_Y - yNow
 	if dist <= 1 then return end
@@ -468,7 +457,9 @@ local function stopAscending()
 	stopUpTextVisual()
 
 	if not nowe then
-		pcall(function() stopNoclip() end)
+		local chr = LocalPlayer.Character
+		local hum = chr and chr:FindFirstChildOfClass("Humanoid")
+		if hum then hum.PlatformStand = false end
 	end
 end
 
@@ -486,9 +477,9 @@ up.MouseButton1Click:Connect(function()
 	local hrp = char and char:FindFirstChild("HumanoidRootPart")
 	if not hrp then return end
 	if not nowe then
-		pcall(function() startNoclip() end)
 	end
-
+end
+end
 	hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
 	startUpTextVisual()
 
