@@ -281,7 +281,7 @@ local function AE_Stop()
 
 	AE_Flying = false
 	
-	if AE_NoclipOwned and not flyActive and not nowe then
+	if AE_NoclipOwned and not nowe then
 		AE_NoclipOwned = false
 		pcall(function() stopNoclip() end)
 	end
@@ -411,28 +411,24 @@ local function stopUpTextVisual()
     if s then s.Enabled = false end
 end
 
-local ASCEND_SPEED = 450
+
+ local ASCEND_SPEED = 450
 local TARGET_Y = 100000000
 local isAscending = false
-local ascendTween
+local ascendConn
 
 local function stopAscending()
 	if not isAscending then return end
 	isAscending = false
 
-	if ascendTween then
-		ascendTween:Cancel()
-		ascendTween = nil
+	if ascendConn then
+		ascendConn:Disconnect()
+		ascendConn = nil
 	end
 
 	stopUpTextVisual()
 
 	if not nowe then
-		local chr = LocalPlayer.Character
-		local hum = chr and chr:FindFirstChildOfClass("Humanoid")
-		if hum and not flyActive then
-			hum.PlatformStand = false
-		end
 		pcall(function() stopNoclip() end)
 	end
 end
@@ -446,6 +442,47 @@ up.MouseButton1Click:Connect(function()
 		stopAscending()
 		return
 	end
+
+	local chr = LocalPlayer.Character
+	local hrp = chr and chr:FindFirstChild("HumanoidRootPart")
+	if not hrp then return end
+
+	if not nowe then
+		pcall(function() startNoclip() end)
+	end
+
+	hrp.AssemblyLinearVelocity = Vector3.new(0,0,0)
+	startUpTextVisual()
+
+	local startPos = hrp.Position
+	local targetPos = Vector3.new(startPos.X, TARGET_Y, startPos.Z)
+	local distance  = TARGET_Y - startPos.Y
+	if distance <= 0 then
+		stopAscending()
+		return
+	end
+
+	local travelTime = distance / ASCEND_SPEED
+	local elapsed = 0
+	isAscending = true
+
+	ascendConn = RS.RenderStepped:Connect(function(dt)
+		if not isAscending then return end
+		if not hrp or not hrp.Parent then
+			stopAscending()
+			return
+		end
+
+		elapsed += dt
+		local alpha = math.clamp(elapsed / travelTime, 0, 1)
+		local newPos = startPos:Lerp(targetPos, alpha)
+		hrp:PivotTo(CFrame.new(newPos))
+
+		if alpha >= 1 then
+			stopAscending()
+		end
+	end)
+end)
 
 	local chr = LocalPlayer.Character
 	local hrp = chr and chr:FindFirstChild("HumanoidRootPart")
