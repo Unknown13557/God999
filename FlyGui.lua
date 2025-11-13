@@ -197,6 +197,23 @@ local nowe = false
 local noclipConn = nil
 local noclipCache = {}
 local flyActive = false
+local downHolding = false
+local downConn = nil
+
+downConn = RS.Heartbeat:Connect(function(dt)
+	if not downHolding then return end
+	if not nowe then return end
+
+	local char = LocalPlayer.Character
+	local hum = char and char:FindFirstChildOfClass("Humanoid")
+	if not char or not hum then return end
+
+	local hrp = char:FindFirstChild("HumanoidRootPart") or char:FindFirstChild("Torso") or char:FindFirstChild("UpperTorso")
+	if not hrp then return end
+
+	local step = flySpeed * dt
+	hrp.CFrame = hrp.CFrame + Vector3.new(0, -step, 0)
+end)
 
 local function cacheAndDisablePart(part)
 	if not part or not part:IsA("BasePart") then return end
@@ -236,6 +253,8 @@ local function stopNoclip()
 	end
 	noclipCache = {}
 end
+
+
 
 local onofDefaultTextColor = onof.TextColor3
 local onofDefaultBG        = onof.BackgroundColor3
@@ -651,6 +670,17 @@ end
 	end
 end)
 
+down.MouseButton1Down:Connect(function()
+	downHolding = true
+end)
+
+down.MouseButton1Up:Connect(function()
+	downHolding = false
+end)
+
+down.MouseLeave:Connect(function()
+	downHolding = false
+end)
 
 plus.MouseButton1Down:Connect(function()
 	if flySpeed >= 50 then
@@ -719,38 +749,35 @@ mine.MouseButton1Down:Connect(function()
 end)
 
 Players.LocalPlayer.CharacterAdded:Connect(function(char)
-    if magiskk and magiskk.StopVertical then
-        pcall(function()
-            magiskk.StopVertical()
-        end)
-    end
+	if magiskk and magiskk.StopVertical then
+		pcall(function()
+			magiskk.StopVertical()
+		end)
+	end
 
-    pcall(function() AE_Stop() end)
-    pcall(function() stopNoclip() end)
+	pcall(function()
+		stopNoclip()
+	end)
 
-    nowe = false
-    flyActive = false
-    tpwalking = false
-    isAscending = false
-    AE_Flying = false
+	nowe = false
+	flyActive = false
+	tpwalking = false
+	isAscending = false
+	downHolding = false
 
-    stopFlyVisuals()
-    stopUpTextVisual()
+	stopFlyVisuals()
+	stopUpTextVisual()
 
-    task.wait(0.15)
+	task.wait(0.15)
 
-    local hum = char:FindFirstChildOfClass("Humanoid")
-    if hum then
-        hum.PlatformStand = false
-        hum.AutoRotate = true
-    end
+	local hum = char:FindFirstChildOfClass("Humanoid")
+	if hum then
+		hum.PlatformStand = false
+		hum.AutoRotate = true
+	end
 
-    local anim = char:FindFirstChild("Animate")
-    if anim then
-        anim.Disabled = false
-    end
-
-    if AE_Enabled then
-        AE_Bind(char)
-    end
+	local anim = char:FindFirstChild("Animate")
+	if anim then
+		anim.Disabled = false
+	end
 end)
