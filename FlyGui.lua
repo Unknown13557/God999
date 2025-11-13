@@ -213,9 +213,10 @@ downConn = RS.Heartbeat:Connect(function(dt)
 	if not hrp then return end
 
 	local step = flySpeed * downFactor
-hrp.CFrame = hrp.CFrame + Vector3.new(0, -step, 0)
+	hrp.CFrame = hrp.CFrame + Vector3.new(0, -step, 0)
+end)
+
 local function cacheAndDisablePart(part)
-			
 	if not part or not part:IsA("BasePart") then return end
 	if noclipCache[part] == nil then
 		noclipCache[part] = part.CanCollide
@@ -248,13 +249,15 @@ local function stopNoclip()
 	if noclipConn then noclipConn:Disconnect(); noclipConn = nil end
 	for part, prev in pairs(noclipCache) do
 		if part and part.Parent then
-			if prev == nil then part.CanCollide = true else part.CanCollide = prev end
+			if prev == nil then
+				part.CanCollide = true
+			else
+				part.CanCollide = prev
+			end
 		end
 	end
 	noclipCache = {}
 end
-
-
 
 local onofDefaultTextColor = onof.TextColor3
 local onofDefaultBG        = onof.BackgroundColor3
