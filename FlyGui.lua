@@ -67,7 +67,7 @@ aeToggle.Text = ""
 local aeStroke = Instance.new("UIStroke")
 aeStroke.Parent = aeToggle
 aeStroke.Color = Color3.fromRGB(0,0,0)
-aeStroke.Thickness = 1
+aeStroke.Thickness = 0
 aeStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
 local aeCorner = Instance.new("UICorner")
