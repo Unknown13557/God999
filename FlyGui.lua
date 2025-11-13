@@ -222,6 +222,7 @@ mini2.MouseButton1Click:Connect(function()
 	closebutton.Position =  UDim2.new(0, 0, -1, 27)
 end)
 
+local magiskk = {}
 local flySpeed = 16
 local speaker = LocalPlayer
 local nowe = false
@@ -470,8 +471,8 @@ local function stopAscending()
 	end
 end
 
-_G.__FlyGui_StopVertical = function()
-	stopAscending()
+function magiskk.StopVertical()
+    stopAscending()
 end
 
 up.MouseButton1Click:Connect(function()
@@ -869,30 +870,28 @@ mine.MouseButton1Down:Connect(function()
 end)
 
 Players.LocalPlayer.CharacterAdded:Connect(function(char)
-	if _G.__FlyGui_StopVertical then
-		pcall(function()
-			_G.__FlyGui_StopVertical()
-		end)
-	end
+    if magiskk.StopVertical then
+        pcall(function()
+            magiskk.StopVertical()
+        end)
+    end
 
-	pcall(function()
-		AE_Stop()
-	end)
+    pcall(function()
+        AE_Stop()
+    end)
 
-	pcall(function()
-		stopNoclip()
-	end)
+    pcall(function()
+        stopNoclip()
+    end)
 
-	nowe = false
-	flyActive = false
-	tpwalking = false
-	isAscending = false
-	AE_Flying = false
-	stopFlyVisuals()
-	stopUpTextVisual()
-
-	task.wait(0.15)
-
+    nowe = false
+    flyActive = false
+    tpwalking = false
+    isAscending = false
+    AE_Flying = false
+    stopFlyVisuals()
+    stopUpTextVisual()
+    task.wait(0.15)
 	local hum = char:FindFirstChildOfClass("Humanoid")
 	if hum then
 		hum.PlatformStand = false
