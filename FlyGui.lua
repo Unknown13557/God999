@@ -227,6 +227,7 @@ local speaker = LocalPlayer
 local nowe = false
 local noclipConn = nil
 local noclipCache = {}
+local flyActive = false
 
 local onofDefaultTextColor = onof.TextColor3
 local onofDefaultBG        = onof.BackgroundColor3
@@ -280,7 +281,7 @@ local function AE_Stop()
 
 	AE_Flying = false
 	
-	if AE_NoclipOwned and not flyActive and not nowe
+	if AE_NoclipOwned and not flyActive and not nowe then
 		AE_NoclipOwned = false
 		pcall(function() stopNoclip() end)
 	end
@@ -418,21 +419,20 @@ local ascendTween
 local function stopAscending()
 	if not isAscending then return end
 	isAscending = false
+
 	if ascendTween then
 		ascendTween:Cancel()
 		ascendTween = nil
 	end
-	
-        stopUpTextVisual()
-	
-     if not nowe then
+
+	stopUpTextVisual()
+
+	if not nowe then
 		local chr = LocalPlayer.Character
 		local hum = chr and chr:FindFirstChildOfClass("Humanoid")
-		if hum then
-			if not flyActive then
-      hum.PlatformStand = false
-	end
-end
+		if hum and not flyActive then
+			hum.PlatformStand = false
+		end
 		pcall(function() stopNoclip() end)
 	end
 end
