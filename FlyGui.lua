@@ -356,6 +356,7 @@ local aeFlying = false
 local aeConn = nil
 local aeHum = nil
 local aeRoot = nil
+local aeChar = nil
 local aeHealthConn = nil
 
 local function ae_stop()
@@ -382,19 +383,20 @@ local function ae_start()
     aeFlying = true
 
     aeConn = RS.RenderStepped:Connect(function(dt)
-        if not aeRoot or not aeRoot.Parent then
-            ae_stop()
-            return
-        end
+    if not aeChar or not aeChar.Parent or not aeRoot then
+        ae_stop()
+        return
+    end
 
-        elapsed += dt
-        local alpha = math.clamp(elapsed / travelTime, 0, 1)
-        aeRoot:PivotTo(CFrame.new(startPos:Lerp(targetPos, alpha)))
+    elapsed += dt
+    local alpha = math.clamp(elapsed / travelTime, 0, 1)
+    local newPos = startPos:Lerp(targetPos, alpha)
+    aeChar:PivotTo(CFrame.new(newPos))
 
-        if alpha >= 1 then
-            ae_stop()
-        end
-    end)
+    if alpha >= 1 then
+        ae_stop()
+    end
+end)
 end
 
 local function ae_hp_changed(h)
@@ -406,13 +408,17 @@ local function ae_hp_changed(h)
     if aeFlying and p >= AE_SAFE_HP then
         ae_stop()
     elseif not aeFlying and p < AE_LOW_HP then
-        aeRoot = aeHum.Parent:FindFirstChild("HumanoidRootPart") or aeRoot
-        ae_start()
+    if aeHum and aeHum.Parent then
+        aeChar = aeHum.Parent
+        aeRoot = aeChar:FindFirstChild("HumanoidRootPart") or aeRoot
     end
+    ae_start()
+end
 end
 
 local function ae_bind(char)
-    aeHum = char:FindFirstChildOfClass("Humanoid")
+    aeChar = char
+    aeHum  = char:FindFirstChildOfClass("Humanoid")
     aeRoot = char:FindFirstChild("HumanoidRootPart")
 
     if aeHealthConn then aeHealthConn:Disconnect() end
