@@ -67,7 +67,7 @@ aeToggle.Text = ""
 local aeStroke = Instance.new("UIStroke")
 aeStroke.Parent = aeToggle
 aeStroke.Color = Color3.fromRGB(0,0,0)
-aeStroke.Thickness = 2
+aeStroke.Thickness = 1
 aeStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
 local aeCorner = Instance.new("UICorner")
@@ -420,14 +420,25 @@ end
 
 local function ae_bind(char)
     aeChar = char
-    aeHum  = char:FindFirstChildOfClass("Humanoid")
-    aeRoot = char:FindFirstChild("HumanoidRootPart")
+    local hum = char:FindFirstChildOfClass("Humanoid")
+        or char:FindFirstChild("Humanoid")
+        or char:WaitForChild("Humanoid", 5)
 
-    if aeHealthConn then aeHealthConn:Disconnect() end
-    if aeHum then
-        aeHealthConn = aeHum.HealthChanged:Connect(ae_hp_changed)
-        ae_hp_changed(aeHum.Health)
+    if not hum then
+        return
     end
+
+    aeHum = hum
+    aeRoot = char:FindFirstChild("HumanoidRootPart") 
+        or char:WaitForChild("HumanoidRootPart", 5)
+
+    if aeHealthConn then
+        aeHealthConn:Disconnect()
+        aeHealthConn = nil
+    end
+	
+    aeHealthConn = aeHum.HealthChanged:Connect(ae_hp_changed)
+    ae_hp_changed(aeHum.Health)
 end
 
 if LocalPlayer.Character then
@@ -435,7 +446,7 @@ if LocalPlayer.Character then
 end
 
 LocalPlayer.CharacterAdded:Connect(function(char)
-    task.wait(0.2)
+    task.wait(0.05)
     ae_stop()
     ae_bind(char)
 end)
