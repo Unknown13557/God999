@@ -228,6 +228,7 @@ local speaker = LocalPlayer
 local nowe = false
 local noclipConn = nil
 local noclipCache = {}
+local flyActive = false
 
 local function cacheAndDisablePart(part)
 	if not part or not part:IsA("BasePart") then return end
