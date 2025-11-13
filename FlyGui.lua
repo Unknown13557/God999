@@ -874,6 +874,9 @@ Players.LocalPlayer.CharacterAdded:Connect(function(char)
 		
 	task.wait(0.7)
 	pcall(function() stopNoclip() end)
+	nowe = false
+       flyActive = false
+         tpwalking = false
 	local c = LocalPlayer.Character
 	if c and c:FindFirstChildOfClass("Humanoid") then
 		c.Humanoid.PlatformStand = false
