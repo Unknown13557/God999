@@ -199,7 +199,7 @@ local noclipCache = {}
 local flyActive = false
 local downHolding = false
 local downConn = nil
-local downFactor = 1.5
+local downFactor = 1
 
 downConn = RS.Heartbeat:Connect(function(dt)
 	if not downHolding then return end
