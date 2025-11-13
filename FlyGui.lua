@@ -229,6 +229,45 @@ local noclipConn = nil
 local noclipCache = {}
 local flyActive = false
 
+local function cacheAndDisablePart(part)
+	if not part or not part:IsA("BasePart") then return end
+	if noclipCache[part] == nil then
+		noclipCache[part] = part.CanCollide
+	end
+	part.CanCollide = false
+end
+
+local function startNoclip()
+	if noclipConn then return end
+	local char = LocalPlayer and LocalPlayer.Character
+	if not char then return end
+
+	for _, p in ipairs(char:GetDescendants()) do
+		if p:IsA("BasePart") then cacheAndDisablePart(p) end
+	end
+
+	noclipConn = RS.Stepped:Connect(function()
+		local c = LocalPlayer and LocalPlayer.Character
+		if not c then return end
+		for part, _ in pairs(noclipCache) do
+			if part and part.Parent then part.CanCollide = false end
+		end
+		for _, p in ipairs(c:GetDescendants()) do
+			if p:IsA("BasePart") and noclipCache[p] == nil then cacheAndDisablePart(p) end
+		end
+	end)
+end
+
+local function stopNoclip()
+	if noclipConn then noclipConn:Disconnect(); noclipConn = nil end
+	for part, prev in pairs(noclipCache) do
+		if part and part.Parent then
+			if prev == nil then part.CanCollide = true else part.CanCollide = prev end
+		end
+	end
+	noclipCache = {}
+end
+
 local onofDefaultTextColor = onof.TextColor3
 local onofDefaultBG        = onof.BackgroundColor3
 local onofDefaultText      = onof.Text
@@ -411,19 +450,18 @@ local function stopUpTextVisual()
     if s then s.Enabled = false end
 end
 
-
- local ASCEND_SPEED = 450
+local ASCEND_SPEED = 450
 local TARGET_Y = 100000000
 local isAscending = false
-local ascendConn
+local ascendTween
 
 local function stopAscending()
 	if not isAscending then return end
 	isAscending = false
 
-	if ascendConn then
-		ascendConn:Disconnect()
-		ascendConn = nil
+	if ascendTween then
+		ascendTween:Cancel()
+		ascendTween = nil
 	end
 
 	stopUpTextVisual()
@@ -443,44 +481,41 @@ up.MouseButton1Click:Connect(function()
 		return
 	end
 
-local function cacheAndDisablePart(part)
-	if not part or not part:IsA("BasePart") then return end
-	if noclipCache[part] == nil then
-		noclipCache[part] = part.CanCollide
-	end
-	part.CanCollide = false
-end
-
-local function startNoclip()
-	if noclipConn then return end
-	local char = LocalPlayer and LocalPlayer.Character
-	if not char then return end
-
-	for _, p in ipairs(char:GetDescendants()) do
-		if p:IsA("BasePart") then cacheAndDisablePart(p) end
+	local char = LocalPlayer.Character
+	local hrp = char and char:FindFirstChild("HumanoidRootPart")
+	if not hrp then return end
+	if not nowe then
+		pcall(function() startNoclip() end)
 	end
 
-	noclipConn = RS.Stepped:Connect(function()
-		local c = LocalPlayer and LocalPlayer.Character
-		if not c then return end
-		for part, _ in pairs(noclipCache) do
-			if part and part.Parent then part.CanCollide = false end
-		end
-		for _, p in ipairs(c:GetDescendants()) do
-			if p:IsA("BasePart") and noclipCache[p] == nil then cacheAndDisablePart(p) end
+	hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+	startUpTextVisual()
+
+	local startPos = hrp.Position
+	local dist = TARGET_Y - startPos.Y
+	if dist <= 0 then
+		stopAscending()
+		return
+	end
+
+	local duration = dist / ASCEND_SPEED
+	isAscending = true
+
+	ascendTween = TweenService:Create(
+		hrp,
+		TweenInfo.new(duration, Enum.EasingStyle.Linear),
+		{CFrame = CFrame.new(startPos.X, TARGET_Y, startPos.Z)}
+	)
+
+	ascendTween.Completed:Connect(function()
+		ascendTween = nil
+		if isAscending then
+			stopAscending()
 		end
 	end)
-end
 
-local function stopNoclip()
-	if noclipConn then noclipConn:Disconnect(); noclipConn = nil end
-	for part, prev in pairs(noclipCache) do
-		if part and part.Parent then
-			if prev == nil then part.CanCollide = true else part.CanCollide = prev end
-		end
-	end
-	noclipCache = {}
-end
+	ascendTween:Play()
+end)		
 
 local RESPECT_COREGUI = false
 local TOP_MARGIN = 0
