@@ -846,23 +846,31 @@ mine.MouseButton1Down:Connect(function()
 	end
 end)
 
-	Players.LocalPlayer.CharacterAdded:Connect(function(char)
-
+Players.LocalPlayer.CharacterAdded:Connect(function(char)
 	if _G.__FlyGui_StopVertical then
 		pcall(function()
 			_G.__FlyGui_StopVertical()
 		end)
 	end
-				
-	pcall(function() stopNoclip() end)
+
+	pcall(function()
+		AE_Stop()
+	end)
+
+	pcall(function()
+		stopNoclip()
+	end)
+
 	nowe = false
 	flyActive = false
-	tpwalking = false   
+	tpwalking = false
 	isAscending = false
 	AE_Flying = false
 	stopFlyVisuals()
 	stopUpTextVisual()
+
 	task.wait(0.15)
+
 	local hum = char:FindFirstChildOfClass("Humanoid")
 	if hum then
 		hum.PlatformStand = false
@@ -873,7 +881,8 @@ end)
 	if anim then
 		anim.Disabled = false
 	end
+
 	if AE_Enabled then
 		AE_Bind(char)
 	end
-end)	
+end)
