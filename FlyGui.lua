@@ -617,11 +617,14 @@ WS:GetPropertyChangedSignal("CurrentCamera"):Connect(hookViewportChanged)
 
 
 local tpwalking = false
+local tpGen = 0
 onof.MouseButton1Down:Connect(function()
 
 	if nowe == true then
 		nowe = false
 	stopFlyVisuals()
+	  tpwalking = false
+        tpGen = tpGen + 1
 				
 		pcall(function() stopNoclip() end)
 
@@ -645,19 +648,22 @@ onof.MouseButton1Down:Connect(function()
 		nowe = true
 				
 		startFlyVisuals()
-		for i = 1, flySpeed do
-			task.spawn(function()
-				local hb = RS.Heartbeat	
-				tpwalking = true
-				local chr = LocalPlayer.Character
-				local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
-				while tpwalking and hb:Wait() and chr and hum and hum.Parent do
-					if hum.MoveDirection.Magnitude > 0 then
-						chr:TranslateBy(hum.MoveDirection)
-					end
-				end
-			end)
+tpGen = tpGen + 1
+tpwalking = true
+local gen = tpGen
+for i = 1, flySpeed do
+	task.spawn(function()
+		local myGen = gen
+		local hb = RS.Heartbeat	
+		local chr = LocalPlayer.Character
+		local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
+		while tpwalking and (myGen == tpGen) and hb:Wait() and chr and hum and hum.Parent do
+			if hum.MoveDirection.Magnitude > 0 then
+				chr:TranslateBy(hum.MoveDirection)
+			end
 		end
+	end)
+end
 		LocalPlayer.Character.Animate.Disabled = true
 		local Char = LocalPlayer.Character
 		local Hum = Char:FindFirstChildOfClass("Humanoid") or Char:FindFirstChildOfClass("AnimationController")
@@ -798,51 +804,68 @@ end)
 
 
 plus.MouseButton1Down:Connect(function()
-	flySpeed = flySpeed + 1
-	speed.Text = flySpeed
-	if nowe == true then
-
-		tpwalking = false
-		for i = 1, flySpeed do
-			task.spawn(function()
-				local hb = RS.Heartbeat	
-				tpwalking = true
-				local chr = LocalPlayer.Character
-				local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
-				while tpwalking and hb:Wait() and chr and hum and hum.Parent do
-					if hum.MoveDirection.Magnitude > 0 then
-						chr:TranslateBy(hum.MoveDirection)
-					end
-				end
-			end)
-		end
-	end
-end)
-	
-mine.MouseButton1Down:Connect(function()
-	if flySpeed == 1 then
-		speed.Text = 'cannot be less than 1'
+	if flySpeed >= 50 then
+		speed.Text = "Max speed reached"
 		task.wait(1)
 		speed.Text = flySpeed
-	else
-		flySpeed = flySpeed - 1
-		speed.Text = flySpeed
-		if nowe == true then
-			tpwalking = false
-			for i = 1, flySpeed do
-				task.spawn(function()
-					local hb = RS.Heartbeat	
-					tpwalking = true
-					local chr = LocalPlayer.Character
-					local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
-					while tpwalking and hb:Wait() and chr and hum and hum.Parent do
-						if hum.MoveDirection.Magnitude > 0 then
-							chr:TranslateBy(hum.MoveDirection)
-						end
-					end
-				end)
+		return
+	end
+
+	flySpeed = flySpeed + 1
+	speed.Text = flySpeed
+
+	if not nowe then return end
+
+	tpwalking = false
+	tpGen = tpGen + 1
+	tpwalking = true
+	local gen = tpGen
+
+	for i = 1, flySpeed do
+		task.spawn(function()
+			local myGen = gen
+			local hb = RS.Heartbeat
+			local chr = LocalPlayer.Character
+			local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
+			while tpwalking and (myGen == tpGen) and hb:Wait() and chr and hum and hum.Parent do
+				if hum.MoveDirection.Magnitude > 0 then
+					chr:TranslateBy(hum.MoveDirection)
+				end
 			end
-		end
+		end)
+	end
+end)
+
+mine.MouseButton1Down:Connect(function()
+	if flySpeed == 1 then
+		speed.Text = "cant be less than 1"
+		task.wait(1)
+		speed.Text = flySpeed
+		return
+	end
+
+	flySpeed = flySpeed - 1
+	speed.Text = flySpeed
+
+	if not nowe then return end
+
+	tpwalking = false
+	tpGen = tpGen + 1
+	tpwalking = true
+	local gen = tpGen
+
+	for i = 1, flySpeed do
+		task.spawn(function()
+			local myGen = gen
+			local hb = RS.Heartbeat
+			local chr = LocalPlayer.Character
+			local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
+			while tpwalking and (myGen == tpGen) and hb:Wait() and chr and hum and hum.Parent do
+				if hum.MoveDirection.Magnitude > 0 then
+					chr:TranslateBy(hum.MoveDirection)
+				end
+			end
+		end)
 	end
 end)
 
