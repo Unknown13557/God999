@@ -48,13 +48,6 @@ up.Text = "UP"
 up.TextColor3 = Color3.fromRGB(0, 0, 0)
 up.TextSize = 17
 
-autoBg.Name = "AutoEscapeBG"
-autoBg.Parent = Frame
-autoBg.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-autoBg.Position = UDim2.new(0, 0, 0.50500074, 0)
-autoBg.Size = UDim2.new(0, 44, 0, 28)
-autoBg.BorderSizePixel = 0
-
 aeToggle.Name = "AutoEscapeToggle"
 aeToggle.Parent = autoBg
 aeToggle.Size = UDim2.new(0, 38, 0, 16)
@@ -62,7 +55,16 @@ aeToggle.Position = UDim2.new(0.5, -19, 0.5, -8)
 aeToggle.BackgroundColor3 = Color3.fromRGB(88, 200, 120)
 aeToggle.AutoButtonColor = false
 aeToggle.Text = ""
-aeToggle.BorderSizePixel = 0
+aeToggle.BorderSizePixel = 1
+aeToggle.BorderColor3 = Color3.fromRGB(0,0,0)
+
+autoBg.Name = "AutoEscapeBG"
+autoBg.Parent = Frame
+autoBg.BackgroundColor3 = Color3.fromRGB(225, 255, 151)
+autoBg.Position = UDim2.new(0, 0, 0.50500074, 0)
+autoBg.Size = UDim2.new(0, 44, 0, 28)
+autoBg.BorderSizePixel = 1
+autoBg.BorderColor3 = Color3.fromRGB(0,0,0)
 
 local aeCorner = Instance.new("UICorner")
 aeCorner.CornerRadius = UDim.new(1, 0)
@@ -74,7 +76,8 @@ knob.Parent = aeToggle
 knob.Size = UDim2.new(0, 12, 0, 12)
 knob.Position = UDim2.new(0, 2, 0.5, -6)
 knob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-knob.BorderSizePixel = 0
+knob.BorderSizePixel = 1
+knob.BorderColor3 = Color3.fromRGB(0,0,0)
 
 local knobCorner = Instance.new("UICorner")
 knobCorner.CornerRadius = UDim.new(1, 0)
@@ -341,20 +344,21 @@ local nowe = false
 local noclipConn = nil
 local noclipCache = {}
 
---===== AUTO ESCAPE CONFIG =====
+-------------------------[ AUTO ESCAPE MODULE FIXED ]-------------------------
 local AE_LOW_HP  = 0.40
 local AE_SAFE_HP = 0.90
-local AE_TARGET_Y = 1000000
+local AE_TARGET_Y = 100000
 local AE_SPEED   = 450
 
 local aeEnabled = true
-local aeIsOn    = true 
-local aeFlying  = false
-local aeConn    = nil
-local aeHum     = nil
-local aeRoot    = nil
+local aeIsOn = true
+local aeFlying = false
+local aeConn = nil
+local aeHum = nil
+local aeRoot = nil
+local aeHealthConn = nil
 
-local function ae_stopFlight()
+local function ae_stop()
     if aeConn then
         aeConn:Disconnect()
         aeConn = nil
@@ -362,97 +366,11 @@ local function ae_stopFlight()
     aeFlying = false
 end
 
-local aeHealthConn
-
-local function ae_onHealthChanged(h)
-    if not aeHum or not aeEnabled then return end
-    local mh = aeHum.MaxHealth
-    if mh <= 0 then return end
-
-    local p = h / mh
-
-    if (not aeFlying) and p < AE_LOW_HP then
-        aeRoot = aeRoot or (aeHum.Parent and aeHum.Parent:FindFirstChild("HumanoidRootPart"))
-        if aeRoot then
-            ae_startFlight()
-        end
-    elseif aeFlying and p >= AE_SAFE_HP then
-        ae_stopFlight()
-    end
-end
-
-local function ae_bindCharacter(char)
-    aeHum = char:FindFirstChildOfClass("Humanoid")
-    aeRoot = char:FindFirstChild("HumanoidRootPart")
-
-    if aeHealthConn then
-        aeHealthConn:Disconnect()
-        aeHealthConn = nil
-    end
-
-    if aeHum and aeEnabled then
-        aeHealthConn = aeHum.HealthChanged:Connect(ae_onHealthChanged)
-        ae_onHealthChanged(aeHum.Health)
-    end
-end
-
--- bind khi mới join / respawn
-if LocalPlayer.Character then
-    ae_bindCharacter(LocalPlayer.Character)
-end
-
-LocalPlayer.CharacterAdded:Connect(function(char)
-    ae_stopFlight()
-    ae_bindCharacter(char)
-end)
-
-local aeOnColor  = Color3.fromRGB(88, 200, 120)
-local aeOffColor = Color3.fromRGB(220, 50, 50)
-
-local function ae_setToggle(state)
-    aeIsOn = state
-    aeEnabled = state
-
-    if aeToggle then
-        aeToggle.BackgroundColor3 = state and aeOnColor or aeOffColor
-    end
-
-    if knob then
-        if state then
-            knob.Position = UDim2.new(0, 2, 0.5, -6)      -- nút lệch trái (ON)
-        else
-            knob.Position = UDim2.new(1, -14, 0.5, -6)    -- nút lệch phải (OFF)
-        end
-    end
-
-    if not state then
-        ae_stopFlight()
-        if aeHealthConn then
-            aeHealthConn:Disconnect()
-            aeHealthConn = nil
-        end
-    else
-        if LocalPlayer.Character then
-            ae_bindCharacter(LocalPlayer.Character)
-        end
-    end
-end
-
--- mặc định bật
-ae_setToggle(true)
-
-if aeToggle then
-    aeToggle.MouseButton1Click:Connect(function()
-        ae_setToggle(not aeIsOn)
-    end)
-end
-
-
-local function ae_startFlight()
+local function ae_start()
     if not aeEnabled or aeFlying or not aeRoot then return end
 
-    local yNow = aeRoot.Position.Y
-    if yNow >= AE_TARGET_Y - 1 then return end
+    local startY = aeRoot.Position.Y
+    if startY >= AE_TARGET_Y - 5 then return end
 
     local startPos = aeRoot.Position
     local targetPos = Vector3.new(startPos.X, AE_TARGET_Y, startPos.Z)
@@ -461,25 +379,82 @@ local function ae_startFlight()
 
     local travelTime = distance / AE_SPEED
     local elapsed = 0
-
     aeFlying = true
 
     aeConn = RS.RenderStepped:Connect(function(dt)
-        if not aeFlying or not aeRoot or not aeRoot.Parent then
-            ae_stopFlight()
+        if not aeRoot or not aeRoot.Parent then
+            ae_stop()
             return
         end
 
         elapsed += dt
         local alpha = math.clamp(elapsed / travelTime, 0, 1)
-        local newPos = startPos:Lerp(targetPos, alpha)
-        aeRoot:PivotTo(CFrame.new(newPos))
+        aeRoot:PivotTo(CFrame.new(startPos:Lerp(targetPos, alpha)))
 
         if alpha >= 1 then
-            ae_stopFlight()
+            ae_stop()
         end
     end)
 end
+
+local function ae_hp_changed(h)
+    if not aeHum then return end
+    local max = aeHum.MaxHealth
+    if max == 0 then return end
+
+    local p = h / max
+    if aeFlying and p >= AE_SAFE_HP then
+        ae_stop()
+    elseif not aeFlying and p < AE_LOW_HP then
+        aeRoot = aeHum.Parent:FindFirstChild("HumanoidRootPart") or aeRoot
+        ae_start()
+    end
+end
+
+local function ae_bind(char)
+    aeHum = char:FindFirstChildOfClass("Humanoid")
+    aeRoot = char:FindFirstChild("HumanoidRootPart")
+
+    if aeHealthConn then aeHealthConn:Disconnect() end
+    if aeHum then
+        aeHealthConn = aeHum.HealthChanged:Connect(ae_hp_changed)
+        ae_hp_changed(aeHum.Health)
+    end
+end
+
+if LocalPlayer.Character then
+    ae_bind(LocalPlayer.Character)
+end
+
+LocalPlayer.CharacterAdded:Connect(function(char)
+    task.wait(0.2)
+    ae_stop()
+    ae_bind(char)
+end)
+
+-- pill toggle UI
+local function ae_set(state)
+    aeEnabled = state
+    aeIsOn = state
+
+    if state then
+        aeToggle.BackgroundColor3 = Color3.fromRGB(88, 200, 120)
+        knob.Position = UDim2.new(0, 2, 0.5, -6)
+    else
+        aeToggle.BackgroundColor3 = Color3.fromRGB(200, 80, 80)
+        knob.Position = UDim2.new(1, -14, 0.5, -6)
+        ae_stop()
+    end
+end
+
+ae_set(true)
+
+aeToggle.MouseButton1Click:Connect(function()
+    ae_set(not aeIsOn)
+end)
+
+-------------------------[ END AUTO ESCAPE MODULE ]-------------------------
+
 
 local function cacheAndDisablePart(part)
 	if not part or not part:IsA("BasePart") then return end
