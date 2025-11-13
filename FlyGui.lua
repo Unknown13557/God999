@@ -257,96 +257,6 @@ local function stopFlyVisuals()
 	onof.TextStrokeTransparency = 1
 end
 
-local upBG0, upText0 = up.BackgroundColor3, up.TextColor3
-local upRainbowConn
-local upHueTime = 0
-local function startUpTextVisual()
-    up.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    up.TextStrokeTransparency = 1
-    local s = up:FindFirstChild("FlyStroke")
-    if s then s.Enabled = false end
-
-    if upRainbowConn then upRainbowConn:Disconnect() end
-    upRainbowConn = RS.RenderStepped:Connect(function(dt)
-        upHueTime += dt
-        local hue = (upHueTime * 0.25) % 1
-        up.TextColor3 = Color3.fromHSV(hue, 1, 1)
-    end)
-end
-
-local function stopUpTextVisual()
-    if upRainbowConn then upRainbowConn:Disconnect(); upRainbowConn = nil end
-    up.BackgroundColor3 = upBG0
-    up.TextColor3       = upText0
-    up.TextStrokeTransparency = 1
-    local s = up:FindFirstChild("FlyStroke")
-    if s then s.Enabled = false end
-end
-
-local ASCEND_SPEED = 450
-local TARGET_Y = 100000000
-local isAscending = false
-local ascendConn
-
-local function stopAscending()
-	if not isAscending then return end
-	isAscending = false
-	if ascendConn then ascendConn:Disconnect(); ascendConn = nil end
-	stopUpTextVisual()
-	if not nowe then
-		local chr = LocalPlayer.Character
-		local hum = chr and chr:FindFirstChildOfClass("Humanoid")
-		if hum then hum.PlatformStand = false end
-		pcall(function() stopNoclip() end)
-	end
-end
-_G.__FlyGui_StopVertical = function()
-	stopAscending()
-end
-
-up.MouseButton1Click:Connect(function()
-	if isAscending then
-	stopAscending()
-	return
-end
-
-	local chr = LocalPlayer.Character
-	local hrp = chr and chr:FindFirstChild("HumanoidRootPart")
-	local hum = chr and chr:FindFirstChildOfClass("Humanoid")
-	if not hrp or not hum then return end
-	if not nowe then
-		pcall(function() startNoclip() end)
-	end
-	hum.PlatformStand = true
-	hrp.AssemblyLinearVelocity = Vector3.new(0,0,0)
-	startUpTextVisual()
-
-	local startPos = hrp.Position
-	local targetPos = Vector3.new(startPos.X, TARGET_Y, startPos.Z)
-	local distance = TARGET_Y - startPos.Y
-	if distance <= 0 then
-		stopAscending()
-		return
-	end
-	local travelTime = distance / ASCEND_SPEED
-	local elapsed = 0
-
-	isAscending = true
-	ascendConn = RS.RenderStepped:Connect(function(dt)
-		if not isAscending then return end
-		elapsed += dt
-		hrp.AssemblyLinearVelocity = Vector3.new(0,0,0)
-
-		local alpha = math.clamp(elapsed / travelTime, 0, 1)
-		local newPos = startPos:Lerp(targetPos, alpha)
-		hrp:PivotTo(CFrame.new(newPos))
-
-		if alpha >= 1 then
-			stopAscending()
-		end
-	end)
-end)
-
 local TweenService = game:GetService("TweenService")
 
 local AE_SPEED    = 450
@@ -403,7 +313,11 @@ end
 
 local function AE_Health(hp)
 	if not AE_Humanoid or not AE_Enabled then return end
-	local r = hp / AE_Humanoid.MaxHealth
+
+	local max = AE_Humanoid.MaxHealth
+	if max <= 0 then return end
+
+	local r = hp / max
 
 	if (not AE_Flying) and r < AE_LOW_HP then
 		AE_Start()
@@ -460,13 +374,6 @@ if LocalPlayer.Character then
 	task.defer(function() AE_Bind(LocalPlayer.Character) end)
 end
 
-LocalPlayer.CharacterAdded:Connect(function(char)
-	task.defer(function()
-		AE_Stop()
-		AE_Bind(char)
-	end)
-end)
-
 if aeToggle then
 	aeToggle.MouseButton1Click:Connect(function()
 		AE_Set(not AE_Enabled)
@@ -475,6 +382,104 @@ end
 
 task.defer(function()
 	AE_Set(true)
+end)
+
+local upBG0, upText0 = up.BackgroundColor3, up.TextColor3
+local upRainbowConn
+local upHueTime = 0
+local function startUpTextVisual()
+    up.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    up.TextStrokeTransparency = 1
+    local s = up:FindFirstChild("FlyStroke")
+    if s then s.Enabled = false end
+
+    if upRainbowConn then upRainbowConn:Disconnect() end
+    upRainbowConn = RS.RenderStepped:Connect(function(dt)
+        upHueTime += dt
+        local hue = (upHueTime * 0.25) % 1
+        up.TextColor3 = Color3.fromHSV(hue, 1, 1)
+    end)
+end
+
+local function stopUpTextVisual()
+    if upRainbowConn then upRainbowConn:Disconnect(); upRainbowConn = nil end
+    up.BackgroundColor3 = upBG0
+    up.TextColor3       = upText0
+    up.TextStrokeTransparency = 1
+    local s = up:FindFirstChild("FlyStroke")
+    if s then s.Enabled = false end
+end
+
+local ASCEND_SPEED = 450
+local TARGET_Y = 100000000
+local isAscending = false
+local ascendTween
+
+local function stopAscending()
+	if not isAscending then return end
+	isAscending = false
+	if ascendTween then
+		ascendTween:Cancel()
+		ascendTween = nil
+	end
+	
+        stopUpTextVisual()
+	
+     if not nowe then
+		local chr = LocalPlayer.Character
+		local hum = chr and chr:FindFirstChildOfClass("Humanoid")
+		if hum then
+			hum.PlatformStand = false
+		end
+		pcall(function() stopNoclip() end)
+	end
+end
+
+_G.__FlyGui_StopVertical = function()
+	stopAscending()
+end
+
+up.MouseButton1Click:Connect(function()
+	if isAscending then
+		stopAscending()
+		return
+	end
+
+	local chr = LocalPlayer.Character
+	local hrp = chr and chr:FindFirstChild("HumanoidRootPart")
+	local hum = chr and chr:FindFirstChildOfClass("Humanoid")
+	if not hrp or not hum then return end
+	if not nowe then
+		pcall(function() startNoclip() end)
+	end
+
+	hum.PlatformStand = true
+	hrp.AssemblyLinearVelocity = Vector3.new(0,0,0)
+	startUpTextVisual()
+		
+	local startPos = hrp.Position
+	local dist = TARGET_Y - startPos.Y
+	if dist <= 0 then
+		stopAscending()
+		return
+	end
+
+	local duration = dist / ASCEND_SPEED
+	isAscending = true
+	ascendTween = TweenService:Create(
+		hrp,
+		TweenInfo.new(duration, Enum.EasingStyle.Linear),
+		{CFrame = CFrame.new(startPos.X, TARGET_Y, startPos.Z)}
+	)
+		
+	ascendTween.Completed:Connect(function()
+		ascendTween = nil
+		if isAscending then
+			stopAscending()
+		end
+	end)
+
+	ascendTween:Play()
 end)
 
 local function cacheAndDisablePart(part)
@@ -617,7 +622,6 @@ local tpGen = 0
 
 onof.MouseButton1Down:Connect(function()
 	if nowe == true then
-		-- TẮT FLY
 		nowe = false
 		stopFlyVisuals()
 		tpwalking = false
@@ -645,7 +649,7 @@ onof.MouseButton1Down:Connect(function()
 			hum:ChangeState(Enum.HumanoidStateType.RunningNoPhysics)
 		end
 	else
-		-- BẬT FLY
+		
 		nowe = true
 		startFlyVisuals()
 
@@ -701,14 +705,12 @@ onof.MouseButton1Down:Connect(function()
 		end
 	end
 
-	-- Xác định rig 1 lần
 	local char = LocalPlayer.Character
 	if not char then return end
 	local hum = char:FindFirstChildOfClass("Humanoid")
 	if not hum then return end
 
 	if hum.RigType == Enum.HumanoidRigType.R6 then
-		--========== FLY R6 ==========--
 		local torso = char:FindFirstChild("Torso")
 		if not torso then return end
 
@@ -775,7 +777,7 @@ onof.MouseButton1Down:Connect(function()
 		tpwalking = false
 
 	else
-		--========== FLY R15 ==========--
+			
 		local root = char:FindFirstChild("UpperTorso")
 		if not root then return end
 
@@ -850,29 +852,26 @@ onof.MouseButton1Down:Connect(function()
 end)
                 
 Players.LocalPlayer.CharacterAdded:Connect(function(char)
-    if _G.__FlyGui_StopVertical then
-        _G.__FlyGui_StopVertical()
-    end
+	if _G.__FlyGui_StopVertical then
+		_G.__FlyGui_StopVertical()
+	end
+	task.wait(0.7)
+	pcall(function() stopNoclip() end)
 
-    task.wait(0.7)
-    pcall(function() stopNoclip() end)
-    AE_NoclipOwned = false
-    tpwalking = false
-    tpGen = tpGen + 1
+	local c = LocalPlayer.Character
+	if c and c:FindFirstChildOfClass("Humanoid") then
+		c.Humanoid.PlatformStand = false
+	end
+	if c and c:FindFirstChild("Animate") then
+		c.Animate.Disabled = false
+	end
+	AE_Stop()
+	if AE_Enabled then
+		AE_Bind(char)
+	end
 
-    nowe = false
-    stopFlyVisuals()
-    stopUpTextVisual()
-    if AE_Flying then AE_CancelFlight() end
-    AE_Flying = false
-    if AE_Tween then AE_Tween:Cancel(); AE_Tween = nil end
-    local c = LocalPlayer.Character
-    if c and c:FindFirstChildOfClass("Humanoid") then
-        c.Humanoid.PlatformStand = false
-    end
-    if c and c:FindFirstChild("Animate") then
-        c.Animate.Disabled = false
-    end
+	stopUpTextVisual()
+	stopFlyVisuals()
 end)
 
 plus.MouseButton1Down:Connect(function()
