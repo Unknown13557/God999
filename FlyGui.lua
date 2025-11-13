@@ -63,8 +63,12 @@ aeToggle.Position = UDim2.new(0.5, -19, 0.5, -8)
 aeToggle.BackgroundColor3 = Color3.fromRGB(88, 200, 120)
 aeToggle.AutoButtonColor = false
 aeToggle.Text = ""
-aeToggle.BorderSizePixel = 1
-aeToggle.BorderColor3 = Color3.fromRGB(0, 0, 0)
+
+local aeStroke = Instance.new("UIStroke")
+aeStroke.Parent = aeToggle
+aeStroke.Color = Color3.fromRGB(0,0,0)
+aeStroke.Thickness = 2
+aeStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
 local aeCorner = Instance.new("UICorner")
 aeCorner.CornerRadius = UDim.new(1, 0)
@@ -462,7 +466,7 @@ ae_set(true)
 
 aeToggle.MouseButton1Click:Connect(function()
     ae_set(not aeIsOn)
-end
+end)
 
 local function cacheAndDisablePart(part)
 	if not part or not part:IsA("BasePart") then return end
