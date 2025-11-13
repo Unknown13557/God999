@@ -343,7 +343,6 @@ end
 	end)
 end)
 
--------------------------[ AUTO ESCAPE MODULE FIXED ]-------------------------
 local AE_LOW_HP  = 0.40
 local AE_SAFE_HP = 0.90
 local AE_TARGET_Y = 100000
@@ -437,18 +436,25 @@ LocalPlayer.CharacterAdded:Connect(function(char)
     ae_bind(char)
 end)
 
--- pill toggle UI
 local function ae_set(state)
     aeEnabled = state
-    aeIsOn = state
+    aeIsOn    = state
 
     if state then
         aeToggle.BackgroundColor3 = Color3.fromRGB(88, 200, 120)
         knob.Position = UDim2.new(0, 2, 0.5, -6)
+        if LocalPlayer.Character then
+            ae_bind(LocalPlayer.Character)
+        end
     else
         aeToggle.BackgroundColor3 = Color3.fromRGB(200, 80, 80)
         knob.Position = UDim2.new(1, -14, 0.5, -6)
+
         ae_stop()
+        if aeHealthConn then
+            aeHealthConn:Disconnect()
+            aeHealthConn = nil
+        end
     end
 end
 
@@ -456,11 +462,7 @@ ae_set(true)
 
 aeToggle.MouseButton1Click:Connect(function()
     ae_set(not aeIsOn)
-end)
-
--------------------------[ END AUTO ESCAPE MODULE ]-------------------------
-    
-
+end
 
 local function cacheAndDisablePart(part)
 	if not part or not part:IsA("BasePart") then return end
