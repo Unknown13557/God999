@@ -228,7 +228,6 @@ local speaker = LocalPlayer
 local nowe = false
 local noclipConn = nil
 local noclipCache = {}
-local flyActive = false
 
 local function cacheAndDisablePart(part)
 	if not part or not part:IsA("BasePart") then return end
@@ -317,9 +316,8 @@ local function AE_Stop()
 		AE_Tween:Cancel()
 		AE_Tween = nil
 	end
-
-       AE_Flying = false
-    end	
+	AE_Flying = false
+end
 
 local function AE_Start()
 	if not AE_Enabled or AE_Flying or not AE_RootPart then return end
@@ -475,11 +473,10 @@ up.MouseButton1Click:Connect(function()
 
 	local char = LocalPlayer.Character
 	local hrp = char and char:FindFirstChild("HumanoidRootPart")
-	if not hrp then return end
-	if not nowe then
-	end
-end
-end
+	local hum = char and char:FindFirstChildOfClass("Humanoid")
+	if not hrp or not hum then return end
+
+	hum.PlatformStand = true
 	hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
 	startUpTextVisual()
 
@@ -507,7 +504,7 @@ end
 	end)
 
 	ascendTween:Play()
-end)		
+end)	
 
 local RESPECT_COREGUI = false
 local TOP_MARGIN = 0
