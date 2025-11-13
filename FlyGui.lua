@@ -610,169 +610,316 @@ local function hookViewportChanged()
 	end)
 end
 	
+	
+if WS.CurrentCamera then hookViewportChanged() end
+WS:GetPropertyChangedSignal("CurrentCamera"):Connect(hookViewportChanged)
+
+local tpwalking = false
+local tpGen = 0
+
 onof.MouseButton1Down:Connect(function()
-	if nowe then
+	if nowe == true then
 		nowe = false
 		stopFlyVisuals()
-		local char = LocalPlayer.Character
-		local hum = char and char:FindFirstChildOfClass("Humanoid")
-		if hum then
-			hum.PlatformStand = false
-			hum.AutoRotate = true
-		end
-		local anim = char and char:FindFirstChild("Animate")
-		if anim then
-			anim.Disabled = false
-		end
-		pcall(function() stopNoclip() end)
-		return
-	end
+			
+      flyActive = false
+local chr = LocalPlayer.Character
+local hum = chr and chr:FindFirstChildOfClass("Humanoid")
 
-	nowe = true
-	startFlyVisuals()
-	pcall(function() startNoclip() end)
+if chr then
+    local anim = chr:FindFirstChild("Animate")
+    if anim then anim.Disabled = false end
+end
+
+if hum then
+    hum.AutoRotate = true
+			end
+			
+		tpwalking = false
+		tpGen += 1
+
+		pcall(function() stopNoclip() end)
+
+		local hum = speaker.Character and speaker.Character:FindFirstChildOfClass("Humanoid")
+		if hum then
+			hum:SetStateEnabled(Enum.HumanoidStateType.Climbing,           true)
+			hum:SetStateEnabled(Enum.HumanoidStateType.FallingDown,        true)
+			hum:SetStateEnabled(Enum.HumanoidStateType.Flying,             true)
+			hum:SetStateEnabled(Enum.HumanoidStateType.Freefall,           true)
+			hum:SetStateEnabled(Enum.HumanoidStateType.GettingUp,          true)
+			hum:SetStateEnabled(Enum.HumanoidStateType.Jumping,            true)
+			hum:SetStateEnabled(Enum.HumanoidStateType.Landed,             true)
+			hum:SetStateEnabled(Enum.HumanoidStateType.Physics,            true)
+			hum:SetStateEnabled(Enum.HumanoidStateType.PlatformStanding,   true)
+			hum:SetStateEnabled(Enum.HumanoidStateType.Ragdoll,            true)
+			hum:SetStateEnabled(Enum.HumanoidStateType.Running,            true)
+			hum:SetStateEnabled(Enum.HumanoidStateType.RunningNoPhysics,   true)
+			hum:SetStateEnabled(Enum.HumanoidStateType.Seated,             true)
+			hum:SetStateEnabled(Enum.HumanoidStateType.StrafingNoPhysics,  true)
+			hum:SetStateEnabled(Enum.HumanoidStateType.Swimming,           true)
+			hum:ChangeState(Enum.HumanoidStateType.RunningNoPhysics)
+		end	
+
+	else		
+        nowe = true
+		startFlyVisuals()
+		flyActive = true
+			
+           local chr = LocalPlayer.Character
+           local hum = chr and chr:FindFirstChildOfClass("Humanoid")
+           if chr and hum then
+           local anim = chr:FindFirstChild("Animate")
+           if anim then anim.Disabled = true end
+
+         hum.AutoRotate = false
+         hum:ChangeState(Enum.HumanoidStateType.Physics)
+    end
+
+		tpGen += 1
+		tpwalking = true
+		local gen = tpGen
+
+		for i = 1, flySpeed do
+			task.spawn(function()
+				local myGen = gen
+				local hb = RS.Heartbeat
+				local chr = LocalPlayer.Character
+				local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
+				while tpwalking and (myGen == tpGen)
+					and hb:Wait() and chr and hum and hum.Parent do
+					if hum.MoveDirection.Magnitude > 0 then
+						chr:TranslateBy(hum.MoveDirection)
+					end
+				end
+			end)
+		end
+
+		local char = LocalPlayer.Character
+		if char then
+			local animHum = char:FindFirstChildOfClass("Humanoid") or char:FindFirstChildOfClass("AnimationController")
+			if animHum then
+				for _, track in ipairs(animHum:GetPlayingAnimationTracks()) do
+					track:AdjustSpeed(0)
+				end
+			end
+
+			pcall(function() startNoclip() end)
+
+			local hum = char:FindFirstChildOfClass("Humanoid")
+			if hum then
+				hum:SetStateEnabled(Enum.HumanoidStateType.Climbing,           false)
+				hum:SetStateEnabled(Enum.HumanoidStateType.FallingDown,        false)
+				hum:SetStateEnabled(Enum.HumanoidStateType.Flying,             false)
+				hum:SetStateEnabled(Enum.HumanoidStateType.Freefall,           false)
+				hum:SetStateEnabled(Enum.HumanoidStateType.GettingUp,          false)
+				hum:SetStateEnabled(Enum.HumanoidStateType.Jumping,            false)
+				hum:SetStateEnabled(Enum.HumanoidStateType.Landed,             false)
+				hum:SetStateEnabled(Enum.HumanoidStateType.Physics,            false)
+				hum:SetStateEnabled(Enum.HumanoidStateType.PlatformStanding,   false)
+				hum:SetStateEnabled(Enum.HumanoidStateType.Ragdoll,            false)
+				hum:SetStateEnabled(Enum.HumanoidStateType.Running,            false)
+				hum:SetStateEnabled(Enum.HumanoidStateType.RunningNoPhysics,   false)
+				hum:SetStateEnabled(Enum.HumanoidStateType.Seated,             false)
+				hum:SetStateEnabled(Enum.HumanoidStateType.StrafingNoPhysics,  false)
+				hum:SetStateEnabled(Enum.HumanoidStateType.Swimming,           false)
+				hum:ChangeState(Enum.HumanoidStateType.Swimming)
+			end
+		end
+	end
 
 	local char = LocalPlayer.Character
 	if not char then return end
 	local hum = char:FindFirstChildOfClass("Humanoid")
 	if not hum then return end
-	local root = char:FindFirstChild("HumanoidRootPart") or char:FindFirstChild("Torso") or char:FindFirstChild("UpperTorso")
-	if not root then return end
-
-	hum.PlatformStand = true
-	hum.AutoRotate = false
-	local anim = char:FindFirstChild("Animate")
-	if anim then
-		anim.Disabled = true
-	end
-
-	local bg = Instance.new("BodyGyro")
-	bg.P = 9e4
-	bg.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
-	bg.CFrame = root.CFrame
-	bg.Parent = root
-
-	local bv = Instance.new("BodyVelocity")
-	bv.MaxForce = Vector3.new(9e9, 9e9, 9e9)
-	bv.Velocity = Vector3.new(0, 0, 0)
-	bv.Parent = root
-
-	local ctrl = {f = 0, b = 0, l = 0, r = 0}
-	local lastctrl = {f = 0, b = 0, l = 0, r = 0}
-	local speed = 0
-	local maxspeed = flySpeed
-
-	local conns = {}
-	conns[#conns + 1] = UIS.InputBegan:Connect(function(input, gpe)
-		if not nowe then return end
-		if input.KeyCode == Enum.KeyCode.W then
-			ctrl.f = 1
-			ctrl.b = 0
-		elseif input.KeyCode == Enum.KeyCode.S then
-			ctrl.b = 1
-			ctrl.f = 0
-		elseif input.KeyCode == Enum.KeyCode.A then
-			ctrl.l = 1
-			ctrl.r = 0
-		elseif input.KeyCode == Enum.KeyCode.D then
-			ctrl.r = 1
-			ctrl.l = 0
-		end
-	end)
-
-	conns[#conns + 1] = UIS.InputEnded:Connect(function(input, gpe)
-		if input.KeyCode == Enum.KeyCode.W then
-			ctrl.f = 0
-		elseif input.KeyCode == Enum.KeyCode.S then
-			ctrl.b = 0
-		elseif input.KeyCode == Enum.KeyCode.A then
-			ctrl.l = 0
-		elseif input.KeyCode == Enum.KeyCode.D then
-			ctrl.r = 0
-		end
-	end)
-
-	task.spawn(function()
-		while nowe and hum and hum.Parent and root.Parent do
-			task.wait()
-			hum:ChangeState(Enum.HumanoidStateType.Physics)
+	if hum.RigType == Enum.HumanoidRigType.R6 then
+		local torso = char:FindFirstChild("Torso")
+		if not torso then return end
+		local ctrl = {f = 0, b = 0, l = 0, r = 0}
+		local lastctrl = {f = 0, b = 0, l = 0, r = 0}
+		local maxspeed = flySpeed
+		local speed = 0
+		local bg = Instance.new("BodyGyro", torso)
+		bg.P = 9e4
+		bg.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+		bg.CFrame = torso.CFrame
+		local bv = Instance.new("BodyVelocity", torso)
+		bv.Velocity = Vector3.new(0, 0.1, 0)
+		bv.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+		hum.PlatformStand = true
+		while nowe == true do	
+		hum:ChangeState(Enum.HumanoidStateType.Physics)
+			RS.RenderStepped:Wait()
 			local cam = WS.CurrentCamera
-			if cam then
-				local move = hum.MoveDirection
-				if move.Magnitude > 0 then
-					if math.abs(move.Z) > math.abs(move.X) then
-						if move.Z < 0 then
-							ctrl.f = 1
-							ctrl.b = 0
-						elseif move.Z > 0 then
-							ctrl.b = 1
-							ctrl.f = 0
-						end
-					else
-						if move.X < 0 then
-							ctrl.l = 1
-							ctrl.r = 0
-						elseif move.X > 0 then
-							ctrl.r = 1
-							ctrl.l = 0
-						end
-					end
-				end
-
-				local cf = cam.CFrame
-				local mv = ctrl.f - ctrl.b
-				local mh = ctrl.r - ctrl.l
-
-				if mv ~= 0 or mh ~= 0 then
-					speed = speed + 0.5 + speed / maxspeed
-					if speed > maxspeed then
-						speed = maxspeed
-					end
+			if not cam then
+				bv.Velocity = Vector3.new(0,0,0)
+				bg.CFrame = torso.CFrame
+			else
+				local camCF = cam.CFrame
+				if ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0 then
+					speed = speed + 0.5 + (speed / maxspeed)
+					if speed > maxspeed then speed = maxspeed end
 				elseif speed ~= 0 then
-					speed = speed - 1
-					if speed < 0 then
-						speed = 0
-					end
+					speed -= 1
+					if speed < 0 then speed = 0 end
 				end
-
-				if speed ~= 0 then
-					local dir = (cf.LookVector * mv) + ((cf * CFrame.new(mh, mv * 0.2, 0)).Position - cf.Position)
-					if dir.Magnitude > 0 then
-						bv.Velocity = dir.Unit * speed
-					else
-						bv.Velocity = Vector3.new(0, 0, 0)
-					end
-					lastctrl.f = ctrl.f
-					lastctrl.b = ctrl.b
-					lastctrl.l = ctrl.l
-					lastctrl.r = ctrl.r
+					
+				if (ctrl.l + ctrl.r) ~= 0 or (ctrl.f + ctrl.b) ~= 0 then
+					bv.Velocity =
+						(camCF.LookVector * (ctrl.f + ctrl.b))
+						+ ((camCF * CFrame.new(ctrl.l + ctrl.r, (ctrl.f + ctrl.b) * .2, 0)).Position - camCF.Position)
+					bv.Velocity *= speed
+					lastctrl = {f = ctrl.f, b = ctrl.b, l = ctrl.l, r = ctrl.r}
+				elseif speed ~= 0 then
+					bv.Velocity =
+						(camCF.LookVector * (lastctrl.f + lastctrl.b))
+						+ ((camCF * CFrame.new(lastctrl.l + lastctrl.r, (lastctrl.f + lastctrl.b) * .2, 0)).Position - camCF.Position)
+					bv.Velocity *= speed
 				else
 					bv.Velocity = Vector3.new(0, 0, 0)
 				end
 
-				bg.CFrame = cf
+				bg.CFrame = camCF * CFrame.Angles(-math.rad((ctrl.f + ctrl.b) * 50 * speed / maxspeed), 0, 0)
 			end
 		end
 
-		nowe = false
+		ctrl = {f = 0, b = 0, l = 0, r = 0}
+		lastctrl = {f = 0, b = 0, l = 0, r = 0}
+		speed = 0
 		bg:Destroy()
 		bv:Destroy()
-		for _, c in ipairs(conns) do
-			c:Disconnect()
+		hum.PlatformStand = false
+		char.Animate.Disabled = false
+		tpwalking = false
+
+	else
+			
+		local root = char:FindFirstChild("UpperTorso")
+		if not root then return end
+		local ctrl = {f = 0, b = 0, l = 0, r = 0}
+		local lastctrl = {f = 0, b = 0, l = 0, r = 0}
+		local maxspeed = flySpeed
+		local speed = 0
+		local bg = Instance.new("BodyGyro", root)
+		bg.P = 9e4
+		bg.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+		bg.CFrame = root.CFrame
+		local bv = Instance.new("BodyVelocity", root)
+		bv.Velocity = Vector3.new(0, 0.1, 0)
+		bv.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+		hum.PlatformStand = true
+		while nowe == true do				
+		hum:ChangeState(Enum.HumanoidStateType.Physics)
+			RS.RenderStepped:Wait()
+			local cam = WS.CurrentCamera
+			if not cam then
+				bv.Velocity = Vector3.new(0,0,0)
+				bg.CFrame = root.CFrame
+			else
+				local camCF = cam.CFrame
+				if ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0 then
+					speed = speed + 0.5 + (speed / maxspeed)
+					if speed > maxspeed then speed = maxspeed end
+				elseif speed ~= 0 then
+					speed -= 1
+					if speed < 0 then speed = 0 end
+				end
+
+				if (ctrl.l + ctrl.r) ~= 0 or (ctrl.f + ctrl.b) ~= 0 then
+					bv.Velocity =
+						(camCF.LookVector * (ctrl.f + ctrl.b))
+						+ ((camCF * CFrame.new(ctrl.l + ctrl.r,
+							(ctrl.f + ctrl.b)*0.2, 0)).Position - camCF.Position)
+					bv.Velocity *= speed
+					lastctrl = {f = ctrl.f, b = ctrl.b, l = ctrl.l, r = ctrl.r}
+				elseif speed ~= 0 then
+					bv.Velocity =
+						(camCF.LookVector * (lastctrl.f + lastctrl.b))
+						+ ((camCF * CFrame.new(lastctrl.l + lastctrl.r,
+							(lastctrl.f + lastctrl.b)*0.2, 0)).Position - camCF.Position)
+					bv.Velocity *= speed
+				else
+					bv.Velocity = Vector3.new(0,0,0)
+				end
+
+				bg.CFrame = camCF * CFrame.Angles(
+					-math.rad((ctrl.f+ctrl.b)*50*speed/maxspeed),
+					0,
+					0
+				)
+			end
 		end
-		local cchar = LocalPlayer.Character
-		local chum = cchar and cchar:FindFirstChildOfClass("Humanoid")
-		if chum then
-			chum.PlatformStand = false
-			chum.AutoRotate = true
-		end
-		local canim = cchar and cchar:FindFirstChild("Animate")
-		if canim then
-			canim.Disabled = false
-		end
-		pcall(function() stopNoclip() end)
-		stopFlyVisuals()
-	end)
+
+		ctrl = {f = 0, b = 0, l = 0, r = 0}
+		lastctrl = {f = 0, b = 0, l = 0, r = 0}
+		speed = 0
+		bg:Destroy()
+		bv:Destroy()
+		hum.PlatformStand = false
+		char.Animate.Disabled = false
+		tpwalking = false
+	end
+end)
+                
+
+plus.MouseButton1Down:Connect(function()
+    if flySpeed >= 50 then
+    speed.Text = "Max speed reached"
+    task.wait(1)
+    speed.Text = flySpeed
+    return
+end
+		
+	flySpeed += 1
+    speed.Text = flySpeed
+    if not nowe then return end
+    tpwalking = false
+    tpGen += 1
+    tpwalking = true
+    local gen = tpGen
+    for i = 1, flySpeed do
+        task.spawn(function()
+            local myGen = gen
+            local hb = RS.Heartbeat
+            local chr = LocalPlayer.Character
+            local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
+            while tpwalking and (myGen == tpGen)
+            and hb:Wait() and chr and hum and hum.Parent do
+                if hum.MoveDirection.Magnitude > 0 then
+                    chr:TranslateBy(hum.MoveDirection)
+                end
+            end
+        end)
+    end
+end)
+	
+mine.MouseButton1Down:Connect(function()
+	if flySpeed == 1 then
+		speed.Text = 'cannot be less than 1'
+		task.wait(1)
+		speed.Text = flySpeed
+		return
+	end
+		
+	flySpeed -= 1
+	speed.Text = flySpeed
+	if not nowe then return end
+	tpwalking = false
+	tpGen += 1
+	tpwalking = true
+	local gen = tpGen
+	for i = 1, flySpeed do
+		task.spawn(function()
+			local myGen = gen
+			local hb = RS.Heartbeat
+			local chr = LocalPlayer.Character
+			local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
+			while tpwalking and (myGen == tpGen) and hb:Wait() and chr and hum and hum.Parent do
+				if hum.MoveDirection.Magnitude > 0 then
+					chr:TranslateBy(hum.MoveDirection)
+				end
+			end
+		end)
+	end
 end)
 
 	Players.LocalPlayer.CharacterAdded:Connect(function(char)
