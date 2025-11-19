@@ -68,7 +68,7 @@ onof.Font = Enum.Font.SourceSans
 onof.Text = "FLY"
 onof.TextColor3 = Color3.fromRGB(0, 0, 0)
 onof.BorderSizePixel = 1
-onof.TextSize = 20
+onof.TextSize = 21
 onof.ZIndex = 50
 
 TextLabel.Parent = Frame
