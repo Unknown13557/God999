@@ -73,7 +73,7 @@ toggleCorner.CornerRadius = UDim.new(1, 0)
 toggleCorner.Parent = toggle
 
 local toggleStroke = Instance.new("UIStroke")
-toggleStroke.Color = Color3.fromRGB(55, 55, 55)
+toggleStroke.Color = Color3.fromRGB(235, 235, 235)
 toggleStroke.Thickness = 1
 toggleStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 toggleStroke.Parent = toggle
