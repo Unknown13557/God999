@@ -22,7 +22,8 @@ main.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 main.IgnoreGuiInset = true
 local Frame = Instance.new("Frame")
 local up = Instance.new("TextButton")
-local down = Instance.new("TextButton")
+local escape = Instance.new("Frame")
+local toggle = Instance.new("TextButton")
 local onof = Instance.new("TextButton")
 local TextLabel = Instance.new("TextLabel")
 local plus = Instance.new("TextButton")
@@ -49,15 +50,15 @@ up.Text = "UP"
 up.TextColor3 = Color3.fromRGB(0, 0, 0)
 up.TextSize = 17
 
-down.Name = "down"
-down.Parent = Frame
-down.BackgroundColor3 = Color3.fromRGB(215, 255, 121)
-down.Position = UDim2.new(0, 0, 0.50500074, 0)
-down.Size = UDim2.new(0, 44, 0, 28)
-down.Font = Enum.Font.SourceSans
-down.Text = "DOWN"
-down.TextColor3 = Color3.fromRGB(0, 0, 0)
-down.TextSize = 16
+escape.Name = "escape"
+escape.Parent = Frame
+escape.BackgroundColor3 = Color3.fromRGB(215, 255, 121)
+escape.Position = UDim2.new(0, 0, 0.50500074, 0)
+escape.Size = UDim2.new(0, 44, 0, 28)
+escape.Font = Enum.Font.SourceSans
+escape.Text = ""
+escape.TextColor3 = Color3.fromRGB(0, 0, 0)
+escape.TextSize = 16
 
 onof.Name = "onof"
 onof.Parent = Frame
@@ -168,7 +169,8 @@ end)
 
 mini.MouseButton1Click:Connect(function()
 	up.Visible = false
-	down.Visible = false
+	escape.Visible = false
+	toggle.Visible = false
 	onof.Visible = false
 	plus.Visible = false
 	speed.Visible = false
@@ -181,7 +183,8 @@ end)
 
 mini2.MouseButton1Click:Connect(function()
 	up.Visible = true
-	down.Visible = true
+	escape.Visible = true
+	toggle.Visible = true
 	onof.Visible = true
 	plus.Visible = true
 	speed.Visible = true
@@ -280,24 +283,6 @@ local nowe = false
 local noclipConn = nil
 local noclipCache = {}
 local flyActive = false
-local downHolding = false
-local downConn = nil
-local downFactor = 1
-
-downConn = RS.Heartbeat:Connect(function(dt)
-	if not downHolding then return end
-	if not nowe then return end
-
-	local char = LocalPlayer.Character
-	local hum = char and char:FindFirstChildOfClass("Humanoid")
-	if not char or not hum then return end
-
-	local hrp = char:FindFirstChild("HumanoidRootPart") or char:FindFirstChild("Torso") or char:FindFirstChild("UpperTorso")
-	if not hrp then return end
-
-	local step = flySpeed * downFactor
-	hrp.CFrame = hrp.CFrame + Vector3.new(0, -step, 0)
-end)
 
 local function cacheAndDisablePart(part)
 	if not part or not part:IsA("BasePart") then return end
@@ -744,7 +729,6 @@ Players.LocalPlayer.CharacterAdded:Connect(function(char)
 	flyActive = false
 	tpwalking = false
 	isAscending = false
-	downHolding = false
 
 	stopFlyVisuals()
 	stopUpTextVisual()
