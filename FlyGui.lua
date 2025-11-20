@@ -831,7 +831,7 @@ end)
 
 mine.MouseButton1Down:Connect(function()
 	if flySpeed == 1 then
-		speed.Text = "cant be less than 1"
+		speed.Text = "cannot be less than 1"
 		task.wait(1)
 		speed.Text = flySpeed
 		return
