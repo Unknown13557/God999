@@ -52,7 +52,7 @@ up.TextSize = 17
 
 escape.Name = "escape"
 escape.Parent = Frame
-escape.BackgroundColor3 = Color3.fromRGB(215, 255, 121)
+escape.BackgroundColor3 = Color3.fromRGB(242, 60, 255)
 escape.Position = UDim2.new(0, 0, 0.50500074, 0)
 escape.Size = UDim2.new(0, 44, 0, 28)
 escape.BorderSizePixel = 1
@@ -73,7 +73,7 @@ toggleCorner.CornerRadius = UDim.new(1, 0)
 toggleCorner.Parent = toggle
 
 local toggleStroke = Instance.new("UIStroke")
-toggleStroke.Color = Color3.fromRGB(220, 220, 220)
+toggleStroke.Color = Color3.fromRGB(55, 55, 55)
 toggleStroke.Thickness = 1
 toggleStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 toggleStroke.Parent = toggle
@@ -93,7 +93,7 @@ knobCorner.CornerRadius = UDim.new(1, 0)
 knobCorner.Parent = knob
 
 local knobStroke = Instance.new("UIStroke")
-knobStroke.Color = Color3.fromRGB(50, 50, 50)
+knobStroke.Color = Color3.fromRGB(100, 100, 100)
 knobStroke.Thickness = 1
 knobStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 knobStroke.Parent = knob
