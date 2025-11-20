@@ -93,7 +93,7 @@ knobCorner.CornerRadius = UDim.new(1, 0)
 knobCorner.Parent = knob
 
 local knobStroke = Instance.new("UIStroke")
-knobStroke.Color = Color3.fromRGB(235, 235, 235)
+knobStroke.Color = Color3.fromRGB(50, 50, 50)
 knobStroke.Thickness = 1
 knobStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 knobStroke.Parent = knob
