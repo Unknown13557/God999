@@ -55,10 +55,47 @@ escape.Parent = Frame
 escape.BackgroundColor3 = Color3.fromRGB(215, 255, 121)
 escape.Position = UDim2.new(0, 0, 0.50500074, 0)
 escape.Size = UDim2.new(0, 44, 0, 28)
-escape.Font = Enum.Font.SourceSans
-escape.Text = ""
-escape.TextColor3 = Color3.fromRGB(0, 0, 0)
-escape.TextSize = 16
+escape.BorderSizePixel = 0
+
+toggle.Name = "toggle"
+toggle.Parent = escape
+toggle.AutoButtonColor = false
+toggle.Text = ""
+toggle.BackgroundColor3 = Color3.fromRGB(88, 200, 120)
+toggle.Size = UDim2.fromOffset(40, 20)
+toggle.Position = UDim2.fromOffset(2, 4)
+toggle.ZIndex = 2
+toggle.ClipsDescendants = true
+
+local toggleCorner = Instance.new("UICorner")
+toggleCorner.CornerRadius = UDim.new(1, 0)
+toggleCorner.Parent = toggle
+
+local toggleStroke = Instance.new("UIStroke")
+toggleStroke.Color = Color3.fromRGB(220, 220, 220)
+toggleStroke.Thickness = 1
+toggleStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+toggleStroke.Parent = toggle
+
+local knob = Instance.new("TextButton")
+knob.Name = "Knob"
+knob.Parent = toggle
+knob.AutoButtonColor = false
+knob.Text = ""
+knob.BackgroundColor3 = Color3.fromRGB(235, 235, 235)
+knob.Size = UDim2.fromOffset(16, 16)
+knob.Position = UDim2.fromOffset(22, 2)
+knob.ZIndex = 3
+
+local knobCorner = Instance.new("UICorner")
+knobCorner.CornerRadius = UDim.new(1, 0)
+knobCorner.Parent = knob
+
+local knobStroke = Instance.new("UIStroke")
+knobStroke.Color = Color3.fromRGB(235, 235, 235)
+knobStroke.Thickness = 1
+knobStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+knobStroke.Parent = knob
 
 onof.Name = "onof"
 onof.Parent = Frame
@@ -284,6 +321,128 @@ local noclipConn = nil
 local noclipCache = {}
 local flyActive = false
 
+local SPEED, TARGET_Y = 450, 1000000
+local LOW_HP, SAFE_HP = 0.40, 0.90
+
+local Enabled, Flying, TweenObj = true, false, nil
+local Humanoid, RootPart
+local healthConn
+local magictis_cancelFlight, magictis_startFlight, magictis_onHealthChanged, magictis_bindCharacter
+
+local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
+local isOn = true
+
+local function setToggle(state)
+	isOn = state
+	local bgOn = Color3.fromRGB(88, 200, 120)
+	local bgOff = Color3.fromRGB(220, 50, 50)
+	if isOn then
+		TweenService:Create(toggle, tweenInfo, {BackgroundColor3 = bgOn}):Play()
+		TweenService:Create(knob, tweenInfo, {Position = UDim2.fromOffset(22, 2)}):Play()
+	else
+		TweenService:Create(toggle, tweenInfo, {BackgroundColor3 = bgOff}):Play()
+		TweenService:Create(knob, tweenInfo, {Position = UDim2.fromOffset(2, 2)}):Play()
+	end
+end
+
+magictis_cancelFlight = function()
+	if TweenObj then TweenObj:Cancel() TweenObj = nil end
+	Flying = false
+end
+
+magictis_startFlight = function()
+	if not Enabled or Flying or not RootPart then return end
+	local yNow = RootPart.Position.Y
+	if yNow >= TARGET_Y - 1 then return end
+	local dist = TARGET_Y - yNow
+	local duration = dist / SPEED
+	Flying = true
+	local cf = RootPart.CFrame
+	TweenObj = TweenService:Create(
+		RootPart,
+		TweenInfo.new(duration, Enum.EasingStyle.Linear),
+		{CFrame = CFrame.new(cf.X, TARGET_Y, cf.Z)}
+	)
+	TweenObj.Completed:Connect(function()
+		TweenObj = nil
+		Flying = false
+	end)
+	TweenObj:Play()
+end
+
+magictis_onHealthChanged = function(h)
+	if not Humanoid or not Enabled then return end
+	local mh = Humanoid.MaxHealth
+	if mh <= 0 then return end
+	local p = h / mh
+	if (not Flying) and p < LOW_HP then
+		magictis_startFlight()
+	elseif Flying and p >= SAFE_HP then
+		magictis_cancelFlight()
+	end
+end
+
+magictis_bindCharacter = function(char)
+	Humanoid = char:WaitForChild("Humanoid")
+	RootPart = char:WaitForChild("HumanoidRootPart")
+	if healthConn then
+		healthConn:Disconnect()
+		healthConn = nil
+	end
+	if Enabled then
+		healthConn = Humanoid.HealthChanged:Connect(magictis_onHealthChanged)
+	end
+end
+
+local function magictis_applyEnabled(state)
+	Enabled = state
+	setToggle(Enabled)
+	if not Enabled then
+		magictis_cancelFlight()
+		Flying = false
+		if healthConn then
+			healthConn:Disconnect()
+			healthConn = nil
+		end
+	else
+		if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+			Humanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
+			if healthConn then
+				healthConn:Disconnect()
+			end
+			healthConn = Humanoid.HealthChanged:Connect(magictis_onHealthChanged)
+			magictis_onHealthChanged(Humanoid.Health)
+		end
+	end
+end
+
+local toggling = false
+local function magictis_onToggleClick()
+	if toggling then return end
+	toggling = true
+	local nextState = not isOn
+	setToggle(nextState)
+	magictis_applyEnabled(nextState)
+	isOn = nextState
+	task.delay(0.05, function()
+		toggling = false
+	end)
+end
+
+toggle.Activated:Connect(magictis_onToggleClick)
+knob.Activated:Connect(magictis_onToggleClick)
+
+if LocalPlayer.Character then
+	magictis_bindCharacter(LocalPlayer.Character)
+end
+
+LocalPlayer.CharacterAdded:Connect(magictis_bindCharacter)
+
+task.defer(function()
+	setToggle(Enabled)
+	magictis_applyEnabled(Enabled)
+end)
+
 local function cacheAndDisablePart(part)
 	if not part or not part:IsA("BasePart") then return end
 	if noclipCache[part] == nil then
@@ -383,7 +542,7 @@ local function stopUpTextVisual()
 end
 
 local ASCEND_SPEED = 450
-local TARGET_Y = 100000000
+local TARGET_Y = 10000000
 local isAscending = false
 local ascendTween
 
@@ -634,18 +793,6 @@ end
 		LocalPlayer.Character.Animate.Disabled = false
 		tpwalking = false
 	end
-end)
-
-down.MouseButton1Down:Connect(function()
-	downHolding = true
-end)
-
-down.MouseButton1Up:Connect(function()
-	downHolding = false
-end)
-
-down.MouseLeave:Connect(function()
-	downHolding = false
 end)
 
 plus.MouseButton1Down:Connect(function()
