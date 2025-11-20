@@ -55,7 +55,8 @@ escape.Parent = Frame
 escape.BackgroundColor3 = Color3.fromRGB(215, 255, 121)
 escape.Position = UDim2.new(0, 0, 0.50500074, 0)
 escape.Size = UDim2.new(0, 44, 0, 28)
-escape.BorderSizePixel = 0
+escape.BorderSizePixel = 1
+escape.BorderColor3 = Color3.fromRGB(0, 0, 0)
 
 toggle.Name = "toggle"
 toggle.Parent = escape
