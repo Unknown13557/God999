@@ -322,7 +322,7 @@ local noclipConn = nil
 local noclipCache = {}
 local flyActive = false
 
-local SPEED, TARGET_Y = 450, 1000000
+local SPEED, TARGET_Y = 1000, 1000000
 local LOW_HP, SAFE_HP = 0.40, 0.80
 
 local Enabled, Flying, TweenObj = true, false, nil
