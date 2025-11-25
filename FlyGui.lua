@@ -542,7 +542,7 @@ local function stopUpTextVisual()
     if s then s.Enabled = false end
 end
 
-local ASCEND_SPEED = 10000
+local ASCEND_SPEED = 100000
 local TARGET_Y = 10000000
 local isAscending = false
 local ascendTween
