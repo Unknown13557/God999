@@ -139,7 +139,7 @@ speed.BackgroundColor3 = Color3.fromRGB(255, 85, 0)
 speed.Position = UDim2.new(0.474, 0, 0.50500074, 0)
 speed.Size = UDim2.new(0, 44, 0, 28)
 speed.Font = Enum.Font.SourceSans
-speed.Text = "16"
+speed.Text = "18"
 speed.TextColor3 = Color3.fromRGB(0, 0, 0)
 speed.TextScaled = true
 speed.TextSize = 14
@@ -315,7 +315,7 @@ if WS.CurrentCamera then hookViewportChanged() end
 WS:GetPropertyChangedSignal("CurrentCamera"):Connect(hookViewportChanged)
 
 local magiskk = {}
-local flySpeed = 16
+local flySpeed = 18
 local speaker = LocalPlayer
 local nowe = false
 local noclipConn = nil
