@@ -541,7 +541,7 @@ local function stopUpTextVisual()
 end
 
 local ASCEND_SPEED = 1000
-local TARGET_Y = 10000000
+local UP_TARGET_Y = 10000000
 local isAscending = false
 local ascendTween
 
@@ -583,7 +583,7 @@ up.MouseButton1Click:Connect(function()
 	startUpTextVisual()
 
 	local startPos = hrp.Position
-	local dist = TARGET_Y - startPos.Y
+	local dist = UP_TARGET_Y - startPos.Y
 	if dist <= 0 then
 		stopAscending()
 		return
@@ -595,7 +595,7 @@ up.MouseButton1Click:Connect(function()
 	ascendTween = TweenService:Create(
 		hrp,
 		TweenInfo.new(duration, Enum.EasingStyle.Linear),
-		{CFrame = CFrame.new(startPos.X, TARGET_Y, startPos.Z)}
+		{CFrame = CFrame.new(startPos.X, UP_TARGET_Y, startPos.Z)}
 	)
 
 	ascendTween.Completed:Connect(function()
