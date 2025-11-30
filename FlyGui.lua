@@ -872,7 +872,6 @@ Players.LocalPlayer.CharacterAdded:Connect(function(char)
 	end)
 
 	nowe = false
-	flyActive = false
 	tpwalking = false
 	isAscending = false
 
