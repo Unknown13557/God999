@@ -325,14 +325,17 @@ local flyActive = false
 local SPEED, TARGET_Y = 1000, 1000000
 local LOW_HP, SAFE_HP = 0.40, 0.80
 
-local Enabled = (getgenv().AutoEscape_Default ~= nil) and getgenv().AutoEscape_Default or true
+local Enabled = (getgenv and getgenv().AutoEscape_Default ~= nil)
+    and getgenv().AutoEscape_Default
+    or true
+
 local Flying, TweenObj = false, nil
 local Humanoid, RootPart
 local healthConn
 local magictis_cancelFlight, magictis_startFlight, magictis_onHealthChanged, magictis_bindCharacter
 
 local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
-local isOn = true
+local isOn = Enabled
 
 local function setToggle(state)
 	isOn = state
