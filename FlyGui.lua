@@ -1,5 +1,4 @@
 local UserInputService = game:GetService("UserInputService")
-local GuiService       = game:GetService("GuiService")
 local Players          = game:GetService("Players")
 local RunService       = game:GetService("RunService")
 local Workspace        = game:GetService("Workspace")
@@ -9,7 +8,6 @@ local LocalPlayer = Players.LocalPlayer
 local RS          = RunService
 local WS          = Workspace
 local UIS         = UserInputService
-local GS          = GuiService
 
 local main = Instance.new("ScreenGui")
 if syn and syn.protect_gui then
@@ -320,7 +318,6 @@ local speaker = LocalPlayer
 local nowe = false
 local noclipConn = nil
 local noclipCache = {}
-local flyActive = false
 
 local SPEED, TARGET_Y = 1000, 1000000
 local LOW_HP, SAFE_HP = 0.40, 0.80
@@ -399,7 +396,6 @@ end
 
 local function magictis_applyEnabled(state)
 	Enabled = state
-	setToggle(Enabled)
 	if not Enabled then
 		magictis_cancelFlight()
 		Flying = false
@@ -421,15 +417,15 @@ end
 
 local toggling = false
 local function magictis_onToggleClick()
-	if toggling then return end
-	toggling = true
-	local nextState = not isOn
-	setToggle(nextState)
-	magictis_applyEnabled(nextState)
-	isOn = nextState
-	task.delay(0.05, function()
-		toggling = false
-	end)
+    if toggling then return end
+    toggling = true
+    local nextState = not isOn
+    setToggle(nextState)
+    magictis_applyEnabled(nextState)
+    isOn = nextState
+    task.delay(0.15, function()
+        toggling = false
+    end)
 end
 
 toggle.Activated:Connect(magictis_onToggleClick)
@@ -444,11 +440,6 @@ LocalPlayer.CharacterAdded:Connect(magictis_bindCharacter)
 task.defer(function()
     setToggle(Enabled)
     magictis_applyEnabled(Enabled)
-		
-    if not Enabled then
-        magictis_cancelFlight()
-        Flying = false
-    end
 end)
 
 local function cacheAndDisablePart(part)
