@@ -444,8 +444,13 @@ end
 LocalPlayer.CharacterAdded:Connect(magictis_bindCharacter)
 
 task.defer(function()
-	setToggle(Enabled)
-	magictis_applyEnabled(Enabled)
+    setToggle(Enabled)
+    magictis_applyEnabled(Enabled)
+		
+    if not Enabled then
+        magictis_cancelFlight()
+        Flying = false
+    end
 end)
 
 local function cacheAndDisablePart(part)
@@ -884,6 +889,14 @@ Players.LocalPlayer.CharacterAdded:Connect(function(char)
 
 	stopFlyVisuals()
 	stopUpTextVisual()
+	if not Enabled then
+		magictis_cancelFlight()
+		Flying = false
+		if healthConn then
+			healthConn:Disconnect()
+			healthConn = nil
+		end
+	end
 
 	task.wait(0.15)
 
