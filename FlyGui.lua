@@ -319,10 +319,10 @@ local nowe = false
 local noclipConn = nil
 local noclipCache = {}
 
-local SPEED, TARGET_Y = 1000, 1000000
+local SPEED, TARGET_Y = 1500, 1000000
 local LOW_HP, SAFE_HP = 0.40, 0.80
 
-local Enabled = false
+local Enabled = true
 
 local Flying, TweenObj = false, nil
 local Humanoid, RootPart
@@ -540,7 +540,7 @@ local function stopUpTextVisual()
     if s then s.Enabled = false end
 end
 
-local ASCEND_SPEED = 1000
+local ASCEND_SPEED = 1500
 local UP_TARGET_Y = 10000000
 local isAscending = false
 local ascendTween
