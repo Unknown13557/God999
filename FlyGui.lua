@@ -322,7 +322,7 @@ local noclipCache = {}
 local SPEED, TARGET_Y = 1500, 1000000
 local LOW_HP, SAFE_HP = 0.40, 0.80
 
-local Enabled = true
+local Enabled = false
 
 local Flying, TweenObj = false, nil
 local Humanoid, RootPart
