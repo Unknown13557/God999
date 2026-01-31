@@ -10,6 +10,8 @@ local RS               = RunService
 local WS               = Workspace
 local UIS              = UserInputService
 
+local bypassUp = false
+
 local main = Instance.new("ScreenGui")
 if syn and syn.protect_gui then
 	syn.protect_gui(main)
@@ -69,6 +71,44 @@ for i = 1, 6 do
 	slot.BackgroundColor3 = Color3.fromRGB(60,60,60)
 	slot.BorderSizePixel = 0
 end
+
+local slot1 = SettingsFrame:GetChildren()[1]
+local pill = Instance.new("Frame")
+pill.Parent = slot1
+pill.Size = UDim2.fromOffset(34, 18)
+pill.Position = UDim2.fromScale(1, 0.5)
+pill.AnchorPoint = Vector2.new(1, 0.5)
+pill.BackgroundColor3 = Color3.fromRGB(80,80,80)
+pill.BorderSizePixel = 0
+
+local pillCorner = Instance.new("UICorner")
+pillCorner.CornerRadius = UDim.new(1,0)
+pillCorner.Parent = pill
+
+local knob = Instance.new("Frame")
+knob.Parent = pill
+knob.Size = UDim2.fromOffset(14,14)
+knob.Position = UDim2.fromOffset(2,2)
+knob.BackgroundColor3 = Color3.fromRGB(200,200,200)
+knob.BorderSizePixel = 0
+
+local knobCorner = Instance.new("UICorner")
+knobCorner.CornerRadius = UDim.new(1,0)
+knobCorner.Parent = knob
+
+pill.InputBegan:Connect(function(input)
+	if input.UserInputType ~= Enum.UserInputType.MouseButton1 then return end
+
+	bypassUp = not bypassUp
+
+	if bypassUp then
+		pill.BackgroundColor3 = Color3.fromRGB(120,200,120)
+		knob:TweenPosition(UDim2.fromOffset(18,2), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.15, true)
+	else
+		pill.BackgroundColor3 = Color3.fromRGB(80,80,80)
+		knob:TweenPosition(UDim2.fromOffset(2,2), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.15, true)
+	end
+end)
 
 Frame.Parent = main
 Frame.BackgroundColor3 = Color3.fromRGB(163, 255, 137)
@@ -606,6 +646,23 @@ up.MouseButton1Click:Connect(function()
 	hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
 	startUpTextVisual()
 
+	if bypassUp then
+		local currentY = hrp.Position.Y
+		if UP_TARGET_Y <= currentY then
+			stopAscending()
+			return
+		end
+
+		hrp.CFrame = CFrame.new(
+			hrp.Position.X,
+			UP_TARGET_Y,
+			hrp.Position.Z
+		)
+
+		stopAscending()
+		return
+	end
+
 	local startPos = hrp.Position
 	local dist = UP_TARGET_Y - startPos.Y
 	if dist <= 0 then
@@ -630,7 +687,7 @@ up.MouseButton1Click:Connect(function()
 	end)
 
 	ascendTween:Play()
-end)	
+end)
 
 local tpwalking = false
 local tpGen = 0
