@@ -295,13 +295,13 @@ closebutton.MouseButton1Click:Connect(function()
 	local now = tick()
 
 	if now - lastClick <= doubleClickWindow then
-		if SettingsGui then
-			SettingsGui:Destroy()
-		end
-
-		if main then
-			main:Destroy()
-		end
+	if main and main.Parent then
+		main:Destroy()
+	end
+	if SettingsGui and SettingsGui.Parent then
+		SettingsGui:Destroy()
+	end
+end
 	else
 		lastClick = now
 		closebutton.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -1016,4 +1016,7 @@ Players.LocalPlayer.CharacterAdded:Connect(function(char)
 	if anim then
 		anim.Disabled = false
 	end
+end)
+Players.LocalPlayer.CharacterAdded:Connect(function()
+	lastClick = 0
 end)
