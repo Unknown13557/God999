@@ -59,7 +59,7 @@ end)
 local SettingsGrid = Instance.new("UIGridLayout")
 SettingsGrid.Parent = SettingsFrame
 SettingsGrid.CellSize = UDim2.fromScale(0.42, 0.34)
-SettingsGrid.CellPadding = UDim2.fromScale(10, 10)
+SettingsGrid.CellPadding = UDim2.fromOffset(10, 10)
 SettingsGrid.HorizontalAlignment = Enum.HorizontalAlignment.Center
 SettingsGrid.VerticalAlignment = Enum.VerticalAlignment.Center
 
