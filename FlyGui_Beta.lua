@@ -211,8 +211,26 @@ slot3.Label.Visible = false
 
 local input = Instance.new("TextBox")
 input.Parent = slot3.Frame
-input.Size = UDim2.fromScale(0.5, 0.7)
-input.Position = UDim2.fromScale(0.05, 0.15)
+input.Text = ""
+input.PlaceholderText = "Input"
+
+input.TextColor3 = Color3.fromRGB(230,230,230)
+input.TextTransparency = 0
+
+input.PlaceholderColor3 = Color3.fromRGB(160,160,160)
+
+input.BackgroundColor3 = Color3.fromRGB(40,40,40)
+input.BackgroundTransparency = 0
+
+input.ClearTextOnFocus = false
+input.ZIndex = 3
+
+input.Size = UDim2.fromScale(0.42, 0.7)
+input.Position = UDim2.fromScale(0.04, 0.15)
+upBtn.Size = UDim2.fromScale(0.22, 0.7)
+upBtn.Position = UDim2.fromScale(0.50, 0.15)
+downBtn.Size = UDim2.fromScale(0.22, 0.7)
+downBtn.Position = UDim2.fromScale(0.74, 0.15)
 
 input.BackgroundColor3 = Color3.fromRGB(40,40,40)
 input.TextColor3 = Color3.fromRGB(230,230,230)
