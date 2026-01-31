@@ -216,7 +216,7 @@ SettingsButton.BackgroundColor3 = Color3.fromRGB(192, 150, 230)
 SettingsButton.Font = Enum.Font.SourceSans
 SettingsButton.Size = UDim2.new(0, 44, 0, 28)
 SettingsButton.Text = "⚙"
-SettingsButton.TextSize = 40
+SettingsButton.TextSize = 25
 SettingsButton.Position = UDim2.new(0, 45, -0.99000, 27)
 
 local lastClick = 0
@@ -266,10 +266,13 @@ local function clampToViewport(x, y)
 	end
 
 	local vp = cam.ViewportSize
-	x = math.clamp(x, 0, math.max(0, vp.X - Frame.AbsoluteSize.X))
-	y = math.clamp(y, 0, math.max(0, vp.Y - Frame.AbsoluteSize.Y))
+	local size = Frame.AbsoluteSize
+
+	x = math.clamp(x, 0, math.max(0, vp.X - size.X))
+	y = math.clamp(y, 0, math.max(0, vp.Y - size.Y))
+
 	return UDim2.fromOffset(x, y)
-end
+	end
 
 Frame.InputBegan:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton1
