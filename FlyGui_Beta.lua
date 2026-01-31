@@ -985,11 +985,11 @@ mine.MouseButton1Down:Connect(function()
 	end
 end)
 
-local settingsOpen = false
-
 SettingsButton.MouseButton1Click:Connect(function()
-	settingsOpen = not settingsOpen
-	SettingsGui.Enabled = settingsOpen
+	if not SettingsGui or not SettingsGui.Parent then
+		return
+	end
+	SettingsGui.Enabled = not SettingsGui.Enabled
 end)
 
 Players.LocalPlayer.CharacterAdded:Connect(function(char)
