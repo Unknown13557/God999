@@ -228,7 +228,7 @@ slot2.Pill.MouseButton1Click:Connect(function()
 	end
 end) 
 
-local slot3 = Slots[3]
+local slot3Data = Slots[3]
 slot3.Frame.AutomaticSize = Enum.AutomaticSize.None
 slot3.Frame.ClipsDescendants = true
 slot3.Pill.Visible = false
@@ -294,7 +294,7 @@ downCorner.CornerRadius = UDim.new(0,6)
 downCorner.Parent = downBtn
 
 local function layoutSlot3()
-	local h = slot3.AbsoluteSize.Y
+	local h = slot3Frame.AbsoluteSize.Y
 	if h <= 0 then return end
 
 	local y = math.floor((h - 28) / 2)
