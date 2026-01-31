@@ -64,7 +64,7 @@ end)
 
 local AbsoluteLayer = Instance.new("Frame")
 AbsoluteLayer.Name = "AbsoluteLayer"
-AbsoluteLayer.Parent = SettingsFrame
+AbsoluteLayer.Parent = SettingsGui
 AbsoluteLayer.Size = UDim2.fromScale(1, 1)
 AbsoluteLayer.Position = UDim2.fromScale(0, 0)
 AbsoluteLayer.BackgroundTransparency = 1
@@ -140,15 +140,24 @@ for i = 1, 6 do
 	}
 end
 
-local slot3 = Slots[3].Frame
-local slot4 = Slots[4].Frame
+local slot3 = SettingsFrame:FindFirstChild("Slot3")
+local slot4 = SettingsFrame:FindFirstChild("Slot4")
 
-slot4.Visible = true
-slot4.BackgroundTransparency = 1
-for _, c in ipairs(slot4:GetChildren()) do
-	if c:IsA("GuiObject") then
-		c.Visible = false
+if slot4 then
+	slot4.BackgroundTransparency = 1
+	for _, c in ipairs(slot4:GetChildren()) do
+		if c:IsA("GuiObject") then
+			c.Visible = false
+		end
 	end
+end
+
+if slot3 then
+	slot3.Parent = AbsoluteLayer
+	slot3.Size = UDim2.fromScale(0.96, 0.22)
+	slot3.Position = UDim2.fromScale(0.02, 0.38)
+	slot3.ZIndex = 50
+	slot3.ClipsDescendants = true
 end
 
 slot3.Parent = AbsoluteLayer
@@ -227,6 +236,8 @@ slot2.Pill.MouseButton1Click:Connect(function()
 		)
 	end
 end) 
+
+
 
 local slot3Data = Slots[3]
 slot3.Frame.AutomaticSize = Enum.AutomaticSize.None
