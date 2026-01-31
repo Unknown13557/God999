@@ -41,6 +41,7 @@ SettingsGui.Parent = LocalPlayer.PlayerGui
 SettingsGui.IgnoreGuiInset = true
 SettingsGui.DisplayOrder = main.DisplayOrder + 1
 SettingsGui.Enabled = false
+SettingsGui.ResetOnSpawn = false
 
 local SettingsFrame = Instance.new("Frame")
 SettingsFrame.Parent = SettingsGui
@@ -65,62 +66,92 @@ SettingsGrid.CellPadding = UDim2.fromOffset(4, 6)
 SettingsGrid.HorizontalAlignment = Enum.HorizontalAlignment.Center
 SettingsGrid.VerticalAlignment = Enum.VerticalAlignment.Center
 
+local Slots = {}
+
 for i = 1, 6 do
 	local slot = Instance.new("Frame")
 	slot.Name = "Slot"..i
 	slot.Parent = SettingsFrame
 	slot.BackgroundColor3 = Color3.fromRGB(60,60,60)
 	slot.BorderSizePixel = 0
+	slot.ZIndex = 11
+
+	local label = Instance.new("TextLabel")
+	label.Name = "Label"
+	label.Parent = slot
+	label.Size = UDim2.fromScale(0.6, 1)
+	label.BackgroundTransparency = 1
+	label.Text = ""
+	label.TextColor3 = Color3.fromRGB(220,220,220)
+	label.Font = Enum.Font.SourceSansBold
+	label.TextSize = 18
+	label.TextXAlignment = Enum.TextXAlignment.Left
+	label.TextYAlignment = Enum.TextYAlignment.Center
+	label.ZIndex = 12
+
+	local pill = Instance.new("Frame")
+	pill.Name = "Pill"
+	pill.Parent = slot
+	pill.Size = UDim2.fromOffset(36, 18)
+	pill.Position = UDim2.fromScale(1, 0.5)
+	pill.AnchorPoint = Vector2.new(1, 0.5)
+	pill.BackgroundColor3 = Color3.fromRGB(80,80,80)
+	pill.BorderSizePixel = 0
+	pill.ZIndex = 12
+
+	local pillCorner = Instance.new("UICorner")
+	pillCorner.CornerRadius = UDim.new(1,0)
+	pillCorner.Parent = pill
+
+	local knob = Instance.new("Frame")
+	knob.Name = "Knob"
+	knob.Parent = pill
+	knob.Size = UDim2.fromOffset(14,14)
+	knob.Position = UDim2.fromOffset(2,2)
+	knob.BackgroundColor3 = Color3.fromRGB(220,220,220)
+	knob.BorderSizePixel = 0
+	knob.ZIndex = 13
+
+	local knobCorner = Instance.new("UICorner")
+	knobCorner.CornerRadius = UDim.new(1,0)
+	knobCorner.Parent = knob
+
+	Slots[i] = {
+		Frame = slot,
+		Label = label,
+		Pill = pill,
+		Knob = knob,
+		State = false
+	}
 end
 
-local slot1 = SettingsFrame:FindFirstChild("Slot1")
-local label = Instance.new("TextLabel")
-label.Parent = slot1
-label.Size = UDim2.fromScale(0.6, 1)
-label.Position = UDim2.fromScale(0, 0)
-label.BackgroundTransparency = 1
-label.Text = "Bypass UP"
-label.TextColor3 = Color3.fromRGB(220,220,220)
-label.Font = Enum.Font.SourceSansBold
-label.TextSize = 18
-label.TextXAlignment = Enum.TextXAlignment.Left
-label.TextYAlignment = Enum.TextYAlignment.Center
-label.ZIndex = 2
+local slot1 = Slots[1]
+slot1.Label.Text = "Bypass UP"
 
-local pill = Instance.new("Frame")
-pill.Parent = slot1
-pill.Size = UDim2.fromOffset(34, 18)
-pill.Position = UDim2.fromScale(1, 0.5)
-pill.AnchorPoint = Vector2.new(1, 0.5)
-pill.BackgroundColor3 = Color3.fromRGB(80,80,80)
-pill.BorderSizePixel = 0
-
-local pillCorner = Instance.new("UICorner")
-pillCorner.CornerRadius = UDim.new(1,0)
-pillCorner.Parent = pill
-
-local knob = Instance.new("Frame")
-knob.Parent = pill
-knob.Size = UDim2.fromOffset(14,14)
-knob.Position = UDim2.fromOffset(2,2)
-knob.BackgroundColor3 = Color3.fromRGB(200,200,200)
-knob.BorderSizePixel = 0
-
-local knobCorner = Instance.new("UICorner")
-knobCorner.CornerRadius = UDim.new(1,0)
-knobCorner.Parent = knob
-
-pill.InputBegan:Connect(function(input)
+slot1.Pill.InputBegan:Connect(function(input)
 	if input.UserInputType ~= Enum.UserInputType.MouseButton1 then return end
 
-	bypassUp = not bypassUp
+	slot1.State = not slot1.State
+	Settings.BypassUp = slot1.State
 
-	if bypassUp then
-		pill.BackgroundColor3 = Color3.fromRGB(120,200,120)
-		knob:TweenPosition(UDim2.fromOffset(18,2), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.15, true)
+	if slot1.State then
+		slot1.Pill.BackgroundColor3 = Color3.fromRGB(120,200,120)
+		slot1.Knob:TweenPosition(
+			UDim2.fromOffset(20,2),
+			Enum.EasingDirection.Out,
+			Enum.EasingStyle.Quad,
+			0.15,
+			true
+		)
 	else
-		pill.BackgroundColor3 = Color3.fromRGB(80,80,80)
-		knob:TweenPosition(UDim2.fromOffset(2,2), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.15, true)
+		slot1.Pill.BackgroundColor3 = Color3.fromRGB(80,80,80)
+		slot1.Knob:TweenPosition(
+			UDim2.fromOffset(2,2),
+			Enum.EasingDirection.Out,
+			Enum.EasingStyle.Quad,
+			0.15,
+			true
+		)
 	end
 end)
 
@@ -673,9 +704,15 @@ up.MouseButton1Click:Connect(function()
 			hrp.Position.Z
 		)
 
-		stopAscending()
-		return
-	end
+		if Settings.BypassUp then
+	hrp.CFrame = CFrame.new(
+		hrp.Position.X,
+		UP_TARGET_Y,
+		hrp.Position.Z
+	)
+	stopAscending()
+	return
+end
 
 	local startPos = hrp.Position
 	local dist = UP_TARGET_Y - startPos.Y
