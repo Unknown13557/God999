@@ -14,6 +14,8 @@ local Settings = {
 	BypassUp         = false,
 	BypassSafe       = true
 }
+local safeTriggered = false
+
 local main = Instance.new("ScreenGui")
 if syn and syn.protect_gui then
 	syn.protect_gui(main)
@@ -166,12 +168,9 @@ slot1.Pill.MouseButton1Click:Connect(function()
 	end
 end)
 
--- SLOT 2 : Bypass Safe
 local slot2 = Slots[2]
 slot2.Label.Text = "Bypass Safe"
-slot2.State = true -- mặc định ON
-
--- sync UI ban đầu
+slot2.State = true
 slot2.Pill.BackgroundColor3 = Color3.fromRGB(120,200,120)
 slot2.SlotKnob.Position = UDim2.fromOffset(20,2)
 
@@ -530,11 +529,35 @@ magictis_onHealthChanged = function(h)
 	if not Humanoid or not Enabled then return end
 	local mh = Humanoid.MaxHealth
 	if mh <= 0 then return end
-	local p = h / mh
-	if (not Flying) and p < LOW_HP then
-		magictis_startFlight()
-	elseif Flying and p >= SAFE_HP then
-		magictis_cancelFlight()
+
+	local hpPercent = h / mh
+
+	if hpPercent < LOW_HP then
+		if not safeTriggered then
+			safeTriggered = true
+
+			if Settings.BypassSafe then
+				if RootPart then
+					local pos = RootPart.Position
+					RootPart.CFrame = CFrame.new(
+						pos.X,
+						TARGET_Y,
+						pos.Z
+					)
+				end
+			else
+				if not Flying then
+					magictis_startFlight()
+				end
+			end
+		end
+
+	elseif hpPercent >= SAFE_HP then
+		safeTriggered = false
+
+		if Flying then
+			magictis_cancelFlight()
+		end
 	end
 end
 
