@@ -210,11 +210,14 @@ closebutton.Text = "X"
 closebutton.TextSize = 30
 closebutton.Position =  UDim2.new(0, 0, -0.99000, 27)
 
-SettingsButton.Parent = Frame
-SettingsButton.Size = UDim2.new(0, 50, 0, 50)
-SettingsButton.Position = UDim2.new(0, 0, 0, 0)
-SettingsButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+SettingsButton.Name = "SettingButton"
+SettingsButton.Parent = main.Frame
+SettingsButton.BackgroundColor3 = Color3.fromRGB(192, 150, 230)
+SettingsButton.Font = Enum.Font.SourceSans
+SettingsButton.Size = UDim2.new(0, 44, 0, 28)
 SettingsButton.Text = "⚙"
+SettingsButton.TextSize = 40
+SettingsButton.Position = UDim2.new(0, 45, -0.99000, 27)
 
 local lastClick = 0
 local doubleClickWindow = 1
@@ -247,6 +250,8 @@ local function over(inst, pos)
 	local p, s = inst.AbsolutePosition, inst.AbsoluteSize
 	return pos.X >= p.X and pos.X <= p.X + s.X and pos.Y >= p.Y and pos.Y <= p.Y + s.Y
 end
+
+local function attachDrag(Frame, ignoreButton)
 
 local dragging = false
 local dragStart, startPos
@@ -316,36 +321,9 @@ local function hookViewportChanged()
 end
 
 if WS.CurrentCamera then hookViewportChanged() end
-WS:GetPropertyChangedSignal("CurrentCamera"):Connect(hookViewportChanged)
+   WS:GetPropertyChangedSignal("CurrentCamera"):Connect(hookViewportChanged)
+end
 
-local dragging = false
-local dragStart
-local startPos
-
-SettingsFrame.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-		dragging = true
-		dragStart = input.Position
-		startPos = SettingsFrame.Position
-
-		input.Changed:Connect(function()
-			if input.UserInputState == Enum.UserInputState.End then
-				dragging = false
-			end
-		end)
-	end
-end)
-
-SettingsFrame.InputChanged:Connect(function(input)
-	if not dragging then return end
-	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-		local delta = input.Position - dragStart
-		SettingsFrame.Position = UDim2.fromOffset(
-			startPos.X.Offset + delta.X,
-			startPos.Y.Offset + delta.Y
-		)
-	end
-end)
 
 local magiskk = {}
 local flySpeed = 18
