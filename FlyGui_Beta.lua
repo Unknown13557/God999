@@ -42,7 +42,7 @@ SettingsGui.Enabled = false
 
 local SettingsFrame = Instance.new("Frame")
 SettingsFrame.Parent = SettingsGui
-SettingsFrame.Size = UDim2.fromScale(0.46, 0.29)
+SettingsFrame.Size = UDim2.fromScale(0.46, 0.28)
 SettingsFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 SettingsFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
 SettingsFrame.BorderSizePixel = 2
