@@ -14,7 +14,6 @@ local Settings = {
 	BypassUp         = false,
 	BypassSafe       = true
 }
-local safeTriggered = false
 
 local main = Instance.new("ScreenGui")
 if syn and syn.protect_gui then
@@ -138,6 +137,18 @@ for i = 1, 6 do
 		SlotKnob = slotKnob,
 		State = false
 	}
+end
+
+local function syncSlotUI(slot, state)
+	slot.State = state
+
+	if state then
+		slot.Pill.BackgroundColor3 = Color3.fromRGB(120,200,120)
+		slot.SlotKnob.Position = UDim2.fromOffset(20,2)
+	else
+		slot.Pill.BackgroundColor3 = Color3.fromRGB(80,80,80)
+		slot.SlotKnob.Position = UDim2.fromOffset(2,2)
+	end
 end
 
 local slot1 = Slots[1]
@@ -1064,7 +1075,11 @@ Players.LocalPlayer.CharacterAdded:Connect(function(char)
 
 	nowe = false
 	tpwalking = false
-	isAscending = false
+syncSlotUI(Slots[1], Settings.BypassUp)
+syncSlotUI(Slots[2], Settings.BypassSafe)
+
+safeTriggered = false
+isAscending = false
     lastClick = 0
     setToggle(false)
 	
