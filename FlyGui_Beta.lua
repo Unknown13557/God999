@@ -65,16 +65,19 @@ SettingsGrid.CellSize = UDim2.fromScale(0.48, 0.27)
 SettingsGrid.CellPadding = UDim2.fromOffset(4, 6)
 SettingsGrid.HorizontalAlignment = Enum.HorizontalAlignment.Center
 SettingsGrid.VerticalAlignment = Enum.VerticalAlignment.Center
+settingsOpen = false
+SettingsGui.Enabled = false
 
 local Slots = {}
 
 for i = 1, 6 do
-	local slot = Instance.new("Frame")
-	slot.Name = "Slot"..i
-	slot.Parent = SettingsFrame
-	slot.BackgroundColor3 = Color3.fromRGB(60,60,60)
-	slot.BorderSizePixel = 0
-	slot.ZIndex = 11
+	local slotknob = Instance.new("Frame")
+	slotknob.Name = "Slot"..i
+	slotknob.Parent = SettingsFrame
+	slotknob.BackgroundColor3 = Color3.fromRGB(60,60,60)
+	slotknob.BorderSizePixel = 0
+	slotknob.ZIndex = 11
+	slotknob.Label.Text = "Empty"
 
 	local label = Instance.new("TextLabel")
 	label.Name = "Label"
@@ -336,7 +339,7 @@ local function over(inst, pos)
 	return pos.X >= p.X and pos.X <= p.X + s.X and pos.Y >= p.Y and pos.Y <= p.Y + s.Y
 end
 
-local function attachDrag(SettingsFrame, nil)
+local function attachDrag(Frame, ignoreButton)
 
 local dragging = false
 local dragStart, startPos
@@ -393,13 +396,13 @@ Frame.InputChanged:Connect(function(input)
 		local newX = startPos.X.Offset + delta.X
 		local newY = startPos.Y.Offset + delta.Y
 
-		Frame.Position = clampToViewport(newX, newY)
+		target.Position = clampToViewport(newX, newY)
 	end
 end)
 
 task.defer(function()
-	local abs = Frame.AbsolutePosition
-	Frame.Position = clampToViewport(abs.X, abs.Y)
+	local abs = target.AbsolutePosition
+	target.Position = clampToViewport(abs.X, abs.Y)
 end)
 
 local function hookViewportChanged()
@@ -408,8 +411,8 @@ local function hookViewportChanged()
 
 	cam:GetPropertyChangedSignal("ViewportSize"):Connect(function()
 		if not dragging then
-			local abs = Frame.AbsolutePosition
-			Frame.Position = clampToViewport(abs.X, abs.Y)
+			local abs = target.AbsolutePosition
+			target.Position = clampToViewport(abs.X, abs.Y)
 		end
 	end)
 end
@@ -419,7 +422,7 @@ if WS.CurrentCamera then hookViewportChanged() end
 end
 
 attachDrag(Frame, onof)
-attachDrag(SettingsFrame)
+attachDrag(SettingsFrame, nil)
 
 local magiskk = {}
 local flySpeed = 18
@@ -691,20 +694,10 @@ up.MouseButton1Click:Connect(function()
 	hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
 	startUpTextVisual()
 
-		hrp.CFrame = CFrame.new(
-			hrp.Position.X,
-			UP_TARGET_Y,
-			hrp.Position.Z
-		)
-
 		if Settings.BypassUp then
-	hrp.CFrame = CFrame.new(
-		hrp.Position.X,
-		UP_TARGET_Y,
-		hrp.Position.Z
-	)
-	stopAscending()
-	return
+    hrp.CFrame = CFrame.new(hrp.Position.X, UP_TARGET_Y, hrp.Position.Z)
+    stopAscending()
+    return
 end
 
 	local startPos = hrp.Position
