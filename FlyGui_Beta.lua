@@ -10,7 +10,9 @@ local RS               = RunService
 local WS               = Workspace
 local UIS              = UserInputService
 
-local bypassUp = false
+local Settings = {
+	BypassUp = false
+}
 
 local main = Instance.new("ScreenGui")
 if syn and syn.protect_gui then
@@ -32,8 +34,6 @@ local speed           = Instance.new("TextLabel")
 local mine            = Instance.new("TextButton")
 local closebutton     = Instance.new("TextButton")
 local SettingsButton = Instance.new("TextButton")
-
-main.ResetOnSpawn = false
 
 local SettingsGui = Instance.new("ScreenGui")
 SettingsGui.Name = "SettingsGui"
@@ -336,7 +336,7 @@ local function over(inst, pos)
 	return pos.X >= p.X and pos.X <= p.X + s.X and pos.Y >= p.Y and pos.Y <= p.Y + s.Y
 end
 
-local function attachDrag(Frame, ignoreButton)
+local function attachDrag(SettingsFrame, nil)
 
 local dragging = false
 local dragStart, startPos
@@ -690,13 +690,6 @@ up.MouseButton1Click:Connect(function()
 	hum.PlatformStand = true
 	hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
 	startUpTextVisual()
-
-	if bypassUp then
-		local currentY = hrp.Position.Y
-		if UP_TARGET_Y <= currentY then
-			stopAscending()
-			return
-		end
 
 		hrp.CFrame = CFrame.new(
 			hrp.Position.X,
