@@ -55,10 +55,6 @@ SettingsFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
 SettingsFrame.BorderSizePixel = 2
 SettingsFrame.Active = true
 
-local SettingsCorner = Instance.new("UICorner")
-SettingsCorner.CornerRadius = UDim.new(0,12)
-SettingsCorner.Parent = SettingsFrame
-
 local SettingsGrid = Instance.new("UIGridLayout")
 SettingsGrid.Parent = SettingsFrame
 SettingsGrid.CellSize = UDim2.fromScale(0.22, 0.25)
@@ -75,14 +71,6 @@ for i = 1, 12 do
 	local c = Instance.new("UICorner")
 	c.CornerRadius = UDim.new(0,8)
 	c.Parent = slot
-
-	local t = Instance.new("TextLabel")
-	t.Parent = slot
-	t.Size = UDim2.fromScale(1,1)
-	t.BackgroundTransparency = 1
-	t.Text = i
-	t.TextScaled = true
-	t.TextColor3 = Color3.fromRGB(200,200,200)
 end
 
 Frame.Parent = main
