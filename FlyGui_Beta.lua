@@ -503,11 +503,15 @@ closebutton.MouseButton1Click:Connect(function()
 	end)
 end)
 
-
 local function pointerPos(input)
-	return (input.UserInputType == Enum.UserInputType.Touch)
-		and Vector2.new(input.Position.X, input.Position.Y)
-		or UIS:GetMouseLocation()
+	if input.UserInputType == Enum.UserInputType.Touch then
+		return Vector2.new(input.Position.X, input.Position.Y)
+	end
+
+	if UIS.GetMouseLocation then
+		return UIS:GetMouseLocation()
+	end
+	return Vector2.new(0, 0)
 end
 
 local function over(inst, pos)
