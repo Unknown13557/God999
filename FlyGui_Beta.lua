@@ -65,7 +65,6 @@ SettingsGrid.CellSize = UDim2.fromScale(0.48, 0.27)
 SettingsGrid.CellPadding = UDim2.fromOffset(4, 6)
 SettingsGrid.HorizontalAlignment = Enum.HorizontalAlignment.Center
 SettingsGrid.VerticalAlignment = Enum.VerticalAlignment.Center
-SettingsGui.Enabled = false
 
 local Slots = {}
 
