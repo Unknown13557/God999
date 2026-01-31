@@ -205,7 +205,7 @@ end)
 
 local slot3 = Slots[3]
 slot3.Frame.AutomaticSize = Enum.AutomaticSize.None
-slot3.Frame.Size = UDim2.fromScale(1, 1)
+slot3.Frame.ClipsDescendants = true
 slot3.Pill.Visible = false
 slot3.State = nil
 slot3.Label.Visible = false
@@ -268,6 +268,15 @@ local downCorner = Instance.new("UICorner")
 downCorner.CornerRadius = UDim.new(0,6)
 downCorner.Parent = downBtn
 
+task.defer(function()
+	local h = slot3.Frame.AbsoluteSize.Y
+	local y = math.floor((h - 28) / 2)
+
+	input.Position = UDim2.fromOffset(8, y)
+	upBtn.Position = UDim2.fromOffset(96, y)
+	downBtn.Position = UDim2.fromOffset(144, y)
+end)
+
 local MIN_SAFE_Y = 30
 
 local function applyOffset(dir)
@@ -281,11 +290,17 @@ local function applyOffset(dir)
 	local currentY = hrp.Position.Y
 	local targetY = currentY + dir * value
 
-	if dir < 0 and targetY < MIN_SAFE_Y then
-		return
+	if dir < 0 then
+		if targetY < MIN_SAFE_Y then
+			targetY = MIN_SAFE_Y
+		end
 	end
 
-	hrp.CFrame = hrp.CFrame + Vector3.new(0, dir * value, 0)
+	hrp.CFrame = CFrame.new(
+		hrp.Position.X,
+		targetY,
+		hrp.Position.Z
+	)
 end
 
 upBtn.MouseButton1Click:Connect(function()
