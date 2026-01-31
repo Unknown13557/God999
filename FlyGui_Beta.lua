@@ -22,6 +22,7 @@ main.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 main.DisplayOrder = 198282823
 main.Name = "main"
 main.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+main.ResetOnSpawn = false
 main.IgnoreGuiInset = true
 local Frame           = Instance.new("Frame")
 local up              = Instance.new("TextButton")
@@ -42,6 +43,13 @@ SettingsGui.IgnoreGuiInset = true
 SettingsGui.DisplayOrder = main.DisplayOrder + 1
 SettingsGui.Enabled = false
 SettingsGui.ResetOnSpawn = false
+SettingsGui.AncestryChanged:Connect(function(_, parent)
+	if not parent then
+		if main and main.Parent then
+			main:Destroy()
+		end
+	end
+end)
 
 local SettingsFrame = Instance.new("Frame")
 SettingsFrame.Parent = SettingsGui
@@ -107,7 +115,6 @@ for i = 1, 6 do
 	pillCorner.CornerRadius = UDim.new(1,0)
 	pillCorner.Parent = pill
 
-	-- slot knob (SETTING ONLY)
 	local slotKnob = Instance.new("Frame")
 	slotKnob.Name = "SlotKnob"
 	slotKnob.Parent = pill
@@ -300,35 +307,33 @@ SettingsButton.Text = "⚙"
 SettingsButton.TextSize = 23
 SettingsButton.Position = UDim2.new(0, 45, -0.99000, 27)
 
-
 local lastClick = 0
 local doubleClickWindow = 1
-
 local originalTextColor = closebutton.TextColor3
-
 closebutton.MouseButton1Click:Connect(function()
-	if not main or not main.Parent then return end
-
 	local now = tick()
 
-	if lastClick > 0 and (now - lastClick) <= doubleClickWindow then
-		if main and main.Parent then
-			main:Destroy()
-		end
+	if now - lastClick <= doubleClickWindow then
 		if SettingsGui and SettingsGui.Parent then
 			SettingsGui:Destroy()
-		end
-	else
-		lastClick = now
-		closebutton.TextColor3 = Color3.fromRGB(255, 255, 255)
-
-		task.delay(doubleClickWindow, function()
-			if lastClick == now then
-				closebutton.TextColor3 = originalTextColor
-			end
-		end)
 	end
+
+		if main and main.Parent then
+			main:Destroy()
+	end
+		return
+	end
+
+	lastClick = now
+	closebutton.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+	task.delay(doubleClickWindow, function()
+		if tick() - lastClick >= doubleClickWindow then
+			closebutton.TextColor3 = originalTextColor
+		end
+	end)
 end)
+
 
 local function pointerPos(input)
 	return (input.UserInputType == Enum.UserInputType.Touch)
@@ -706,14 +711,11 @@ up.MouseButton1Click:Connect(function()
 		return
 	end
 
-	if Settings.BypassUp then
-		hrp.CFrame = CFrame.new(
-			startPos.X,
-			UP_TARGET_Y,
-			startPos.Z
-		)
-		return
-	end
+    if Settings.BypassUp then
+	hrp.CFrame = CFrame.new(startPos.X, UP_TARGET_Y, startPos.Z)
+	stopAscending()
+	return
+end
 
 	local duration = dist / ASCEND_SPEED
 
