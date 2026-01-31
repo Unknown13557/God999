@@ -210,6 +210,9 @@ slot2.Pill.MouseButton1Click:Connect(function()
 	end
 end)
 
+syncSlotUI(Slots[1], Settings.BypassUp)
+syncSlotUI(Slots[2], Settings.BypassSafe)
+
 Frame.Parent = main
 Frame.BackgroundColor3 = Color3.fromRGB(163, 255, 137)
 Frame.BorderColor3 = Color3.fromRGB(103, 221, 213)
@@ -532,6 +535,7 @@ magictis_startFlight = function()
 	TweenObj.Completed:Connect(function()
 		TweenObj = nil
 		Flying = false
+	local safeTriggered = false
 	end)
 	TweenObj:Play()
 end
