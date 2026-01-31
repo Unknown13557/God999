@@ -72,7 +72,8 @@ for i = 1, 6 do
 	slot.BorderSizePixel = 0
 end
 
-local slot1 = SettingsFrame:GetChildren()[1]
+local slot1 = SettingsFrame:FindFirstChild("Slot1")
+
 local pill = Instance.new("Frame")
 pill.Parent = slot1
 pill.Size = UDim2.fromOffset(34, 18)
