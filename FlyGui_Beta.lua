@@ -132,35 +132,27 @@ for i = 1, 6 do
 	}
 end
 
-
+local slot3 = SettingsFrame:FindFirstChild("Slot3")
 local slot4 = SettingsFrame:FindFirstChild("Slot4")
-if slot4 then
-	slot4:Destroy()
+
+if slot3 and slot4 then
+	slot3.LayoutOrder = 3
+	slot4.LayoutOrder = 4
+	slot3.Size = UDim2.fromScale(1, 0.48)
+	slot3.Position = UDim2.fromScale(0, 0.26)
+	slot3.AnchorPoint = Vector2.new(0, 0)
+	slot3.ZIndex = 50
+
+	slot4.BackgroundTransparency = 1
+	slot4.ZIndex = 1
+
+	for _, child in ipairs(slot4:GetChildren()) do
+		if child:IsA("GuiObject") then
+			child.Visible = false
+		end
+	end
 end
 
-local slot3 = SettingsFrame:FindFirstChild("Slot3")
-if not slot3 then return end
-
-slot3.Size = UDim2.fromScale(2, 1)
-slot3.LayoutOrder = 3
-
-local slot5 = SettingsFrame:FindFirstChild("Slot5")
-local slot6 = SettingsFrame:FindFirstChild("Slot6")
-if slot5 then slot5.LayoutOrder = 5 end
-if slot6 then slot6.LayoutOrder = 6 end
-
-local row = Instance.new("Frame")
-row.Parent = slot3
-row.Size = UDim2.new(1, -12, 1, -8)
-row.Position = UDim2.fromOffset(6, 4)
-row.BackgroundTransparency = 1
-row.ZIndex = 20
-
-local layout = Instance.new("UIListLayout")
-layout.Parent = row
-layout.FillDirection = Enum.FillDirection.Horizontal
-layout.VerticalAlignment = Enum.VerticalAlignment.Center
-layout.Padding = UDim.new(0, 6)
 
 local function syncSlotUI(slot, state)
 	slot.State = state
