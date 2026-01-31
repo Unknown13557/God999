@@ -3,12 +3,12 @@ local Players          = game:GetService("Players")
 local RunService       = game:GetService("RunService")
 local Workspace        = game:GetService("Workspace")
 local TweenService     = game:GetService("TweenService")
-local SettingsMain     = Instance.new("ScreenGui")
 
-local LocalPlayer = Players.LocalPlayer
-local RS          = RunService
-local WS          = Workspace
-local UIS         = UserInputService
+
+local LocalPlayer      = Players.LocalPlayer
+local RS               = RunService
+local WS               = Workspace
+local UIS              = UserInputService
 
 local main = Instance.new("ScreenGui")
 if syn and syn.protect_gui then
@@ -19,27 +19,29 @@ main.DisplayOrder = 198282823
 main.Name = "main"
 main.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 main.IgnoreGuiInset = true
-local Frame = Instance.new("Frame")
-local up = Instance.new("TextButton")
-local escape = Instance.new("Frame")
-local toggle = Instance.new("TextButton")
-local onof = Instance.new("TextButton")
-local TextLabel = Instance.new("TextLabel")
-local plus = Instance.new("TextButton")
-local speed = Instance.new("TextLabel")
-local mine = Instance.new("TextButton")
-local closebutton = Instance.new("TextButton")
+local Frame           = Instance.new("Frame")
+local up              = Instance.new("TextButton")
+local escape          = Instance.new("Frame")
+local toggle          = Instance.new("TextButton")
+local onof            = Instance.new("TextButton")
+local TextLabel       = Instance.new("TextLabel")
+local plus            = Instance.new("TextButton")
+local speed           = Instance.new("TextLabel")
+local mine            = Instance.new("TextButton")
+local closebutton     = Instance.new("TextButton")
+local SettingsButton = Instance.new("TextButton")
 
 main.ResetOnSpawn = false
 
-SettingsMain.Name = "SettingsMain"
-SettingsMain.Parent = LocalPlayer.PlayerGui
-SettingsMain.IgnoreGuiInset = true
-SettingsMain.DisplayOrder = main.DisplayOrder + 1
-SettingsMain.Enabled = false
+local SettingsGui = Instance.new("ScreenGui")
+SettingsGui.Name = "SettingsGui"
+SettingsGui.Parent = LocalPlayer.PlayerGui
+SettingsGui.IgnoreGuiInset = true
+SettingsGui.DisplayOrder = main.DisplayOrder + 1
+SettingsGui.Enabled = false
 
 local SettingsFrame = Instance.new("Frame")
-SettingsFrame.Parent = SettingsMain
+SettingsFrame.Parent = SettingsGui
 SettingsFrame.Size = UDim2.fromScale(0.4, 0.4)
 SettingsFrame.Position = UDim2.fromScale(0.5, 0.5)
 SettingsFrame.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -208,6 +210,12 @@ closebutton.Text = "X"
 closebutton.TextSize = 30
 closebutton.Position =  UDim2.new(0, 0, -0.99000, 27)
 
+SettingsButton.Parent = Frame
+SettingsButton.Size = UDim2.new(0, 50, 0, 50)
+SettingsButton.Position = UDim2.new(0, 0, 0, 0)
+SettingsButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+SettingsButton.Text = "⚙"
+
 local lastClick = 0
 local doubleClickWindow = 1
 
@@ -310,31 +318,31 @@ end
 if WS.CurrentCamera then hookViewportChanged() end
 WS:GetPropertyChangedSignal("CurrentCamera"):Connect(hookViewportChanged)
 
-local settingsDragging = false
-local settingsDragStart
-local settingsStartPos
+local dragging = false
+local dragStart
+local startPos
 
 SettingsFrame.InputBegan:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-		settingsDragging = true
-		settingsDragStart = input.Position
-		settingsStartPos = SettingsFrame.Position
+		dragging = true
+		dragStart = input.Position
+		startPos = SettingsFrame.Position
 
 		input.Changed:Connect(function()
 			if input.UserInputState == Enum.UserInputState.End then
-				settingsDragging = false
+				dragging = false
 			end
 		end)
 	end
 end)
 
 SettingsFrame.InputChanged:Connect(function(input)
-	if not settingsDragging then return end
+	if not dragging then return end
 	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-		local delta = input.Position - settingsDragStart
+		local delta = input.Position - dragStart
 		SettingsFrame.Position = UDim2.fromOffset(
-			settingsStartPos.X.Offset + delta.X,
-			settingsStartPos.Y.Offset + delta.Y
+			startPos.X.Offset + delta.X,
+			startPos.Y.Offset + delta.Y
 		)
 	end
 end)
@@ -889,9 +897,9 @@ end)
 
 local settingsOpen = false
 
-settingBtn.MouseButton1Click:Connect(function()
+SettingsButton.MouseButton1Click:Connect(function()
 	settingsOpen = not settingsOpen
-	SettingsMain.Enabled = settingsOpen
+	SettingsGui.Enabled = settingsOpen
 end)
 
 Players.LocalPlayer.CharacterAdded:Connect(function(char)
