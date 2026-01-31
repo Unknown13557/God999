@@ -58,7 +58,7 @@ end)
 
 local SettingsGrid = Instance.new("UIGridLayout")
 SettingsGrid.Parent = SettingsFrame
-SettingsGrid.CellSize = UDim2.fromScale(0.48, 0.26)
+SettingsGrid.CellSize = UDim2.fromScale(0.48, 0.27)
 SettingsGrid.CellPadding = UDim2.fromOffset(10, 10)
 SettingsGrid.HorizontalAlignment = Enum.HorizontalAlignment.Center
 SettingsGrid.VerticalAlignment = Enum.VerticalAlignment.Center
@@ -216,10 +216,18 @@ local lastClick = 0
 local doubleClickWindow = 1
 
 local originalTextColor = closebutton.TextColor3
+
 closebutton.MouseButton1Click:Connect(function()
 	local now = tick()
+
 	if now - lastClick <= doubleClickWindow then
-		main:Destroy()
+		if SettingsGui then
+			SettingsGui:Destroy()
+		end
+
+		if main then
+			main:Destroy()
+		end
 	else
 		lastClick = now
 		closebutton.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -231,7 +239,6 @@ closebutton.MouseButton1Click:Connect(function()
 		end)
 	end
 end)
-
 
 local function pointerPos(input)
 	return (input.UserInputType == Enum.UserInputType.Touch)
