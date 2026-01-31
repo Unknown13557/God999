@@ -684,21 +684,20 @@ up.MouseButton1Click:Connect(function()
 	startUpTextVisual()
 
 if Settings.BypassUp then
+	isAscending = true
+	startUpTextVisual()
+
 	hrp.CFrame = CFrame.new(
 		hrp.Position.X,
 		UP_TARGET_Y,
 		hrp.Position.Z
 	)
-	stopAscending()
-	return
-		end
 
-	local startPos = hrp.Position
-	local dist = UP_TARGET_Y - startPos.Y
-	if dist <= 0 then
+	task.delay(0.05, function()
 		stopAscending()
-		return
-	end
+	end)
+	return
+end
 
 	local duration = dist / ASCEND_SPEED
 	isAscending = true
