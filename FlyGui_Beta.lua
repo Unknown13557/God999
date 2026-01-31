@@ -43,8 +43,14 @@ SettingsGui.Enabled = false
 local SettingsFrame = Instance.new("Frame")
 SettingsFrame.Parent = SettingsGui
 SettingsFrame.Size = UDim2.fromScale(0.4, 0.4)
-SettingsFrame.Position = UDim2.fromScale(0.5, 0.5)
 SettingsFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+task.defer(function()
+	local cam = WS.CurrentCamera
+	if cam then
+		local vp = cam.ViewportSize
+		SettingsFrame.Position = UDim2.fromOffset(vp.X * 0.5, vp.Y * 0.5)
+	end
+end)
 SettingsFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
 SettingsFrame.BorderSizePixel = 2
 SettingsFrame.Active = true
