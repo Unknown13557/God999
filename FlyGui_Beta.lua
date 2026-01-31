@@ -65,7 +65,6 @@ for i = 1, 4 do
 	slot.Parent = SettingsFrame
 	slot.BackgroundColor3 = Color3.fromRGB(60,60,60)
 	slot.BorderSizePixel = 0
-end
 
 Frame.Parent = main
 Frame.BackgroundColor3 = Color3.fromRGB(163, 255, 137)
