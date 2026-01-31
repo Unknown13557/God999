@@ -63,7 +63,7 @@ SettingsGrid.CellPadding = UDim2.fromOffset(10, 10)
 SettingsGrid.HorizontalAlignment = Enum.HorizontalAlignment.Center
 SettingsGrid.VerticalAlignment = Enum.VerticalAlignment.Center
 
-for i = 1, 4 do
+for i = 1, 6 do
 	local slot = Instance.new("Frame")
 	slot.Parent = SettingsFrame
 	slot.BackgroundColor3 = Color3.fromRGB(60,60,60)
