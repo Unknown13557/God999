@@ -291,7 +291,7 @@ closebutton.TextSize = 30
 closebutton.Position =  UDim2.new(0, 0, -0.99000, 27)
 
 SettingsButton.Name = "SettingButton"
-SettingsButton.Parent = main.Frame
+SettingsButton.Parent = Frame
 SettingsButton.BackgroundColor3 = Color3.fromRGB(192, 150, 230)
 SettingsButton.Font = Enum.Font.SourceSans
 SettingsButton.Size = UDim2.new(0, 44, 0, 28)
@@ -696,6 +696,7 @@ up.MouseButton1Click:Connect(function()
 	end
 
 	isAscending = true
+	hum.PlatformStand = true
 	startUpTextVisual()
 
 	local startPos = hrp.Position
