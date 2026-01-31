@@ -55,22 +55,16 @@ SettingsFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
 SettingsFrame.BorderSizePixel = 2
 SettingsFrame.Active = true
 
-local SettingsGrid = Instance.new("UIGridLayout")
-SettingsGrid.Parent = SettingsFrame
-SettingsGrid.CellSize = UDim2.fromScale(0.22, 0.25)
-SettingsGrid.CellPadding = UDim2.fromScale(0.03, 0.05)
+SettingsGrid.CellSize = UDim2.fromScale(0.45, 0.45)
+SettingsGrid.CellPadding = UDim2.fromScale(0.05, 0.05)
 SettingsGrid.HorizontalAlignment = Enum.HorizontalAlignment.Center
 SettingsGrid.VerticalAlignment = Enum.VerticalAlignment.Center
 
-for i = 1, 12 do
+for i = 1, 4 do
 	local slot = Instance.new("Frame")
 	slot.Parent = SettingsFrame
 	slot.BackgroundColor3 = Color3.fromRGB(60,60,60)
 	slot.BorderSizePixel = 0
-
-	local c = Instance.new("UICorner")
-	c.CornerRadius = UDim.new(0,8)
-	c.Parent = slot
 end
 
 Frame.Parent = main
