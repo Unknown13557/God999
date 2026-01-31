@@ -1009,6 +1009,7 @@ Players.LocalPlayer.CharacterAdded:Connect(function(char)
 	tpwalking = false
 	isAscending = false
     lastClick = 0
+    setToggle(false)
 	
 	stopFlyVisuals()
 	stopUpTextVisual()
