@@ -228,14 +228,15 @@ slot2.Pill.MouseButton1Click:Connect(function()
 	end
 end) 
 
-
-
 local slot3Data = Slots[3]
-slot3.Frame.AutomaticSize = Enum.AutomaticSize.None
-slot3.Frame.ClipsDescendants = true
-slot3.Pill.Visible = false
-slot3.State = nil
-slot3.Label.Visible = false
+local slot3Frame = slot3Data.Frame
+
+slot3Frame.AutomaticSize = Enum.AutomaticSize.None
+slot3Frame.ClipsDescendants = true
+
+slot3Data.Pill.Visible = false
+slot3Data.State = nil
+slot3Data.Label.Visible = false
 
 local input = Instance.new("TextBox")
 input.Parent = slot3
@@ -303,9 +304,9 @@ local function applyOffset(dir)
 	local value = tonumber(input.Text)
 	if not value or value <= 0 then return end
 
-	local char = LocalPlayer.Character
-	local hrp = char and char:FindFirstChild("HumanoidRootPart")
-	if not hrp then return end
+	local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local hum = char:WaitForChild("Humanoid")
+    local hrp = char:WaitForChild("HumanoidRootPart")
 
 	local currentY = hrp.Position.Y
 	local targetY = currentY + dir * value
