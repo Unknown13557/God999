@@ -216,7 +216,7 @@ SettingsButton.BackgroundColor3 = Color3.fromRGB(192, 150, 230)
 SettingsButton.Font = Enum.Font.SourceSans
 SettingsButton.Size = UDim2.new(0, 44, 0, 28)
 SettingsButton.Text = "⚙"
-SettingsButton.TextSize = 25
+SettingsButton.TextSize = 20
 SettingsButton.Position = UDim2.new(0, 45, -0.99000, 27)
 
 local lastClick = 0
@@ -267,9 +267,15 @@ local function clampToViewport(x, y)
 
 	local vp = cam.ViewportSize
 	local size = Frame.AbsoluteSize
+	local anchor = Frame.AnchorPoint
 
-	x = math.clamp(x, 0, math.max(0, vp.X - size.X))
-	y = math.clamp(y, 0, math.max(0, vp.Y - size.Y))
+	local minX = size.X * anchor.X
+	local maxX = vp.X - size.X * (1 - anchor.X)
+	local minY = size.Y * anchor.Y
+	local maxY = vp.Y - size.Y * (1 - anchor.Y)
+
+	x = math.clamp(x, minX, math.max(minX, maxX))
+	y = math.clamp(y, minY, math.max(minY, maxY))
 
 	return UDim2.fromOffset(x, y)
 	end
