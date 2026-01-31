@@ -68,7 +68,7 @@ AbsoluteLayer.Parent = SettingsGui
 AbsoluteLayer.Size = UDim2.fromScale(1, 1)
 AbsoluteLayer.Position = UDim2.fromScale(0, 0)
 AbsoluteLayer.BackgroundTransparency = 1
-AbsoluteLayer.ZIndex = 40
+AbsoluteLayer.ZIndex = 50
 
 local SettingsGrid = Instance.new("UIGridLayout")
 SettingsGrid.Parent = SettingsFrame
@@ -140,31 +140,22 @@ for i = 1, 6 do
 	}
 end
 
-local slot3 = SettingsFrame:FindFirstChild("Slot3")
-local slot4 = SettingsFrame:FindFirstChild("Slot4")
+local slot3 = Slots[3].Frame
+local slot4 = Slots[4].Frame
 
-if slot4 then
-	slot4.BackgroundTransparency = 1
-	for _, c in ipairs(slot4:GetChildren()) do
-		if c:IsA("GuiObject") then
-			c.Visible = false
-		end
+slot4.BackgroundTransparency = 1
+for _, c in ipairs(slot4:GetChildren()) do
+	if c:IsA("GuiObject") then
+		c.Visible = false
 	end
 end
 
-if slot3 then
-	slot3.Parent = AbsoluteLayer
-	slot3.Size = UDim2.fromScale(0.96, 0.22)
-	slot3.Position = UDim2.fromScale(0.02, 0.38)
-	slot3.ZIndex = 50
-	slot3.ClipsDescendants = true
-end
-
 slot3.Parent = AbsoluteLayer
-slot3.Size = UDim2.fromScale(0.96, 0.24)
-slot3.Position = UDim2.fromScale(0.02, 0.38)
-slot3.ZIndex = 50
+slot3.ZIndex = 60
 slot3.ClipsDescendants = true
+
+slot3.Size = UDim2.fromScale(0.96, 0.30)
+slot3.Position = UDim2.fromScale(0.02, 0.34)
 
 local function syncSlotUI(slot, state)
 	slot.State = state
@@ -247,7 +238,7 @@ slot3.State = nil
 slot3.Label.Visible = false
 
 local input = Instance.new("TextBox")
-input.Parent = slot3.Frame
+input.Parent = slot3
 input.Size = UDim2.fromOffset(80, 28)
 input.Position = UDim2.fromOffset(8, 10)
 
@@ -275,10 +266,10 @@ input:GetPropertyChangedSignal("Text"):Connect(function()
 end)
 
 local upBtn = Instance.new("TextButton")
-upBtn.Parent = slot3.Frame
 upBtn.Size = UDim2.fromOffset(44, 28)
 upBtn.Position = UDim2.fromOffset(96, 10)
 upBtn.Text = "UP"
+upBtn.Parent = slot3
 upBtn.BackgroundColor3 = Color3.fromRGB(80,180,120)
 upBtn.TextColor3 = Color3.fromRGB(255,255,255)
 upBtn.Font = Enum.Font.SourceSansBold
@@ -290,30 +281,21 @@ upCorner.CornerRadius = UDim.new(0,6)
 upCorner.Parent = upBtn
 
 local downBtn = Instance.new("TextButton")
-downBtn.Parent = slot3.Frame
 downBtn.Size = UDim2.fromOffset(44, 28)
 downBtn.Position = UDim2.fromOffset(144, 10)
 downBtn.Text = "DOWN"
+downBtn.Parent = slot3
 downBtn.BackgroundColor3 = Color3.fromRGB(180,80,80)
 downBtn.TextColor3 = Color3.fromRGB(255,255,255)
 downBtn.Font = Enum.Font.SourceSansBold
 downBtn.TextSize = 14
 downBtn.ZIndex = 15
 
-local downCorner = Instance.new("UICorner")
-downCorner.CornerRadius = UDim.new(0,6)
-downCorner.Parent = downBtn
+local y = 12
 
-local function layoutSlot3()
-	local h = slot3Frame.AbsoluteSize.Y
-	if h <= 0 then return end
-
-	local y = math.floor((h - 28) / 2)
-
-	input.Position = UDim2.fromOffset(8, y)
-	upBtn.Position = UDim2.fromOffset(96, y)
-	downBtn.Position = UDim2.fromOffset(144, y)
-end
+input.Position = UDim2.fromOffset(12, y)
+upBtn.Position = UDim2.fromOffset(140, y)
+downBtn.Position = UDim2.fromOffset(200, y)
 
 layoutSlot3()
 slot3:GetPropertyChangedSignal("AbsoluteSize"):Connect(layoutSlot3)
