@@ -216,11 +216,11 @@ local flyKnobCorner = Instance.new("UICorner")
 flyKnobCorner.CornerRadius = UDim.new(1, 0)
 flyKnobCorner.Parent = flyKnob
 
-local knobStroke = Instance.new("UIStroke")
-flyknobStroke.Color = Color3.fromRGB(235, 235, 235)
-fltknobStroke.Thickness = 1
-flyknobStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-flyknobStroke.Parent = flyKnob
+local flyKnobStroke = Instance.new("UIStroke")
+flyKnobStroke.Color = Color3.fromRGB(235, 235, 235)
+flyKnobStroke.Thickness = 1
+flyKnobStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+flyKnobStroke.Parent = flyKnob
 
 onof.Name = "onof"
 onof.Parent = Frame
@@ -282,7 +282,7 @@ mine.TextSize = 17
 mine.TextWrapped = true
 
 closebutton.Name = "Close"
-closebutton.Parent = main.Frame
+closebutton.Parent = Frame
 closebutton.BackgroundColor3 = Color3.fromRGB(225, 25, 0)
 closebutton.Font = Enum.Font.SourceSans
 closebutton.Size = UDim2.new(0, 44, 0, 28)
@@ -685,15 +685,18 @@ function magiskk.StopVertical()
 end
 
 up.MouseButton1Click:Connect(function()
+	local char = LocalPlayer.Character
+	local hrp = char and char:FindFirstChild("HumanoidRootPart")
+	local hum = char and char:FindFirstChildOfClass("Humanoid")
+	if not hrp or not hum then return end
+
 	if isAscending then
 		stopAscending()
 		return
 	end
 
-	local char = LocalPlayer.Character
-	local hrp = char and char:FindFirstChild("HumanoidRootPart")
-	local hum = char and char:FindFirstChildOfClass("Humanoid")
-	if not hrp or not hum then return end
+	isAscending = true
+	startUpTextVisual()
 
 	local startPos = hrp.Position
 	local dist = UP_TARGET_Y - startPos.Y
@@ -702,41 +705,21 @@ up.MouseButton1Click:Connect(function()
 		return
 	end
 
-	hum.PlatformStand = true
-	hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-	startUpTextVisual()
-
 	if Settings.BypassUp then
-	if isAscending then
-		stopAscending()
+		hrp.CFrame = CFrame.new(
+			startPos.X,
+			UP_TARGET_Y,
+			startPos.Z
+		)
 		return
 	end
 
-	isAscending = true
-	startUpTextVisual()
-
-	hrp.CFrame = CFrame.new(
-		hrp.Position.X,
-		UP_TARGET_Y,
-		hrp.Position.Z
-	)
-
-	task.delay(0.05, function()
-		if isAscending then
-			stopAscending()
-		end
-	end)
-
-	return
-end
-
 	local duration = dist / ASCEND_SPEED
-	isAscending = true
 
 	ascendTween = TweenService:Create(
 		hrp,
 		TweenInfo.new(duration, Enum.EasingStyle.Linear),
-		{CFrame = CFrame.new(startPos.X, UP_TARGET_Y, startPos.Z)}
+		{ CFrame = CFrame.new(startPos.X, UP_TARGET_Y, startPos.Z) }
 	)
 
 	ascendTween.Completed:Connect(function()
@@ -1022,7 +1005,8 @@ Players.LocalPlayer.CharacterAdded:Connect(function(char)
 	nowe = false
 	tpwalking = false
 	isAscending = false
-
+    lastClick = 0
+	
 	stopFlyVisuals()
 	stopUpTextVisual()
 	if not Enabled then
@@ -1046,7 +1030,4 @@ Players.LocalPlayer.CharacterAdded:Connect(function(char)
 	if anim then
 		anim.Disabled = false
 	end
-end)
-Players.LocalPlayer.CharacterAdded:Connect(function()
-	lastClick = 0
 end)
