@@ -223,16 +223,9 @@ SettingsButton.Font = Enum.Font.SourceSans
 SettingsButton.Size = UDim2.new(0, 44, 0, 28)
 SettingsButton.TextColor3 = Color3.fromRGB(20, 20, 20)
 SettingsButton.Text = "⚙"
-SettingsButton.TextSize = 20
+SettingsButton.TextSize = 23
 SettingsButton.Position = UDim2.new(0, 45, -0.99000, 27)
 
-local pad = Instance.new("UIPadding")
-pad.Parent = SettingsButton
-pad.PaddingTop = UDim.new(0, 1)
-
-SettingsButton.TextXAlignment = Enum.TextXAlignment.Center
-SettingsButton.TextYAlignment = Enum.TextYAlignment.Center
-SettingsButton.TextScaled = false
 
 local lastClick = 0
 local doubleClickWindow = 1
