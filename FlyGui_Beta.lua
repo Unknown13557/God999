@@ -69,20 +69,20 @@ SettingsGrid.VerticalAlignment = Enum.VerticalAlignment.Center
 local Slots = {}
 
 for i = 1, 6 do
- local slotKnob = Instance.new("Frame")
-    slotKnob.Name = "Knob"
-    slotKnob.Parent = pill
-    slotKnob.Size = UDim2.fromOffset(14,14)
-    slotKnob.Position = UDim2.fromOffset(2,2)
-    slotKnob.BackgroundColor3 = Color3.fromRGB(220,220,220)
-    slotKnob.BorderSizePixel = 0
-    slotKnob.ZIndex = 13
-    slotKnob.Active = false
-	
+	-- slot frame
+	local slot = Instance.new("Frame")
+	slot.Name = "Slot"..i
+	slot.Parent = SettingsFrame
+	slot.BackgroundColor3 = Color3.fromRGB(60,60,60)
+	slot.BorderSizePixel = 0
+	slot.ZIndex = 10
+
+	-- label
 	local label = Instance.new("TextLabel")
 	label.Name = "Label"
 	label.Parent = slot
-	label.Size = UDim2.fromScale(0.6, 1)
+	label.Size = UDim2.fromScale(0.65, 1)
+	label.Position = UDim2.fromScale(0, 0)
 	label.BackgroundTransparency = 1
 	label.Text = "Empty"
 	label.TextColor3 = Color3.fromRGB(220,220,220)
@@ -90,48 +90,51 @@ for i = 1, 6 do
 	label.TextSize = 18
 	label.TextXAlignment = Enum.TextXAlignment.Left
 	label.TextYAlignment = Enum.TextYAlignment.Center
-	label.ZIndex = 12
+	label.ZIndex = 11
 
+	-- pill toggle
 	local pill = Instance.new("TextButton")
-    pill.Text = ""
-    pill.AutoButtonColor = false
 	pill.Name = "Pill"
 	pill.Parent = slot
+	pill.Text = ""
+	pill.AutoButtonColor = false
 	pill.Size = UDim2.fromOffset(36, 18)
 	pill.Position = UDim2.fromScale(1, 0.5)
 	pill.AnchorPoint = Vector2.new(1, 0.5)
 	pill.BackgroundColor3 = Color3.fromRGB(80,80,80)
 	pill.BorderSizePixel = 0
-	pill.ZIndex = 12
+	pill.ZIndex = 11
 
 	local pillCorner = Instance.new("UICorner")
 	pillCorner.CornerRadius = UDim.new(1,0)
 	pillCorner.Parent = pill
 
-	local knob = Instance.new("Frame")
-	knob.Name = "Knob"
-	knob.Parent = pill
-	knob.Size = UDim2.fromOffset(14,14)
-	knob.Position = UDim2.fromOffset(2,2)
-	knob.BackgroundColor3 = Color3.fromRGB(220,220,220)
-	knob.BorderSizePixel = 0
-	knob.ZIndex = 13
-    knob.Active = false
-	
+	-- slot knob (SETTING ONLY)
+	local slotKnob = Instance.new("Frame")
+	slotKnob.Name = "SlotKnob"
+	slotKnob.Parent = pill
+	slotKnob.Size = UDim2.fromOffset(14,14)
+	slotKnob.Position = UDim2.fromOffset(2,2)
+	slotKnob.BackgroundColor3 = Color3.fromRGB(220,220,220)
+	slotKnob.BorderSizePixel = 0
+	slotKnob.ZIndex = 12
+	slotKnob.Active = false
+
 	local knobCorner = Instance.new("UICorner")
-    knobCorner.CornerRadius = UDim.new(1,0)
-    knobCorner.Parent = slotKnob
+	knobCorner.CornerRadius = UDim.new(1,0)
+	knobCorner.Parent = slotKnob
 
 	Slots[i] = {
 		Frame = slot,
 		Label = label,
 		Pill = pill,
-		Knob = slotKnob,
+		SlotKnob = slotKnob,
 		State = false
 	}
 end
 
 local slot1 = Slots[1]
+slot1.Label.Text = "Bypass UP"
 
 slot1.Pill.MouseButton1Click:Connect(function()
 	slot1.State = not slot1.State
@@ -139,13 +142,24 @@ slot1.Pill.MouseButton1Click:Connect(function()
 
 	if slot1.State then
 		slot1.Pill.BackgroundColor3 = Color3.fromRGB(120,200,120)
-		slot1.Knob:TweenPosition(UDim2.fromOffset(20,2), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.15, true)
+		slot1.SlotKnob:TweenPosition(
+			UDim2.fromOffset(20,2),
+			Enum.EasingDirection.Out,
+			Enum.EasingStyle.Quad,
+			0.15,
+			true
+		)
 	else
 		slot1.Pill.BackgroundColor3 = Color3.fromRGB(80,80,80)
-		slot1.Knob:TweenPosition(UDim2.fromOffset(2,2), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.15, true)
+		slot1.SlotKnob:TweenPosition(
+			UDim2.fromOffset(2,2),
+			Enum.EasingDirection.Out,
+			Enum.EasingStyle.Quad,
+			0.15,
+			true
+		)
 	end
 end)
-slot1.Label.Text = "Bypass UP"
 
 Frame.Parent = main
 Frame.BackgroundColor3 = Color3.fromRGB(163, 255, 137)
@@ -190,25 +204,25 @@ toggleStroke.Thickness = 1
 toggleStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 toggleStroke.Parent = toggle
 
-local knob = Instance.new("TextButton")
-flyknob.Name = "flyKnob"
-flyknob.Parent = toggle
-flyknob.AutoButtonColor = false
-flyknob.Text = ""
-flyknob.BackgroundColor3 = Color3.fromRGB(235, 235, 235)
-flyknob.Size = UDim2.fromOffset(16, 16)
-flyknob.Position = UDim2.fromOffset(22, 2)
-flyknob.ZIndex = 3
+local flyKnob = Instance.new("TextButton")
+flyKnob.Name = "flyKnob"
+flyKnob.Parent = toggle
+flyKnob.AutoButtonColor = false
+flyKnob.Text = ""
+flyKnob.BackgroundColor3 = Color3.fromRGB(235, 235, 235)
+flyKnob.Size = UDim2.fromOffset(16, 16)
+flyKnob.Position = UDim2.fromOffset(22, 2)
+flyKnob.ZIndex = 3
 
 local knobCorner = Instance.new("UICorner")
 knobCorner.CornerRadius = UDim.new(1, 0)
-knobCorner.Parent = knob
+knobCorner.Parent = flyKnob
 
 local knobStroke = Instance.new("UIStroke")
 knobStroke.Color = Color3.fromRGB(235, 235, 235)
 knobStroke.Thickness = 1
 knobStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-knobStroke.Parent = knob
+knobStroke.Parent = flyKnob
 
 onof.Name = "onof"
 onof.Parent = Frame
@@ -686,7 +700,8 @@ up.MouseButton1Click:Connect(function()
 	hum.PlatformStand = true
 	hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
 	startUpTextVisual()
-if Settings.BypassUp then
+
+	if Settings.BypassUp then
 	if isAscending then
 		stopAscending()
 		return
