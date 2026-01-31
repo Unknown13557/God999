@@ -93,7 +93,6 @@ for i = 1, 6 do
 	label.TextYAlignment = Enum.TextYAlignment.Center
 	label.ZIndex = 11
 
-	-- pill toggle
 	local pill = Instance.new("TextButton")
 	pill.Name = "Pill"
 	pill.Parent = slot
@@ -202,6 +201,95 @@ slot2.Pill.MouseButton1Click:Connect(function()
 			true
 		)
 	end
+end) 
+
+local slot3 = Slots[3]
+
+slot3.Pill.Visible = false
+slot3.State = nil
+slot3.Label.Visible = false
+
+local input = Instance.new("TextBox")
+input.Parent = slot3.Frame
+input.Size = UDim2.fromScale(0.5, 0.7)
+input.Position = UDim2.fromScale(0.05, 0.15)
+
+input.BackgroundColor3 = Color3.fromRGB(40,40,40)
+input.TextColor3 = Color3.fromRGB(230,230,230)
+input.PlaceholderText = "Input"
+input.Text = ""
+input.ClearTextOnFocus = false
+input.Font = Enum.Font.SourceSansBold
+input.TextSize = 16
+input.TextXAlignment = Enum.TextXAlignment.Center
+
+local inputCorner = Instance.new("UICorner")
+inputCorner.CornerRadius = UDim.new(0,6)
+inputCorner.Parent = input
+
+input:GetPropertyChangedSignal("Text"):Connect(function()
+	local filtered = input.Text:gsub("%D", "")
+	if input.Text ~= filtered then
+		input.Text = filtered
+	end
+end)
+
+local upBtn = Instance.new("TextButton")
+upBtn.Parent = slot3.Frame
+upBtn.Size = UDim2.fromScale(0.2, 0.7)
+upBtn.Position = UDim2.fromScale(0.58, 0.15)
+upBtn.Text = "UP"
+
+upBtn.BackgroundColor3 = Color3.fromRGB(80,180,120)
+upBtn.TextColor3 = Color3.fromRGB(255,255,255)
+upBtn.Font = Enum.Font.SourceSansBold
+upBtn.TextSize = 14
+
+local upCorner = Instance.new("UICorner")
+upCorner.CornerRadius = UDim.new(0,6)
+upCorner.Parent = upBtn
+
+local downBtn = Instance.new("TextButton")
+downBtn.Parent = slot3.Frame
+downBtn.Size = UDim2.fromScale(0.2, 0.7)
+downBtn.Position = UDim2.fromScale(0.8, 0.15)
+downBtn.Text = "DOWN"
+
+downBtn.BackgroundColor3 = Color3.fromRGB(180,80,80)
+downBtn.TextColor3 = Color3.fromRGB(255,255,255)
+downBtn.Font = Enum.Font.SourceSansBold
+downBtn.TextSize = 14
+
+local downCorner = Instance.new("UICorner")
+downCorner.CornerRadius = UDim.new(0,6)
+downCorner.Parent = downBtn
+
+local MIN_SAFE_Y = 30
+
+local function applyOffset(dir)
+	local value = tonumber(input.Text)
+	if not value or value <= 0 then return end
+
+	local char = LocalPlayer.Character
+	local hrp = char and char:FindFirstChild("HumanoidRootPart")
+	if not hrp then return end
+
+	local currentY = hrp.Position.Y
+	local targetY = currentY + dir * value
+
+	if dir < 0 and targetY < MIN_SAFE_Y then
+		return
+	end
+
+	hrp.CFrame = hrp.CFrame + Vector3.new(0, dir * value, 0)
+end
+
+upBtn.MouseButton1Click:Connect(function()
+	applyOffset(1)
+end)
+
+downBtn.MouseButton1Click:Connect(function()
+	applyOffset(-1)
 end)
 
 syncSlotUI(Slots[1], Settings.BypassUp)
