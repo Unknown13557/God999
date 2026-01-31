@@ -44,13 +44,6 @@ SettingsGui.IgnoreGuiInset = true
 SettingsGui.DisplayOrder = main.DisplayOrder + 1
 SettingsGui.Enabled = false
 SettingsGui.ResetOnSpawn = false
-SettingsGui.AncestryChanged:Connect(function(_, parent)
-	if not parent then
-		if main and main.Parent then
-			main:Destroy()
-		end
-	end
-end)
 
 local SettingsFrame = Instance.new("Frame")
 SettingsFrame.Parent = SettingsGui
@@ -750,13 +743,6 @@ local function stopAscending()
 
 	stopUpTextVisual()
 
-	if not nowe then
-		local chr = LocalPlayer.Character
-		local hum = chr and chr:FindFirstChildOfClass("Humanoid")
-		if hum then hum.PlatformStand = false end
-	end
-end
-
 function magiskk.StopVertical()
     stopAscending()
 end
@@ -773,7 +759,6 @@ up.MouseButton1Click:Connect(function()
 	end
 
 	isAscending = true
-	hum.PlatformStand = true
 	startUpTextVisual()
 
 	local startPos = hrp.Position
