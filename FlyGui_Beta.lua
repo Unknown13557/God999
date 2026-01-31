@@ -297,9 +297,6 @@ input.Position = UDim2.fromOffset(12, y)
 upBtn.Position = UDim2.fromOffset(140, y)
 downBtn.Position = UDim2.fromOffset(200, y)
 
-layoutSlot3()
-slot3:GetPropertyChangedSignal("AbsoluteSize"):Connect(layoutSlot3)
-
 local MIN_SAFE_Y = 30
 
 local function applyOffset(dir)
