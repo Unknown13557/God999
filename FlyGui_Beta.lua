@@ -486,6 +486,7 @@ local SPEED, TARGET_Y = 1500, 1000000
 local LOW_HP, SAFE_HP = 0.40, 0.80
 
 local Enabled = false
+local EscapeEnabled = false
 
 local Flying, TweenObj = false, nil
 local Humanoid, RootPart
@@ -534,7 +535,7 @@ magictis_startFlight = function()
 end
 
 magictis_onHealthChanged = function(h)
-	if not Humanoid or not Enabled then return end
+	if not Humanoid or not EscapeEnabled then return end
 	local mh = Humanoid.MaxHealth
 	if mh <= 0 then return end
 
@@ -607,9 +608,10 @@ local function magictis_onToggleClick()
     if toggling then return end
     toggling = true
     local nextState = not isOn
-    setToggle(nextState)
-    magictis_applyEnabled(nextState)
-    isOn = nextState
+setToggle(nextState)
+EscapeEnabled = nextState
+magictis_applyEnabled(nextState)
+isOn = nextState
     task.delay(0.15, function()
         toggling = false
     end)
@@ -1072,6 +1074,7 @@ safeTriggered = false
 isAscending = false
     lastClick = 0
     setToggle(false)
+	EscapeEnabled = false
 	
 	stopFlyVisuals()
 	stopUpTextVisual()
