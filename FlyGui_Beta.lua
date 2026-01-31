@@ -62,6 +62,14 @@ task.defer(function()
 	end
 end)
 
+local AbsoluteLayer = Instance.new("Frame")
+AbsoluteLayer.Name = "AbsoluteLayer"
+AbsoluteLayer.Parent = SettingsFrame
+AbsoluteLayer.Size = UDim2.fromScale(1, 1)
+AbsoluteLayer.Position = UDim2.fromScale(0, 0)
+AbsoluteLayer.BackgroundTransparency = 1
+AbsoluteLayer.ZIndex = 40
+
 local SettingsGrid = Instance.new("UIGridLayout")
 SettingsGrid.Parent = SettingsFrame
 SettingsGrid.CellSize = UDim2.fromScale(0.48, 0.27)
@@ -132,27 +140,22 @@ for i = 1, 6 do
 	}
 end
 
-local slot3 = SettingsFrame:FindFirstChild("Slot3")
-local slot4 = SettingsFrame:FindFirstChild("Slot4")
+local slot3 = Slots[3].Frame
+local slot4 = Slots[4].Frame
 
-if slot3 and slot4 then
-	slot3.LayoutOrder = 3
-	slot4.LayoutOrder = 4
-	slot3.Size = UDim2.fromScale(1, 0.48)
-	slot3.Position = UDim2.fromScale(0, 0.26)
-	slot3.AnchorPoint = Vector2.new(0, 0)
-	slot3.ZIndex = 50
-
-	slot4.BackgroundTransparency = 1
-	slot4.ZIndex = 1
-
-	for _, child in ipairs(slot4:GetChildren()) do
-		if child:IsA("GuiObject") then
-			child.Visible = false
-		end
+slot4.Visible = true
+slot4.BackgroundTransparency = 1
+for _, c in ipairs(slot4:GetChildren()) do
+	if c:IsA("GuiObject") then
+		c.Visible = false
 	end
 end
 
+slot3.Parent = AbsoluteLayer
+slot3.Size = UDim2.fromScale(0.96, 0.24)
+slot3.Position = UDim2.fromScale(0.02, 0.38)
+slot3.ZIndex = 50
+slot3.ClipsDescendants = true
 
 local function syncSlotUI(slot, state)
 	slot.State = state
@@ -290,14 +293,19 @@ local downCorner = Instance.new("UICorner")
 downCorner.CornerRadius = UDim.new(0,6)
 downCorner.Parent = downBtn
 
-task.defer(function()
-	local h = slot3.Frame.AbsoluteSize.Y
+local function layoutSlot3()
+	local h = slot3.AbsoluteSize.Y
+	if h <= 0 then return end
+
 	local y = math.floor((h - 28) / 2)
 
 	input.Position = UDim2.fromOffset(8, y)
 	upBtn.Position = UDim2.fromOffset(96, y)
 	downBtn.Position = UDim2.fromOffset(144, y)
-end)
+end
+
+layoutSlot3()
+slot3:GetPropertyChangedSignal("AbsoluteSize"):Connect(layoutSlot3)
 
 local MIN_SAFE_Y = 30
 
