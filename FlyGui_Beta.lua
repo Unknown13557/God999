@@ -132,6 +132,19 @@ for i = 1, 6 do
 	}
 end
 
+local slot3 = SettingsFrame:FindFirstChild("Slot3")
+local slot4 = SettingsFrame:FindFirstChild("Slot4")
+
+if slot3 then
+	slot3.Size = UDim2.fromScale(1.5, 1)
+	slot3.LayoutOrder = 3
+end
+
+if slot4 then
+	slot4.Size = UDim2.fromScale(0.5, 1)
+	slot4.LayoutOrder = 4
+end
+
 local function syncSlotUI(slot, state)
 	slot.State = state
 
