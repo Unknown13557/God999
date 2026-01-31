@@ -44,6 +44,10 @@ local SettingsFrame = Instance.new("Frame")
 SettingsFrame.Parent = SettingsGui
 SettingsFrame.Size = UDim2.fromScale(0.4, 0.4)
 SettingsFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+SettingsFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+SettingsFrame.BorderSizePixel = 2
+SettingsFrame.Active = true
+
 task.defer(function()
 	local cam = WS.CurrentCamera
 	if cam then
@@ -51,10 +55,9 @@ task.defer(function()
 		SettingsFrame.Position = UDim2.fromOffset(vp.X * 0.5, vp.Y * 0.5)
 	end
 end)
-SettingsFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
-SettingsFrame.BorderSizePixel = 2
-SettingsFrame.Active = true
 
+local SettingsGrid = Instance.new("UIGridLayout")
+SettingsGrid.Parent = SettingsFrame
 SettingsGrid.CellSize = UDim2.fromScale(0.45, 0.45)
 SettingsGrid.CellPadding = UDim2.fromScale(0.05, 0.05)
 SettingsGrid.HorizontalAlignment = Enum.HorizontalAlignment.Center
@@ -65,6 +68,7 @@ for i = 1, 4 do
 	slot.Parent = SettingsFrame
 	slot.BackgroundColor3 = Color3.fromRGB(60,60,60)
 	slot.BorderSizePixel = 0
+end
 
 Frame.Parent = main
 Frame.BackgroundColor3 = Color3.fromRGB(163, 255, 137)
