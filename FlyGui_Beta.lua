@@ -25,6 +25,7 @@ main.Name = "main"
 main.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 main.ResetOnSpawn = false
 main.IgnoreGuiInset = true
+local safeTriggered = false
 local Frame           = Instance.new("Frame")
 local up              = Instance.new("TextButton")
 local escape          = Instance.new("Frame")
@@ -528,7 +529,6 @@ magictis_startFlight = function()
 	TweenObj.Completed:Connect(function()
 		TweenObj = nil
 		Flying = false
-	local safeTriggered = false
 	end)
 	TweenObj:Play()
 end
@@ -742,9 +742,10 @@ local function stopAscending()
 	end
 
 	stopUpTextVisual()
+end
 
 function magiskk.StopVertical()
-    stopAscending()
+	stopAscending()
 end
 
 up.MouseButton1Click:Connect(function()
