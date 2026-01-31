@@ -11,9 +11,9 @@ local WS               = Workspace
 local UIS              = UserInputService
 
 local Settings = {
-	BypassUp = false
+	BypassUp     = false,
+	BypassSafe = true
 }
-
 local main = Instance.new("ScreenGui")
 if syn and syn.protect_gui then
 	syn.protect_gui(main)
