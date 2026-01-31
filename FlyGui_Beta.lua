@@ -67,12 +67,25 @@ SettingsGrid.VerticalAlignment = Enum.VerticalAlignment.Center
 
 for i = 1, 6 do
 	local slot = Instance.new("Frame")
+	slot.Name = "Slot"..i
 	slot.Parent = SettingsFrame
 	slot.BackgroundColor3 = Color3.fromRGB(60,60,60)
 	slot.BorderSizePixel = 0
 end
 
 local slot1 = SettingsFrame:FindFirstChild("Slot1")
+local label = Instance.new("TextLabel")
+label.Parent = slot1
+label.Size = UDim2.fromScale(0.6, 1)
+label.Position = UDim2.fromScale(0, 0)
+label.BackgroundTransparency = 1
+label.Text = "Bypass UP"
+label.TextColor3 = Color3.fromRGB(220,220,220)
+label.Font = Enum.Font.SourceSansBold
+label.TextSize = 18
+label.TextXAlignment = Enum.TextXAlignment.Left
+label.TextYAlignment = Enum.TextYAlignment.Center
+label.ZIndex = 2
 
 local pill = Instance.new("Frame")
 pill.Parent = slot1
