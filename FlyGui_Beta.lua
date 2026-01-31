@@ -324,6 +324,8 @@ if WS.CurrentCamera then hookViewportChanged() end
    WS:GetPropertyChangedSignal("CurrentCamera"):Connect(hookViewportChanged)
 end
 
+attachDrag(Frame, onof)
+attachDrag(SettingsFrame)
 
 local magiskk = {}
 local flySpeed = 18
