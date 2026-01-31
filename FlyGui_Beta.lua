@@ -69,7 +69,6 @@ SettingsGrid.VerticalAlignment = Enum.VerticalAlignment.Center
 local Slots = {}
 
 for i = 1, 6 do
-	-- slot frame
 	local slot = Instance.new("Frame")
 	slot.Name = "Slot"..i
 	slot.Parent = SettingsFrame
@@ -77,7 +76,6 @@ for i = 1, 6 do
 	slot.BorderSizePixel = 0
 	slot.ZIndex = 10
 
-	-- label
 	local label = Instance.new("TextLabel")
 	label.Name = "Label"
 	label.Parent = slot
@@ -120,9 +118,9 @@ for i = 1, 6 do
 	slotKnob.ZIndex = 12
 	slotKnob.Active = false
 
-	local knobCorner = Instance.new("UICorner")
-	knobCorner.CornerRadius = UDim.new(1,0)
-	knobCorner.Parent = slotKnob
+    local slotKnobCorner = Instance.new("UICorner")
+    slotKnobCorner.CornerRadius = UDim.new(1, 0)
+    slotKnobCorner.Parent = slotKnob
 
 	Slots[i] = {
 		Frame = slot,
@@ -214,15 +212,15 @@ flyKnob.Size = UDim2.fromOffset(16, 16)
 flyKnob.Position = UDim2.fromOffset(22, 2)
 flyKnob.ZIndex = 3
 
-local knobCorner = Instance.new("UICorner")
-knobCorner.CornerRadius = UDim.new(1, 0)
-knobCorner.Parent = flyKnob
+local flyKnobCorner = Instance.new("UICorner")
+flyKnobCorner.CornerRadius = UDim.new(1, 0)
+flyKnobCorner.Parent = flyKnob
 
 local knobStroke = Instance.new("UIStroke")
-knobStroke.Color = Color3.fromRGB(235, 235, 235)
-knobStroke.Thickness = 1
-knobStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-knobStroke.Parent = flyKnob
+flyknobStroke.Color = Color3.fromRGB(235, 235, 235)
+fltknobStroke.Thickness = 1
+flyknobStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+flyknobStroke.Parent = flyKnob
 
 onof.Name = "onof"
 onof.Parent = Frame
@@ -457,10 +455,10 @@ local function setToggle(state)
 	local bgOff = Color3.fromRGB(220, 50, 50)
 	if isOn then
 		TweenService:Create(toggle, tweenInfo, {BackgroundColor3 = bgOn}):Play()
-		TweenService:Create(knob, tweenInfo, {Position = UDim2.fromOffset(22, 2)}):Play()
+		TweenService:Create(flyKnob, tweenInfo, {Position = UDim2.fromOffset(22, 2)}):Play()
 	else
 		TweenService:Create(toggle, tweenInfo, {BackgroundColor3 = bgOff}):Play()
-		TweenService:Create(knob, tweenInfo, {Position = UDim2.fromOffset(2, 2)}):Play()
+		TweenService:Create(flyKnob, tweenInfo, {Position = UDim2.fromOffset(2, 2)}):Play()
 	end
 end
 
@@ -548,7 +546,7 @@ local function magictis_onToggleClick()
 end
 
 toggle.Activated:Connect(magictis_onToggleClick)
-knob.Activated:Connect(magictis_onToggleClick)
+flyKnob.Activated:Connect(magictis_onToggleClick)
 
 if LocalPlayer.Character then
 	magictis_bindCharacter(LocalPlayer.Character)
@@ -696,6 +694,13 @@ up.MouseButton1Click:Connect(function()
 	local hrp = char and char:FindFirstChild("HumanoidRootPart")
 	local hum = char and char:FindFirstChildOfClass("Humanoid")
 	if not hrp or not hum then return end
+
+	local startPos = hrp.Position
+	local dist = UP_TARGET_Y - startPos.Y
+	if dist <= 0 then
+		stopAscending()
+		return
+	end
 
 	hum.PlatformStand = true
 	hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
