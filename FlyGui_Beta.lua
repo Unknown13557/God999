@@ -69,13 +69,16 @@ SettingsGrid.VerticalAlignment = Enum.VerticalAlignment.Center
 local Slots = {}
 
 for i = 1, 6 do
-	local slot = Instance.new("Frame")
-	slot.Name = "Slot"..i
-	slot.Parent = SettingsFrame
-	slot.BackgroundColor3 = Color3.fromRGB(60,60,60)
-	slot.BorderSizePixel = 0
-	slot.ZIndex = 11
-
+ local slotKnob = Instance.new("Frame")
+    slotKnob.Name = "Knob"
+    slotKnob.Parent = pill
+    slotKnob.Size = UDim2.fromOffset(14,14)
+    slotKnob.Position = UDim2.fromOffset(2,2)
+    slotKnob.BackgroundColor3 = Color3.fromRGB(220,220,220)
+    slotKnob.BorderSizePixel = 0
+    slotKnob.ZIndex = 13
+    slotKnob.Active = false
+	
 	local label = Instance.new("TextLabel")
 	label.Name = "Label"
 	label.Parent = slot
@@ -116,14 +119,14 @@ for i = 1, 6 do
     knob.Active = false
 	
 	local knobCorner = Instance.new("UICorner")
-	knobCorner.CornerRadius = UDim.new(1,0)
-	knobCorner.Parent = knob
+    knobCorner.CornerRadius = UDim.new(1,0)
+    knobCorner.Parent = slotKnob
 
 	Slots[i] = {
 		Frame = slot,
 		Label = label,
 		Pill = pill,
-		Knob = knob,
+		Knob = slotKnob,
 		State = false
 	}
 end
@@ -188,14 +191,14 @@ toggleStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 toggleStroke.Parent = toggle
 
 local knob = Instance.new("TextButton")
-knob.Name = "Knob"
-knob.Parent = toggle
-knob.AutoButtonColor = false
-knob.Text = ""
-knob.BackgroundColor3 = Color3.fromRGB(235, 235, 235)
-knob.Size = UDim2.fromOffset(16, 16)
-knob.Position = UDim2.fromOffset(22, 2)
-knob.ZIndex = 3
+flyknob.Name = "flyKnob"
+flyknob.Parent = toggle
+flyknob.AutoButtonColor = false
+flyknob.Text = ""
+flyknob.BackgroundColor3 = Color3.fromRGB(235, 235, 235)
+flyknob.Size = UDim2.fromOffset(16, 16)
+flyknob.Position = UDim2.fromOffset(22, 2)
+flyknob.ZIndex = 3
 
 local knobCorner = Instance.new("UICorner")
 knobCorner.CornerRadius = UDim.new(1, 0)
@@ -292,22 +295,23 @@ local doubleClickWindow = 1
 local originalTextColor = closebutton.TextColor3
 
 closebutton.MouseButton1Click:Connect(function()
+	if not main or not main.Parent then return end
+
 	local now = tick()
 
-	if now - lastClick <= doubleClickWindow then
-	if main and main.Parent then
-		main:Destroy()
-	end
-	if SettingsGui and SettingsGui.Parent then
-		SettingsGui:Destroy()
-	end
-end
+	if lastClick > 0 and (now - lastClick) <= doubleClickWindow then
+		if main and main.Parent then
+			main:Destroy()
+		end
+		if SettingsGui and SettingsGui.Parent then
+			SettingsGui:Destroy()
+		end
 	else
 		lastClick = now
 		closebutton.TextColor3 = Color3.fromRGB(255, 255, 255)
 
 		task.delay(doubleClickWindow, function()
-			if tick() - lastClick >= doubleClickWindow then
+			if lastClick == now then
 				closebutton.TextColor3 = originalTextColor
 			end
 		end)
@@ -682,8 +686,12 @@ up.MouseButton1Click:Connect(function()
 	hum.PlatformStand = true
 	hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
 	startUpTextVisual()
-
 if Settings.BypassUp then
+	if isAscending then
+		stopAscending()
+		return
+	end
+
 	isAscending = true
 	startUpTextVisual()
 
@@ -694,8 +702,11 @@ if Settings.BypassUp then
 	)
 
 	task.delay(0.05, function()
-		stopAscending()
+		if isAscending then
+			stopAscending()
+		end
 	end)
+
 	return
 end
 
