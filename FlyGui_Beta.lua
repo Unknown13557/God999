@@ -204,28 +204,28 @@ slot2.Pill.MouseButton1Click:Connect(function()
 end) 
 
 local slot3 = Slots[3]
-
+slot3.Frame.AutomaticSize = Enum.AutomaticSize.None
+slot3.Frame.Size = UDim2.fromScale(1, 1)
 slot3.Pill.Visible = false
 slot3.State = nil
 slot3.Label.Visible = false
 
 local input = Instance.new("TextBox")
 input.Parent = slot3.Frame
-input.Size = UDim2.fromScale(0.42, 0.7)
-input.Position = UDim2.fromScale(0.04, 0.15)
+input.Size = UDim2.fromOffset(80, 28)
+input.Position = UDim2.fromOffset(8, 10)
 
 input.Text = ""
 input.PlaceholderText = "Input"
 input.TextColor3 = Color3.fromRGB(230,230,230)
 input.PlaceholderColor3 = Color3.fromRGB(160,160,160)
 input.BackgroundColor3 = Color3.fromRGB(40,40,40)
-input.BackgroundTransparency = 0
 input.ClearTextOnFocus = false
 input.Font = Enum.Font.SourceSansBold
 input.TextSize = 16
 input.TextXAlignment = Enum.TextXAlignment.Center
 input.TextYAlignment = Enum.TextYAlignment.Center
-input.ZIndex = 3
+input.ZIndex = 15
 
 local inputCorner = Instance.new("UICorner")
 inputCorner.CornerRadius = UDim.new(0,6)
@@ -240,14 +240,14 @@ end)
 
 local upBtn = Instance.new("TextButton")
 upBtn.Parent = slot3.Frame
-upBtn.Size = UDim2.fromScale(0.22, 0.7)
-upBtn.Position = UDim2.fromScale(0.50, 0.15)
+upBtn.Size = UDim2.fromOffset(44, 28)
+upBtn.Position = UDim2.fromOffset(96, 10)
 upBtn.Text = "UP"
 upBtn.BackgroundColor3 = Color3.fromRGB(80,180,120)
 upBtn.TextColor3 = Color3.fromRGB(255,255,255)
 upBtn.Font = Enum.Font.SourceSansBold
 upBtn.TextSize = 14
-upBtn.ZIndex = 3
+upBtn.ZIndex = 15
 
 local upCorner = Instance.new("UICorner")
 upCorner.CornerRadius = UDim.new(0,6)
@@ -255,14 +255,14 @@ upCorner.Parent = upBtn
 
 local downBtn = Instance.new("TextButton")
 downBtn.Parent = slot3.Frame
-downBtn.Size = UDim2.fromScale(0.22, 0.7)
-downBtn.Position = UDim2.fromScale(0.74, 0.15)
+downBtn.Size = UDim2.fromOffset(44, 28)
+downBtn.Position = UDim2.fromOffset(144, 10)
 downBtn.Text = "DOWN"
 downBtn.BackgroundColor3 = Color3.fromRGB(180,80,80)
 downBtn.TextColor3 = Color3.fromRGB(255,255,255)
 downBtn.Font = Enum.Font.SourceSansBold
 downBtn.TextSize = 14
-downBtn.ZIndex = 3
+downBtn.ZIndex = 15
 
 local downCorner = Instance.new("UICorner")
 downCorner.CornerRadius = UDim.new(0,6)
