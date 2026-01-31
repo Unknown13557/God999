@@ -42,7 +42,7 @@ SettingsGui.Enabled = false
 
 local SettingsFrame = Instance.new("Frame")
 SettingsFrame.Parent = SettingsGui
-SettingsFrame.Size = UDim2.fromScale(0.4, 0.4)
+SettingsFrame.Size = UDim2.fromScale(0.46, 0.34)
 SettingsFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 SettingsFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
 SettingsFrame.BorderSizePixel = 2
@@ -58,7 +58,7 @@ end)
 
 local SettingsGrid = Instance.new("UIGridLayout")
 SettingsGrid.Parent = SettingsFrame
-SettingsGrid.CellSize = UDim2.fromScale(0.42, 0.34)
+SettingsGrid.CellSize = UDim2.fromScale(0.44, 0.26)
 SettingsGrid.CellPadding = UDim2.fromOffset(10, 10)
 SettingsGrid.HorizontalAlignment = Enum.HorizontalAlignment.Center
 SettingsGrid.VerticalAlignment = Enum.VerticalAlignment.Center
