@@ -11,8 +11,8 @@ local WS               = Workspace
 local UIS              = UserInputService
 
 local Settings = {
-	BypassUp     = false,
-	BypassSafe = true
+	BypassUp         = false,
+	BypassSafe       = true
 }
 local main = Instance.new("ScreenGui")
 if syn and syn.protect_gui then
@@ -157,6 +157,40 @@ slot1.Pill.MouseButton1Click:Connect(function()
 	else
 		slot1.Pill.BackgroundColor3 = Color3.fromRGB(80,80,80)
 		slot1.SlotKnob:TweenPosition(
+			UDim2.fromOffset(2,2),
+			Enum.EasingDirection.Out,
+			Enum.EasingStyle.Quad,
+			0.15,
+			true
+		)
+	end
+end)
+
+-- SLOT 2 : Bypass Safe
+local slot2 = Slots[2]
+slot2.Label.Text = "Bypass Safe"
+slot2.State = true -- mặc định ON
+
+-- sync UI ban đầu
+slot2.Pill.BackgroundColor3 = Color3.fromRGB(120,200,120)
+slot2.SlotKnob.Position = UDim2.fromOffset(20,2)
+
+slot2.Pill.MouseButton1Click:Connect(function()
+	slot2.State = not slot2.State
+	Settings.BypassSafe = slot2.State
+
+	if slot2.State then
+		slot2.Pill.BackgroundColor3 = Color3.fromRGB(120,200,120)
+		slot2.SlotKnob:TweenPosition(
+			UDim2.fromOffset(20,2),
+			Enum.EasingDirection.Out,
+			Enum.EasingStyle.Quad,
+			0.15,
+			true
+		)
+	else
+		slot2.Pill.BackgroundColor3 = Color3.fromRGB(80,80,80)
+		slot2.SlotKnob:TweenPosition(
 			UDim2.fromOffset(2,2),
 			Enum.EasingDirection.Out,
 			Enum.EasingStyle.Quad,
