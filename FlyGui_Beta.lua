@@ -89,7 +89,9 @@ for i = 1, 6 do
 	label.TextYAlignment = Enum.TextYAlignment.Center
 	label.ZIndex = 12
 
-	local pill = Instance.new("Frame")
+	local pill = Instance.new("TextButton")
+    pill.Text = ""
+    pill.AutoButtonColor = false
 	pill.Name = "Pill"
 	pill.Parent = slot
 	pill.Size = UDim2.fromOffset(36, 18)
@@ -111,7 +113,8 @@ for i = 1, 6 do
 	knob.BackgroundColor3 = Color3.fromRGB(220,220,220)
 	knob.BorderSizePixel = 0
 	knob.ZIndex = 13
-
+    knob.Active = false
+	
 	local knobCorner = Instance.new("UICorner")
 	knobCorner.CornerRadius = UDim.new(1,0)
 	knobCorner.Parent = knob
@@ -127,30 +130,16 @@ end
 
 local slot1 = Slots[1]
 
-slot1.Pill.InputBegan:Connect(function(input)
-	if input.UserInputType ~= Enum.UserInputType.MouseButton1 then return end
-
+slot1.Pill.MouseButton1Click:Connect(function()
 	slot1.State = not slot1.State
 	Settings.BypassUp = slot1.State
 
 	if slot1.State then
 		slot1.Pill.BackgroundColor3 = Color3.fromRGB(120,200,120)
-		slot1.Knob:TweenPosition(
-			UDim2.fromOffset(20,2),
-			Enum.EasingDirection.Out,
-			Enum.EasingStyle.Quad,
-			0.15,
-			true
-		)
+		slot1.Knob:TweenPosition(UDim2.fromOffset(20,2), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.15, true)
 	else
 		slot1.Pill.BackgroundColor3 = Color3.fromRGB(80,80,80)
-		slot1.Knob:TweenPosition(
-			UDim2.fromOffset(2,2),
-			Enum.EasingDirection.Out,
-			Enum.EasingStyle.Quad,
-			0.15,
-			true
-		)
+		slot1.Knob:TweenPosition(UDim2.fromOffset(2,2), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.15, true)
 	end
 end)
 slot1.Label.Text = "Bypass UP"
