@@ -2,7 +2,8 @@ local UserInputService = game:GetService("UserInputService")
 local Players          = game:GetService("Players")
 local RunService       = game:GetService("RunService")
 local Workspace        = game:GetService("Workspace")
-local TweenService     = game:GetService("TweenService")	
+local TweenService     = game:GetService("TweenService")
+local SettingsMain     = Instance.new("ScreenGui")
 
 local LocalPlayer = Players.LocalPlayer
 local RS          = RunService
@@ -28,10 +29,53 @@ local plus = Instance.new("TextButton")
 local speed = Instance.new("TextLabel")
 local mine = Instance.new("TextButton")
 local closebutton = Instance.new("TextButton")
-local mini = Instance.new("TextButton")
-local mini2 = Instance.new("TextButton")
 
 main.ResetOnSpawn = false
+
+SettingsMain.Name = "SettingsMain"
+SettingsMain.Parent = LocalPlayer.PlayerGui
+SettingsMain.IgnoreGuiInset = true
+SettingsMain.DisplayOrder = main.DisplayOrder + 1
+SettingsMain.Enabled = false
+
+local SettingsFrame = Instance.new("Frame")
+SettingsFrame.Parent = SettingsMain
+SettingsFrame.Size = UDim2.fromScale(0.4, 0.4)
+SettingsFrame.Position = UDim2.fromScale(0.5, 0.5)
+SettingsFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+SettingsFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+SettingsFrame.BorderSizePixel = 2
+SettingsFrame.Active = true
+
+local SettingsCorner = Instance.new("UICorner")
+SettingsCorner.CornerRadius = UDim.new(0,12)
+SettingsCorner.Parent = SettingsFrame
+
+local SettingsGrid = Instance.new("UIGridLayout")
+SettingsGrid.Parent = SettingsFrame
+SettingsGrid.CellSize = UDim2.fromScale(0.22, 0.25)
+SettingsGrid.CellPadding = UDim2.fromScale(0.03, 0.05)
+SettingsGrid.HorizontalAlignment = Enum.HorizontalAlignment.Center
+SettingsGrid.VerticalAlignment = Enum.VerticalAlignment.Center
+
+for i = 1, 12 do
+	local slot = Instance.new("Frame")
+	slot.Parent = SettingsFrame
+	slot.BackgroundColor3 = Color3.fromRGB(60,60,60)
+	slot.BorderSizePixel = 0
+
+	local c = Instance.new("UICorner")
+	c.CornerRadius = UDim.new(0,8)
+	c.Parent = slot
+
+	local t = Instance.new("TextLabel")
+	t.Parent = slot
+	t.Size = UDim2.fromScale(1,1)
+	t.BackgroundTransparency = 1
+	t.Text = i
+	t.TextScaled = true
+	t.TextColor3 = Color3.fromRGB(200,200,200)
+end
 
 Frame.Parent = main
 Frame.BackgroundColor3 = Color3.fromRGB(163, 255, 137)
@@ -164,25 +208,6 @@ closebutton.Text = "X"
 closebutton.TextSize = 30
 closebutton.Position =  UDim2.new(0, 0, -0.99000, 27)
 
-mini.Name = "minimize"
-mini.Parent = main.Frame
-mini.BackgroundColor3 = Color3.fromRGB(192, 150, 230)
-mini.Font = Enum.Font.SourceSans
-mini.Size = UDim2.new(0, 44, 0, 28)
-mini.Text = "-"
-mini.TextSize = 40
-mini.Position = UDim2.new(0, 45, -0.99000, 27)
-
-mini2.Name = "minimize2"
-mini2.Parent = main.Frame
-mini2.BackgroundColor3 = Color3.fromRGB(192, 150, 230)
-mini2.Font = Enum.Font.SourceSans
-mini2.Size = UDim2.new(0, 45, 0, 28)
-mini2.Text = "+"
-mini2.TextSize = 40
-mini2.Position = UDim2.new(0, 44, -1, 57)
-mini2.Visible = false
-
 local lastClick = 0
 local doubleClickWindow = 1
 
@@ -203,33 +228,6 @@ closebutton.MouseButton1Click:Connect(function()
 	end
 end)
 
-mini.MouseButton1Click:Connect(function()
-	up.Visible = false
-	escape.Visible = false
-	toggle.Visible = false
-	onof.Visible = false
-	plus.Visible = false
-	speed.Visible = false
-	mine.Visible = false
-	mini.Visible = false
-	mini2.Visible = true
-	main.Frame.BackgroundTransparency = 1
-	closebutton.Position =  UDim2.new(0, 0, -1, 57)
-end)
-
-mini2.MouseButton1Click:Connect(function()
-	up.Visible = true
-	escape.Visible = true
-	toggle.Visible = true
-	onof.Visible = true
-	plus.Visible = true
-	speed.Visible = true
-	mine.Visible = true
-	mini.Visible = true
-	mini2.Visible = false
-	main.Frame.BackgroundTransparency = 0 
-	closebutton.Position =  UDim2.new(0, 0, -1, 27)
-end)
 
 local function pointerPos(input)
 	return (input.UserInputType == Enum.UserInputType.Touch)
@@ -311,6 +309,35 @@ end
 
 if WS.CurrentCamera then hookViewportChanged() end
 WS:GetPropertyChangedSignal("CurrentCamera"):Connect(hookViewportChanged)
+
+local settingsDragging = false
+local settingsDragStart
+local settingsStartPos
+
+SettingsFrame.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		settingsDragging = true
+		settingsDragStart = input.Position
+		settingsStartPos = SettingsFrame.Position
+
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				settingsDragging = false
+			end
+		end)
+	end
+end)
+
+SettingsFrame.InputChanged:Connect(function(input)
+	if not settingsDragging then return end
+	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+		local delta = input.Position - settingsDragStart
+		SettingsFrame.Position = UDim2.fromOffset(
+			settingsStartPos.X.Offset + delta.X,
+			settingsStartPos.Y.Offset + delta.Y
+		)
+	end
+end)
 
 local magiskk = {}
 local flySpeed = 18
@@ -858,6 +885,13 @@ mine.MouseButton1Down:Connect(function()
 			end
 		end)
 	end
+end)
+
+local settingsOpen = false
+
+settingBtn.MouseButton1Click:Connect(function()
+	settingsOpen = not settingsOpen
+	SettingsMain.Enabled = settingsOpen
 end)
 
 Players.LocalPlayer.CharacterAdded:Connect(function(char)
