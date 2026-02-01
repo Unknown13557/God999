@@ -306,6 +306,7 @@ yBox.Parent = frame
 yBox.Text = "100000"
 yBox.Size = UDim2.fromOffset(90, 22)
 yBox.Position = UDim2.fromOffset(startX + 14 + gap, centerY)
+yBox.AnchorPoint = Vector2.new(0, 0)
 yBox.ClearTextOnFocus = false
 yBox.Font = Enum.Font.SourceSans
 yBox.TextSize = 13
@@ -342,6 +343,7 @@ spLabel.ZIndex = 50
 local spBox = Instance.new("TextBox")
 spBox.Parent = frame
 spBox.Text = "2000"
+spBox.AnchorPoint = Vector2.new(0, 0)
 spBox.Size = UDim2.fromOffset(60, 22)
 spBox.Position = UDim2.fromOffset(
 	startX + 14 + gap + 90 + gap + 18 + gap,
