@@ -423,7 +423,7 @@ slot3Input.ZIndex = 15
 
 local slot3InputCorner = Instance.new("UICorner")
 slot3InputCorner.CornerRadius = UDim.new(0,6)
-slot3InputCorner.Parent = input
+slot3InputCorner.Parent = slot3Input
 
 slot3Input:GetPropertyChangedSignal("Text"):Connect(function()	
 local filtered = slot3Input.Text:gsub("%D", "")
@@ -474,10 +474,10 @@ local slot3DownCorner = Instance.new("UICorner")
 slot3DownCorner.CornerRadius = UDim.new(0,6)
 slot3DownCorner.Parent = slot3DownBtn
 
-local MIN_TWEEN_Y = 30
+local SLOT3MIN_TWEEN_Y = 30
 
 local function applyOffset(dir)
-	local value = tonumber(input.Text)
+	local value = tonumber(slot3Input.Text)
 	if not value or value <= 0 then return end
 
 	local char = LocalPlayer.Character
@@ -498,8 +498,8 @@ local function applyOffset(dir)
 
 		targetY = currentY - value
 
-		if targetY < MIN_TWEEN_Y then
-			targetY = MIN_TWEEN_Y
+		if targetY < SLOT3MIN_TWEEN_Y then
+			targetY = SLOT3MIN_TWEEN_Y
 		end
 	end
 
@@ -513,11 +513,11 @@ local function applyOffset(dir)
 	)
 end
 
-upBtn.MouseButton1Click:Connect(function()
+slot3UpBtn.MouseButton1Click:Connect(function()
     applyOffset(1)
 end)
 
-downBtn.MouseButton1Click:Connect(function()
+slot3DownBtn.MouseButton1Click:Connect(function()
     applyOffset(-1)
 end)
 
