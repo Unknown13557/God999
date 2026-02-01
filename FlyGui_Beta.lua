@@ -181,96 +181,71 @@ SettingsGrid.Parent = SettingsFrame
 SettingsGrid.CellSize = UDim2.fromOffset(260, 56)
 SettingsGrid.CellPadding = UDim2.fromOffset(6, 6)
 SettingsGrid.HorizontalAlignment = Enum.HorizontalAlignment.Center
-SettingsGrid.VerticalAlignment = Enum.VerticalAlignment.Center
+SettingsGrid.VerticalAlignment = Enum.VerticalAlignment.Top
 
 local Slots = {}
 
 for i = 1, 6 do
     local slot = Instance.new("Frame")
-    slot.Name = "Slot"..i
-    slot.Parent = SettingsFrame
-    slot.BackgroundColor3 = Color3.fromRGB(60,60,60)
-    slot.BorderSizePixel = 0
-    slot.ZIndex = 10
-    slot.ClipsDescendants = (i ~= 1)
-    slot.Size = UDim2.fromOffset(260, 56)
+slot.Name = "Slot"..i
+        slot.Parent = SettingsFrame
+        slot.Size = UDim2.fromOffset(260, 56)
+        slot.BackgroundColor3 = Color3.fromRGB(60,60,60)
+        slot.BorderSizePixel = 0
+        slot.ClipsDescendants = false
+        slot.ZIndex = 10
 
-    if i == 1 then
+   if i == 1 then
+    local row = Instance.new("Frame")
+    row.Parent = slot
+    row.Size = UDim2.fromScale(1,1)
+    row.BackgroundTransparency = 1
 
-        local row = Instance.new("Frame")
-        row.Parent = slot
-        row.BackgroundTransparency = 1
-        row.Size = UDim2.fromScale(1, 1)
+    local layout = Instance.new("UIListLayout")
+    layout.Parent = row
+    layout.FillDirection = Enum.FillDirection.Horizontal
+    layout.VerticalAlignment = Enum.VerticalAlignment.Center
+    layout.Padding = UDim.new(0,4)
 
-        local layout = Instance.new("UIListLayout")
-        layout.Parent = row
-        layout.FillDirection = Enum.FillDirection.Horizontal
-        layout.VerticalAlignment = Enum.VerticalAlignment.Center
-        layout.HorizontalAlignment = Enum.HorizontalAlignment.Left
-		
-        layout.Padding = UDim.new(0, 2)
+    local pad = Instance.new("UIPadding")
+    pad.Parent = row
+    pad.PaddingLeft = UDim.new(0,6)
+    pad.PaddingRight = UDim.new(0,6)
 
-        local pad = Instance.new("UIPadding")
-        pad.Parent = row
-        pad.PaddingLeft = UDim.new(0, 6)
-        pad.PaddingRight = UDim.new(0, 6)
+    local function label(txt,w)
+        local l = Instance.new("TextLabel")
+        l.Size = UDim2.fromOffset(w,20)
+        l.BackgroundTransparency = 1
+        l.Text = txt
+        l.Font = Enum.Font.SourceSansBold
+        l.TextSize = 12
+        l.TextColor3 = Color3.fromRGB(220,220,220)
+        l.Parent = row
+    end
 
-        local function makeLabel(text, w)
-            local lb = Instance.new("TextLabel")
-            lb.BackgroundTransparency = 1
-            lb.Size = UDim2.fromOffset(w, 20)
-            lb.Text = text
-            lb.Font = Enum.Font.SourceSansBold
-            lb.TextSize = 12
-            lb.TextColor3 = Color3.fromRGB(220,220,220)
-            lb.TextXAlignment = Enum.TextXAlignment.Center
-            return lb
-        end
+    local function box(def,w)
+        local b = Instance.new("TextBox")
+        b.Size = UDim2.fromOffset(w,22)
+        b.Text = def
+        b.ClearTextOnFocus = false
+        b.Font = Enum.Font.SourceSans
+        b.TextSize = 13
+        b.BackgroundColor3 = Color3.fromRGB(40,40,40)
+        b.TextColor3 = Color3.fromRGB(255,255,255)
+        Instance.new("UICorner", b).CornerRadius = UDim.new(0,4)
+        b.Parent = row
+        return b
+    end
 
-        local function makeBox(default, w)
-            local box = Instance.new("TextBox")
-            box.Size = UDim2.fromOffset(w, 22)
-            box.Text = default
-            box.Font = Enum.Font.SourceSans
-            box.TextSize = 13
-            box.ClearTextOnFocus = false
-            box.BackgroundColor3 = Color3.fromRGB(40,40,40)
-            box.TextColor3 = Color3.fromRGB(255,255,255)
-            Instance.new("UICorner", box).CornerRadius = UDim.new(0,4)
-            return box
-        end
+    label("Y",12)
+    local yBox = box("100000",90)
 
-        makeLabel("Y", 12).Parent = row
-        local yBox = makeBox("100000", 96)
-        yBox.Parent = row
+    label("Sp",16)
+    local spBox = box("2000",70)
 
-        makeLabel("Sp", 16).Parent = row
-        local spBox = makeBox("2000", 72)
-        spBox.Parent = row
+    Slots[1] = { Frame = slot, Type = "Console" } 
 
-        Settings.ConsoleY = tonumber(yBox.Text) or 100000
-        Settings.ConsoleSpeed = tonumber(spBox.Text) or 2000
-
-        yBox:GetPropertyChangedSignal("Text"):Connect(function()
-            local n = tonumber(yBox.Text)
-            if n then
-                Settings.ConsoleY = n
-            end
-        end)
-
-        spBox:GetPropertyChangedSignal("Text"):Connect(function()
-            local n = tonumber(spBox.Text)
-            if n then
-                Settings.ConsoleSpeed = n
-            end
-        end)
-
-        Slots[1] = {
-            Frame = slot,
-            Type = "Console"
-        }
-
-    else
+else
 
         local content = Instance.new("Frame")
         content.Parent = slot
@@ -322,19 +297,17 @@ for i = 1, 6 do
 end
 		
 local function syncSlotUI(slot, state)
-	if not slot or slot.Type ~= "Toggle" then
-		return
-	end
+    if not slot or slot.Type ~= "Toggle" then return end
 
-	slot.State = state
+    slot.State = state
 
-	if state then
-		slot.Pill.BackgroundColor3 = Color3.fromRGB(120,200,120)
-		slot.SlotKnob.Position = UDim2.fromOffset(20, 2)
-	else
-		slot.Pill.BackgroundColor3 = Color3.fromRGB(80,80,80)
-		slot.SlotKnob.Position = UDim2.fromOffset(2, 2)
-	end
+    if state then
+        slot.Pill.BackgroundColor3 = Color3.fromRGB(120,200,120)
+        slot.SlotKnob.Position = UDim2.fromOffset(20,2)
+    else
+        slot.Pill.BackgroundColor3 = Color3.fromRGB(80,80,80)
+        slot.SlotKnob.Position = UDim2.fromOffset(2,2)
+    end
 end
 
 local slot2 = Slots[2]
