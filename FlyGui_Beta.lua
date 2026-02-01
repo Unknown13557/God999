@@ -376,8 +376,12 @@ end)
 
 
 
+
+
 repeat task.wait() until SettingsFrame and SettingsFrame.Parent
+
 local slot3Data = Slots[3]
+local slot3Value = 0
 local slot3Frame = slot3Data.Frame
 
 slot3Frame.AutomaticSize = Enum.AutomaticSize.None
@@ -421,10 +425,13 @@ local inputCorner = Instance.new("UICorner")
 inputCorner.CornerRadius = UDim.new(0,6)
 inputCorner.Parent = input
 
-input:GetPropertyChangedSignal("Text"):Connect(function()
-	local filtered = input.Text:gsub("%D", "")
+input:GetPropertyChangedSignal("Text"):Connect(function()	
+local filtered = input.Text:gsub("%D", "")
 	if input.Text ~= filtered then
 		input.Text = filtered
+local n = tonumber(input.Text)
+	if n then
+		slot3Value = n
 	end
 end)
 
@@ -506,12 +513,24 @@ local function applyOffset(dir)
 	)
 end
 
-upBtn.MouseButton1Click:Connect(function()
-	applyOffset(1)
+up.MouseButton1Click:Connect(function()
+	local char = LocalPlayer.Character
+	local hrp = char and char:FindFirstChild("HumanoidRootPart")
+	if not hrp then return end
+	if slot3Value == 0 then return end
+
+	local pos = hrp.Position
+	hrp.CFrame = CFrame.new(pos.X, pos.Y + slot3Value, pos.Z)
 end)
 
-downBtn.MouseButton1Click:Connect(function()
-	applyOffset(-1)
+down.MouseButton1Click:Connect(function()
+	local char = LocalPlayer.Character
+	local hrp = char and char:FindFirstChild("HumanoidRootPart")
+	if not hrp then return end
+	if slot3Value == 0 then return end
+
+	local pos = hrp.Position
+	hrp.CFrame = CFrame.new(pos.X, pos.Y - slot3Value, pos.Z)
 end)
 
 
