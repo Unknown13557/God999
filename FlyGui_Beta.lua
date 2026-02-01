@@ -108,6 +108,12 @@ for i = 1, 6 do
 	label.TextYAlignment = Enum.TextYAlignment.Center
 	label.ZIndex = 11
 
+	do
+        local pad = Instance.new("UIPadding")
+        pad.PaddingLeft = UDim.new(0, 6)
+        pad.Parent = label
+	end
+
 	local pill = Instance.new("TextButton")
 	pill.Name = "Pill"
 	pill.Parent = content
@@ -145,12 +151,6 @@ for i = 1, 6 do
 		SlotKnob = slotKnob,
 		State = false
 	}
-end
-
-do
-    local pad = Instance.new("UIPadding")
-    pad.PaddingLeft = UDim.new(0, 6)
-    pad.Parent = slot1
 end
 
 local function syncSlotUI(slot, state)
@@ -193,12 +193,6 @@ slot1.Pill.MouseButton1Click:Connect(function()
 	end
 end)
 
-do
-    local pad = Instance.new("UIPadding")
-    pad.PaddingLeft = UDim.new(0, 6)
-    pad.Parent = slot1
-end
-
 local slot2 = Slots[2]
 slot2.Label.Text = "Bypass Safe"
 slot2.State = true
@@ -230,12 +224,6 @@ slot2.Pill.MouseButton1Click:Connect(function()
 		)
 	end
 end) 
-
-do
-    local pad = Instance.new("UIPadding")
-    pad.PaddingLeft = UDim.new(0, 6)
-    pad.Parent = slot1
-end
 
 repeat task.wait() until SettingsFrame and SettingsFrame.Parent
 local slot3Data = Slots[3]
