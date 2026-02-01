@@ -90,8 +90,8 @@ for i = 1, 6 do
 	local content = Instance.new("Frame")
     content.Name = "Content"
     content.Parent = slot
-    content.Size = UDim2.new(1, -20, 1, 0)
-    content.Position = UDim2.fromOffset(10, 0)
+    content.Size = UDim2.new(1, -28, 1, 0)
+    content.Position = UDim2.fromOffset(14, 0)
     content.BackgroundTransparency = 1
 
 	local label = Instance.new("TextLabel")
