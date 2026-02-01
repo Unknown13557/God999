@@ -371,7 +371,7 @@ local downCorner = Instance.new("UICorner")
 downCorner.CornerRadius = UDim.new(0,6)
 downCorner.Parent = downBtn
 
-local MIN_SAFE_Y = 30
+local MIN_TWEEN_Y = 30
 
 local function applyOffset(dir)
 	local value = tonumber(input.Text)
@@ -418,8 +418,7 @@ downBtn.MouseButton1Click:Connect(function()
 	applyOffset(-1)
 end)
 
-syncSlotUI(Slots[1], Settings.BypassUp)
-syncSlotUI(Slots[2], Settings.BypassSafe)
+syncSlotUI(Slots[2], Settings.BypassTween)
 
 Frame.Parent = main
 Frame.BackgroundColor3 = Color3.fromRGB(163, 255, 137)
