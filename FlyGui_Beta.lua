@@ -164,6 +164,7 @@ SettingsFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
 SettingsFrame.BorderSizePixel = 2
 SettingsFrame.Active = true
 SettingsFrame.Position = UDim2.fromScale(0.5, 0.5)
+attachDrag(SettingsFrame, nil)
 
 task.defer(function()
 	local cam = WS.CurrentCamera
