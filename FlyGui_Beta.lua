@@ -11,8 +11,6 @@ local RunService       = game:GetService("RunService")
 local Workspace        = game:GetService("Workspace")
 local TweenService     = game:GetService("TweenService")
 
-
-local LocalPlayer      = Players.LocalPlayer
 local RS               = RunService
 local WS               = Workspace
 local UIS              = UserInputService
@@ -273,10 +271,9 @@ end
 local slot1 = Slots[1]
 local frame = slot1.Frame
 
-for _, c in ipairs(frame:GetChildren()) do
-	if not c:IsA("UICorner") then
-		c:Destroy()
-	end
+local oldContent = frame:FindFirstChild("Content")
+if oldContent then
+	oldContent:Destroy()
 end
 
 local row1 = Instance.new("Frame")
@@ -342,7 +339,7 @@ createNumberInput(row1, "Speed", Settings.ConsoleSpeed, function(v)
 	Settings.ConsoleSpeed = v
 end)
 
-createNumberInput(row, "Y", Settings.ConsoleY, function(v)
+createNumberInput(row1, "Y", Settings.ConsoleY, function(v)
 	Settings.ConsoleY = v
 end)
 
@@ -516,8 +513,6 @@ end)
 downBtn.MouseButton1Click:Connect(function()
 	applyOffset(-1)
 end)
-
-syncSlotUI(Slots[2], Settings.BypassTween)
 
 
 Frame.BackgroundColor3 = Color3.fromRGB(163, 255, 137)
