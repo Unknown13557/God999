@@ -278,7 +278,7 @@ upIcon.BackgroundTransparency = 1
 upIcon.Size = UDim2.fromScale(0.85, 0.85)
 upIcon.Position = UDim2.fromScale(0.075, 0.075)
 upIcon.Image = "rbxassetid://6031090990"
-UpIcon.Rotation = 0
+upIcon.Rotation = 0
 upIcon.ZIndex = upBtn.ZIndex + 1
 
 local upCorner = Instance.new("UICorner")
