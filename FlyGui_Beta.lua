@@ -183,6 +183,7 @@ end)
 
 local Slots = {}
 
+
 for i = 1, 6 do
 	local slot = Instance.new("Frame")
 	slot.Name = "Slot"..i
@@ -190,6 +191,9 @@ for i = 1, 6 do
 	slot.BackgroundColor3 = Color3.fromRGB(60,60,60)
 	slot.BorderSizePixel = 0
 	slot.ZIndex = 10
+	slot.ClipsDescendants = true
+	slot.AutomaticSize = Enum.AutomaticSize.None
+
 
 	local col = (i - 1) % 2
 	local row = math.floor((i - 1) / 2)
@@ -200,43 +204,52 @@ for i = 1, 6 do
 		0.05 + row * 0.31
 	)
 
-	slot.ClipsDescendants = true
-	slot.AutomaticSize = Enum.AutomaticSize.None
-
 	if i == 1 then
+
 		Slots[1] = {
 			Frame = slot,
 			Type = "Console"
 		}
+
 	else
+
 		local content = Instance.new("Frame")
 		content.Parent = slot
-		content.Position = UDim2.fromOffset(10, 0)
-		content.Size = UDim2.new(1, -20, 1, 0)
 		content.BackgroundTransparency = 1
+		content.Size = UDim2.new(1, -20, 1, 0)
+		content.Position = UDim2.fromOffset(10, 0)
+		content.ZIndex = 11
 
 		local label = Instance.new("TextLabel")
 		label.Parent = content
-		label.Size = UDim2.fromScale(0.65, 1)
 		label.BackgroundTransparency = 1
-		label.Text = "Empty"
+		label.Size = UDim2.fromScale(0.65, 1)
+		label.Position = UDim2.fromScale(0, 0)
 		label.Font = Enum.Font.SourceSansBold
 		label.TextSize = 18
-		label.TextXAlignment = Left
+		label.TextXAlignment = Enum.TextXAlignment.Left
 		label.TextColor3 = Color3.fromRGB(220,220,220)
+		label.Text = "Slot "..i
+		label.ZIndex = 12
 
 		local pill = Instance.new("TextButton")
 		pill.Parent = content
 		pill.Size = UDim2.fromOffset(36, 18)
-		pill.Position = UDim2.fromScale(1, 0.5)
 		pill.AnchorPoint = Vector2.new(1, 0.5)
+		pill.Position = UDim2.fromScale(1, 0.5)
 		pill.BackgroundColor3 = Color3.fromRGB(80,80,80)
+		pill.Text = ""
+		pill.AutoButtonColor = false
+		pill.ZIndex = 12
+		Instance.new("UICorner", pill).CornerRadius = UDim.new(1, 0)
 
 		local knob = Instance.new("Frame")
 		knob.Parent = pill
-		knob.Size = UDim2.fromOffset(14,14)
-		knob.Position = UDim2.fromOffset(2,2)
+		knob.Size = UDim2.fromOffset(14, 14)
+		knob.Position = UDim2.fromOffset(2, 2)
 		knob.BackgroundColor3 = Color3.fromRGB(220,220,220)
+		knob.ZIndex = 13
+		Instance.new("UICorner", knob).CornerRadius = UDim.new(1, 0)
 
 		Slots[i] = {
 			Frame = slot,
@@ -260,7 +273,7 @@ local gap = 4
 
 task.defer(function()
     local frame = Slots[1].Frame
-    local centerY = math.floor(frame.AbsoluteSize.Y/2 - 11)
+    local centerY = 14
 
 local yLabel = Instance.new("TextLabel")
 yLabel.Parent = frame
