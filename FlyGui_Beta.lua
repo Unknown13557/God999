@@ -288,7 +288,8 @@ downIcon.Parent = downBtn
 downIcon.BackgroundTransparency = 1
 downIcon.Size = UDim2.fromScale(0.85, 0.85)
 downIcon.Position = UDim2.fromScale(0.075, 0.075)
-downIcon.Image = "rbxassetid://6031091002"
+"rbxassetid://6031091004"
+downIcon.Rotation = 180
 downIcon.ZIndex = downBtn.ZIndex + 1
 
 local downCorner = Instance.new("UICorner")
