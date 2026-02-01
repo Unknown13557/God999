@@ -270,6 +270,7 @@ local function syncSlotUI(slot, state)
 	end
 end
 
+local slot1 = Slots[1]
 local frame = slot1.Frame
 
 for _, c in ipairs(frame:GetChildren()) do
@@ -278,13 +279,13 @@ for _, c in ipairs(frame:GetChildren()) do
 	end
 end
 
-local row = Instance.new("Frame")
-row.Parent = frame
-row.BackgroundTransparency = 1
-row.Size = UDim2.fromScale(1, 1)
+local row1 = Instance.new("Frame")
+row1.Parent = frame
+row1.BackgroundTransparency = 1
+row1.Size = UDim2.fromScale(1, 1)
 
 local layout = Instance.new("UIListLayout")
-layout.Parent = row
+layout.Parent = row1
 layout.FillDirection = Enum.FillDirection.Horizontal
 layout.HorizontalAlignment = Enum.HorizontalAlignment.Left
 layout.VerticalAlignment = Enum.VerticalAlignment.Center
@@ -306,7 +307,7 @@ local function createNumberInput(parent, labelText, defaultValue, onChanged)
 	label.Text = labelText
 	label.Size = UDim2.fromOffset(50, 32)
 	label.BackgroundTransparency = 1
-	label.TextXAlignment = Left
+	label.TextXAlignment = Enum.TextXAlignment.Left
 	label.Font = Enum.Font.SourceSansBold
 	label.TextSize = 14
 	label.TextColor3 = Color3.fromRGB(200,200,200)
@@ -337,7 +338,7 @@ end
 Settings.ConsoleSpeed = 2000
 Settings.ConsoleY = 100000
 
-createNumberInput(row, "Speed", Settings.ConsoleSpeed, function(v)
+createNumberInput(row1, "Speed", Settings.ConsoleSpeed, function(v)
 	Settings.ConsoleSpeed = v
 end)
 
@@ -389,21 +390,21 @@ slot3Data.Pill.Visible = false
 slot3Data.State = nil
 slot3Data.Label.Visible = false
 
-local row = Instance.new("Frame")
-row.Parent = slot3Frame
-row.Size = UDim2.new(1, -12, 1, -8)
-row.Position = UDim2.fromOffset(6, 4)
-row.BackgroundTransparency = 1
-row.ZIndex = 20
+local row3 = Instance.new("Frame")
+row3.Parent = slot3Frame
+row3.Size = UDim2.new(1, -12, 1, -8)
+row3.Position = UDim2.fromOffset(6, 4)
+row3.BackgroundTransparency = 1
+row3.ZIndex = 20
 
 local rowLayout = Instance.new("UIListLayout")
-rowLayout.Parent = row
+rowLayout.Parent = row3
 rowLayout.FillDirection = Enum.FillDirection.Horizontal
 rowLayout.VerticalAlignment = Enum.VerticalAlignment.Center
 rowLayout.Padding = UDim.new(0, 2)
 
 local input = Instance.new("TextBox")
-input.Parent = row
+input.Parent = row3
 
 input.Size = UDim2.fromOffset(80, 28)
 
@@ -431,7 +432,7 @@ input:GetPropertyChangedSignal("Text"):Connect(function()
 end)
 
 local upBtn = Instance.new("TextButton")
-upBtn.Parent = row
+upBtn.Parent = row3
 upBtn.Size = UDim2.fromOffset(34, 28)
 upBtn.Text = ""
 upBtn.BackgroundColor3 = Color3.fromRGB(80,180,120)
@@ -450,7 +451,7 @@ upCorner.CornerRadius = UDim.new(0,6)
 upCorner.Parent = upBtn
 
 local downBtn = Instance.new("TextButton")
-downBtn.Parent = row
+downBtn.Parent = row3
 downBtn.Size = UDim2.fromOffset(34, 28)
 downBtn.Text = ""
 downBtn.BackgroundColor3 = Color3.fromRGB(180,80,80)
