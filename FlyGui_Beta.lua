@@ -435,6 +435,23 @@ local n = tonumber(slot3Input.Text)
 	end
 end)
 
+slot3Input:GetPropertyChangedSignal("Text"):Connect(function()
+	local text = slot3Input.Text
+	local num = tonumber(text)
+	if not num then
+		slot3Input.Text = ""
+		return
+	end
+
+	if num < 0 then
+		num = 0
+end
+	if num > SLOT3MAX_TWEEN_Y then
+		num = SLOT3MAX_TWEEN_Y
+end
+	slot3Input.Text = tostring(math.floor(num))
+end)
+
 local slot3UpBtn = Instance.new("TextButton")
 slot3UpBtn.Parent = row3
 slot3UpBtn.Size = UDim2.fromOffset(34, 28)
@@ -475,6 +492,7 @@ slot3DownCorner.CornerRadius = UDim.new(0,6)
 slot3DownCorner.Parent = slot3DownBtn
 
 local SLOT3MIN_TWEEN_Y = 30
+local SLOT3MAX_TWEEN_Y = 2000000000
 
 local function applyOffset(dir)
 	local value = tonumber(slot3Input.Text)
@@ -484,24 +502,18 @@ local function applyOffset(dir)
 	if not char then return end
 
 	local hrp = char:FindFirstChild("HumanoidRootPart")
-    if not hrp then return end
+	if not hrp then return end
 
 	local currentY = hrp.Position.Y
-	local targetY = currentY
+	local targetY = currentY + (value * dir)
 
-	if dir > 0 then
-		targetY = currentY + value
-	else
-		if currentY <= MIN_TWEEN_Y then
-			return
-		end
+	if targetY < SLOT3MIN_TWEEN_Y then
+		targetY = SLOT3MIN_TWEEN_Y
+end
 
-		targetY = currentY - value
-
-		if targetY < SLOT3MIN_TWEEN_Y then
-			targetY = SLOT3MIN_TWEEN_Y
-		end
-	end
+	if targetY > SLOT3MAX_TWEEN_Y then
+		targetY = SLOT3MAX_TWEEN_Y
+end
 
 	hrp.AssemblyLinearVelocity = Vector3.zero
 	hrp.AssemblyAngularVelocity = Vector3.zero
