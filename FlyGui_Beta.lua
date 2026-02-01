@@ -17,11 +17,97 @@ local RS               = RunService
 local WS               = Workspace
 local UIS              = UserInputService
 
-local function attachDrag(target, ignoreButton)
-
 local Settings = {
 	BypassTween       = true
 }
+
+local function attachDrag(target, ignoreButton)
+
+local dragging = false
+	local dragStart, startPos
+
+	target.Active = true
+	target.Draggable = false
+
+	local function clampToViewport(x, y)
+		local cam = WS.CurrentCamera
+		if not cam then
+			return UDim2.fromOffset(x, y)
+		end
+
+		local vp = cam.ViewportSize
+		local size = target.AbsoluteSize
+		local anchor = target.AnchorPoint
+
+		local minX = size.X * anchor.X
+		local maxX = vp.X - size.X * (1 - anchor.X)
+		local minY = size.Y * anchor.Y
+		local maxY = vp.Y - size.Y * (1 - anchor.Y)
+
+		x = math.clamp(x, minX, math.max(minX, maxX))
+		y = math.clamp(y, minY, math.max(minY, maxY))
+
+		return UDim2.fromOffset(x, y)
+	end
+
+	target.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1
+			or input.UserInputType == Enum.UserInputType.Touch then
+
+			if ignoreButton and over(ignoreButton, pointerPos(input)) then
+				return
+			end
+
+			dragging = true
+			dragStart = input.Position
+			startPos = target.Position
+
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					dragging = false
+				end
+			end)
+		end
+	end)
+
+	target.InputChanged:Connect(function(input)
+		if not dragging then return end
+		if input.UserInputType == Enum.UserInputType.MouseMovement
+			or input.UserInputType == Enum.UserInputType.Touch then
+
+			local delta = input.Position - dragStart
+			target.Position = clampToViewport(
+				startPos.X.Offset + delta.X,
+				startPos.Y.Offset + delta.Y
+			)
+		end
+	end)
+
+	task.defer(function()
+		local abs = target.AbsolutePosition
+		target.Position = clampToViewport(abs.X, abs.Y)
+	end)
+
+	local function hookViewportChanged()
+		local cam = WS.CurrentCamera
+		if not cam then return end
+
+		cam:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+			if not dragging then
+				local abs = target.AbsolutePosition
+				target.Position = clampToViewport(abs.X, abs.Y)
+			end
+		end)
+	end
+
+	if WS.CurrentCamera then
+		hookViewportChanged()
+	end
+
+	WS:GetPropertyChangedSignal("CurrentCamera"):Connect(hookViewportChanged)
+end
+
+	
 
 local main = Instance.new("ScreenGui")
 if syn and syn.protect_gui then
@@ -612,90 +698,10 @@ end
 
 
 
+	
+
 		
-	local dragging = false
-	local dragStart, startPos
-
-	target.Active = true
-	target.Draggable = false
-
-	local function clampToViewport(x, y)
-		local cam = WS.CurrentCamera
-		if not cam then
-			return UDim2.fromOffset(x, y)
-		end
-
-		local vp = cam.ViewportSize
-		local size = target.AbsoluteSize
-		local anchor = target.AnchorPoint
-
-		local minX = size.X * anchor.X
-		local maxX = vp.X - size.X * (1 - anchor.X)
-		local minY = size.Y * anchor.Y
-		local maxY = vp.Y - size.Y * (1 - anchor.Y)
-
-		x = math.clamp(x, minX, math.max(minX, maxX))
-		y = math.clamp(y, minY, math.max(minY, maxY))
-
-		return UDim2.fromOffset(x, y)
-	end
-
-	target.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1
-			or input.UserInputType == Enum.UserInputType.Touch then
-
-			if ignoreButton and over(ignoreButton, pointerPos(input)) then
-				return
-			end
-
-			dragging = true
-			dragStart = input.Position
-			startPos = target.Position
-
-			input.Changed:Connect(function()
-				if input.UserInputState == Enum.UserInputState.End then
-					dragging = false
-				end
-			end)
-		end
-	end)
-
-	target.InputChanged:Connect(function(input)
-		if not dragging then return end
-		if input.UserInputType == Enum.UserInputType.MouseMovement
-			or input.UserInputType == Enum.UserInputType.Touch then
-
-			local delta = input.Position - dragStart
-			target.Position = clampToViewport(
-				startPos.X.Offset + delta.X,
-				startPos.Y.Offset + delta.Y
-			)
-		end
-	end)
-
-	task.defer(function()
-		local abs = target.AbsolutePosition
-		target.Position = clampToViewport(abs.X, abs.Y)
-	end)
-
-	local function hookViewportChanged()
-		local cam = WS.CurrentCamera
-		if not cam then return end
-
-		cam:GetPropertyChangedSignal("ViewportSize"):Connect(function()
-			if not dragging then
-				local abs = target.AbsolutePosition
-				target.Position = clampToViewport(abs.X, abs.Y)
-			end
-		end)
-	end
-
-	if WS.CurrentCamera then
-		hookViewportChanged()
-	end
-
-	WS:GetPropertyChangedSignal("CurrentCamera"):Connect(hookViewportChanged)
-end
+	
 
 
 
@@ -704,9 +710,6 @@ end
 
 
 
-
-
-attachDrag(SettingsFrame, nil)
 
 local magiskk = {}
 local flySpeed = 18
