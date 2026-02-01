@@ -274,28 +274,36 @@ row.BackgroundTransparency = 1
 row.Size = UDim2.new(1, -12, 1, -8)
 row.Position = UDim2.fromOffset(6, 4)
 row.ZIndex = 20
+row.ClipsDescendants = true
 
 local layout = Instance.new("UIListLayout")
 layout.Parent = row
 layout.FillDirection = Enum.FillDirection.Horizontal
 layout.VerticalAlignment = Enum.VerticalAlignment.Center
 layout.HorizontalAlignment = Enum.HorizontalAlignment.Left
-layout.Padding = UDim.new(0, 6)
+layout.Padding = UDim.new(0, 4)
 
 local yLabel = Instance.new("TextLabel")
 yLabel.Parent = row
-yLabel.Size = UDim2.fromOffset(16, 24)
+yLabel.Size = UDim2.fromOffset(14, 24)
 yLabel.BackgroundTransparency = 1
 yLabel.Text = "Y"
 yLabel.Font = Enum.Font.SourceSansBold
 yLabel.TextSize = 16
 yLabel.TextColor3 = Color3.fromRGB(220,220,220)
-yLabel.TextXAlignment = Enum.TextXAlignment.Left
+yLabel.TextXAlignment = Enum.TextXAlignment.Center
 yLabel.ZIndex = 30
 
 local yBox = Instance.new("TextBox")
 yBox.Parent = row
-yBox.Size = UDim2.fromOffset(90, 28)
+yBox.AnchorPoint = Vector2.new(0, 0.5)
+
+
+
+yBox.Size = UDim2.fromOffset(70, 28)
+
+
+
 yBox.Text = "100000"
 yBox.ClearTextOnFocus = false
 yBox.PlaceholderText = ""
@@ -319,6 +327,7 @@ spLabel.ZIndex = 30
 
 local spBox = Instance.new("TextBox")
 spBox.Parent = row
+spBox.AnchorPoint = Vector2.new(0, 0.5)
 spBox.Size = UDim2.fromOffset(60, 28)
 spBox.Text = "2000"
 spBox.ClearTextOnFocus = false
