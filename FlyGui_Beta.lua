@@ -232,7 +232,7 @@ rowLayout.Padding = UDim.new(0, 2)
 local input = Instance.new("TextBox")
 input.Parent = row
 
-input.Size = UDim2.fromOffset(70, 28)
+input.Size = UDim2.fromOffset(80, 28)
 
 input.Text = "500000"
 input.PlaceholderText = "Input"
@@ -264,22 +264,13 @@ upBtn.Text = ""
 upBtn.BackgroundColor3 = Color3.fromRGB(80,180,120)
 upBtn.ZIndex = 15
 
-local upIcon = Instance.new("TextLabel")
+local upIcon = Instance.new("ImageLabel")
 upIcon.Parent = upBtn
-upIcon.ZIndex = upBtn.ZIndex + 1
-upIcon.Size = UDim2.fromScale(1,1)
 upIcon.BackgroundTransparency = 1
-upIcon.Text = "⌃"
-
-upIcon.Font = Enum.Font.SourceSansBold
-upIcon.TextSize = 26
-upIcon.TextColor3 = Color3.fromRGB(255,255,255)
-upIcon.TextXAlignment = Enum.TextXAlignment.Center
-upIcon.TextYAlignment = Enum.TextYAlignment.Center
-
-task.defer(function()
-   upIcon.TextSize = math.floor(upBtn.AbsoluteSize.Y * 0.85)
-end)
+upIcon.Size = UDim2.fromScale(0.7, 0.7)
+upIcon.Position = UDim2.fromScale(0.15, 0.15)
+upIcon.Image = "rbxassetid://6031090990" -- mũi tên lên
+upIcon.ZIndex = upBtn.ZIndex + 1
 
 local upCorner = Instance.new("UICorner")
 upCorner.CornerRadius = UDim.new(0,6)
@@ -292,21 +283,13 @@ downBtn.Text = ""
 downBtn.BackgroundColor3 = Color3.fromRGB(180,80,80)
 downBtn.ZIndex = 15
 
-local downIcon = Instance.new("TextLabel")
+local downIcon = Instance.new("ImageLabel")
 downIcon.Parent = downBtn
-downIcon.ZIndex = upBtn.ZIndex + 1
-downIcon.Size = UDim2.fromScale(1,1)
 downIcon.BackgroundTransparency = 1
-downIcon.Text = "⌄"
-downIcon.Font = Enum.Font.SourceSansBold
-downIcon.TextSize = 26
-downIcon.TextColor3 = Color3.fromRGB(255,255,255)
-downIcon.TextXAlignment = Enum.TextXAlignment.Center
-downIcon.TextYAlignment = Enum.TextYAlignment.Center
-
-task.defer(function()
-    downIcon.TextSize = math.floor(downBtn.AbsoluteSize.Y * 0.85)
-end)
+downIcon.Size = UDim2.fromScale(0.7, 0.7)
+downIcon.Position = UDim2.fromScale(0.15, 0.15)
+downIcon.Image = "rbxassetid://6031091002"
+downIcon.ZIndex = downBtn.ZIndex + 1
 
 local downCorner = Instance.new("UICorner")
 downCorner.CornerRadius = UDim.new(0,6)
