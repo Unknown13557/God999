@@ -362,6 +362,7 @@ end)
 
 
 local function syncSlotUI(slot, state)
+  if not slot.Pill then return end
 	slot.State = state
 
 	if state then
