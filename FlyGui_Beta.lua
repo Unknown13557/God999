@@ -260,7 +260,19 @@ for i = 1, 6 do
 		}
 	end
 end
-	
+
+
+
+
+local test = Instance.new("TextLabel")
+test.Parent = Slots[1].Frame
+test.Size = UDim2.fromScale(1, 1)
+test.BackgroundTransparency = 1
+test.Text = "SLOT 1 OK"
+test.TextColor3 = Color3.fromRGB(255,255,255)
+test.TextScaled = true
+
+
 
 local slot1 = Slots[1]
 local frame = slot1.Frame
