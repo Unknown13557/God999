@@ -195,7 +195,6 @@ for i = 1, 6 do
 	slot.AutomaticSize = Enum.AutomaticSize.None
 
 	if i == 1 then
-		-- SLOT 1 : CONSOLE (LAYOUT GIỐNG SLOT 3)
 
 		local row = Instance.new("Frame")
 		row.Parent = slot
@@ -207,12 +206,28 @@ for i = 1, 6 do
 		layout.FillDirection = Enum.FillDirection.Horizontal
 		layout.HorizontalAlignment = Enum.HorizontalAlignment.Left
 		layout.VerticalAlignment = Enum.VerticalAlignment.Center
-		layout.Padding = UDim.new(0, 4)
 
+
+
+
+		
+		layout.Padding = UDim.new(0, 1)
+
+
+
+
+		
 		local pad = Instance.new("UIPadding")
 		pad.Parent = row
-		pad.PaddingLeft = UDim.new(0, 6)
-		pad.PaddingRight = UDim.new(0, 6)
+
+
+
+		
+		pad.PaddingLeft = UDim.new(0, 1)
+		pad.PaddingRight = UDim.new(0, 1)
+
+
+		
 
 		local function makeLabel(text, w)
 			local lb = Instance.new("TextLabel")
@@ -239,11 +254,11 @@ for i = 1, 6 do
 			return box
 		end
 
-		makeLabel("Y", 16).Parent = row
+		makeLabel("Y", 14).Parent = row
 		local yBox = makeBox("100000", 90)
 		yBox.Parent = row
 
-		makeLabel("Sp", 18).Parent = row
+		makeLabel("Sp", 16).Parent = row
 		local spBox = makeBox("2000", 70)
 		spBox.Parent = row
 
@@ -338,175 +353,6 @@ local function syncSlotUI(slot, state)
 		slot.SlotKnob.Position = UDim2.fromOffset(2,2)
 	end
 end
-
-local slot1 = Slots[1]
-local frame = slot1.Frame
-
-frame.ClipsDescendants = true
-
-for _, c in ipairs(frame:GetChildren()) do
-	if c:IsA("Frame") or c:IsA("TextLabel") or c:IsA("TextButton") then
-		if c.Name ~= "Slot1Keep" then
-			c:Destroy()
-		end
-	end
-end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-local startX = 1
-local gap = 1
-
-local yLabel = Instance.new("TextLabel")
-yLabel.Parent = frame
-
-
-
-
-
-
-yLabel.Size = UDim2.fromOffset(20, 18)
-yLabel.Position = UDim2.fromOffset(startX, 7)
-
-
-
-
-
-
-yLabel.BackgroundTransparency = 1
-yLabel.Text = "Y"
-yLabel.TextSize = 11
-yLabel.Font = Enum.Font.SourceSansBold
-yLabel.TextColor3 = Color3.fromRGB(220,220,220)
-yLabel.TextXAlignment = Enum.TextXAlignment.Center
-yLabel.ZIndex = 20
-
-local yBox = Instance.new("TextBox")
-yBox.Parent = frame
-
-
-
-
-
-
-
-yBox.Size = UDim2.fromOffset(72, 20)
-yBox.Position = UDim2.fromOffset(startX + 20, 6)
-
-
-
-
-
-
-yBox.Text = "100000"
-yBox.ClearTextOnFocus = false
-yBox.Font = Enum.Font.SourceSans
-yBox.TextSize = 12
-yBox.TextColor3 = Color3.fromRGB(255,255,255)
-yBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
-yBox.ZIndex = 20
-
-Instance.new("UICorner", yBox).CornerRadius = UDim.new(0,4)
-
-local spLabel = Instance.new("TextLabel")
-spLabel.Parent = frame
-
-
-
-
-
-spLabel.Size = UDim2.fromOffset(22, 20)
-spLabel.Position = UDim2.fromOffset(startX + 20 + 68 + gap, 7)
-
-
-
-
-
-
-spLabel.BackgroundTransparency = 1
-spLabel.Text = "Sp"
-spLabel.TextSize = 12
-spLabel.Font = Enum.Font.SourceSansBold
-spLabel.TextColor3 = Color3.fromRGB(220,220,220)
-spLabel.TextXAlignment = Enum.TextXAlignment.Center
-spLabel.ZIndex = 20
-
-local spBox = Instance.new("TextBox")
-spBox.Parent = frame
-
-
-
-
-
-
-spBox.Size = UDim2.fromOffset(68, 22)
-spBox.Position = UDim2.fromOffset(startX + 20 + 68 + gap + 20, 6)
-
-
-
-
-
-
-
-
-spBox.Text = "2000"
-spBox.ClearTextOnFocus = false
-spBox.Font = Enum.Font.SourceSans
-spBox.TextSize = 13
-spBox.TextColor3 = Color3.fromRGB(255,255,255)
-spBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
-spBox.ZIndex = 20
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Instance.new("UICorner", spBox).CornerRadius = UDim.new(0,4)
-
-Settings.ConsoleY = tonumber(yBox.Text) or 100000
-Settings.ConsoleSpeed = tonumber(spBox.Text) or 2000
-
-yBox:GetPropertyChangedSignal("Text"):Connect(function()
-	local n = tonumber(yBox.Text)
-	if n then
-		Settings.ConsoleY = n
-	end
-end)
-
-spBox:GetPropertyChangedSignal("Text"):Connect(function()
-	local n = tonumber(spBox.Text)
-	if n then
-		Settings.ConsoleSpeed = n
-	end
-end)
 
 
 local slot2 = Slots[2]
