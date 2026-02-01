@@ -166,6 +166,12 @@ SettingsFrame.Active = true
 SettingsFrame.Position = UDim2.fromScale(0.5, 0.5)
 attachDrag(SettingsFrame, nil)
 
+local GridHolder = Instance.new("Frame")
+GridHolder.Parent = SettingsFrame
+GridHolder.Size = UDim2.fromScale(1, 1)
+GridHolder.BackgroundTransparency = 1
+GridHolder.Name = "GridHolder"
+
 task.defer(function()
 	local cam = WS.CurrentCamera
 	if cam then
@@ -175,7 +181,7 @@ task.defer(function()
 end)
 
 local SettingsGrid = Instance.new("UIGridLayout")
-SettingsGrid.Parent = SettingsFrame
+SettingsGrid.Parent = GridHolder
 SettingsGrid.CellSize = UDim2.fromScale(0.48, 0.27)
 SettingsGrid.CellPadding = UDim2.fromOffset(4, 6)
 SettingsGrid.HorizontalAlignment = Enum.HorizontalAlignment.Center
@@ -186,7 +192,7 @@ local Slots = {}
 for i = 1, 6 do
 	local slot = Instance.new("Frame")
 	slot.Name = "Slot"..i
-	slot.Parent = SettingsFrame
+	slot.Parent = GridHolder
 	slot.BackgroundColor3 = Color3.fromRGB(60,60,60)
 	slot.BorderSizePixel = 0
 	slot.ZIndex = 10
@@ -266,8 +272,6 @@ local frame = slot1.Frame
 
 frame.Size = UDim2.fromOffset(260, 56)
 
-slot1.Frame.Parent = nil
-slot1.Frame.Parent = SettingsFrame
 
 SettingsGrid.Parent = nil
 SettingsGrid.Parent = SettingsFrame
