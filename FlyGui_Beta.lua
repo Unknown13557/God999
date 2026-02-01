@@ -90,8 +90,8 @@ for i = 1, 6 do
 	local content = Instance.new("Frame")
     content.Name = "Content"
     content.Parent = slot
-    content.Size = UDim2.new(1, -20, 1, 0)
-    content.Position = UDim2.fromOffset(10, 0)
+    content.Size = UDim2.new(1, 1)
+    content.Position = UDim2.fromOffset(0, 0)
     content.BackgroundTransparency = 1
 
 	local label = Instance.new("TextLabel")
@@ -270,6 +270,15 @@ input:GetPropertyChangedSignal("Text"):Connect(function()
 	if input.Text ~= filtered then
 		input.Text = filtered
 	end
+end)
+
+task.defer(function()
+    local inputLeft = input.AbsolutePosition.X
+    local contentLeft = content.AbsolutePosition.X
+    local delta = inputLeft - contentLeft
+
+    content.Position = UDim2.fromOffset(delta, 0)
+    content.Size = UDim2.new(1, -delta, 1, 0)
 end)
 
 local upBtn = Instance.new("TextButton")
