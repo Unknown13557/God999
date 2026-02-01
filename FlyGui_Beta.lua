@@ -283,15 +283,15 @@ for _, c in ipairs(frame:GetChildren()) do
 end
 
 local startX = 6
-local gap = 4
+local gap = 1.5
 
 local yLabel = Instance.new("TextLabel")
 yLabel.Parent = frame
-yLabel.Size = UDim2.fromOffset(22, 20)
-yLabel.Position = UDim2.fromOffset(startX, 6)
+yLabel.Size = UDim2.fromOffset(20, 18)
+yLabel.Position = UDim2.fromOffset(startX, 7)
 yLabel.BackgroundTransparency = 1
 yLabel.Text = "Y"
-yLabel.TextSize = 12
+yLabel.TextSize = 11
 yLabel.Font = Enum.Font.SourceSansBold
 yLabel.TextColor3 = Color3.fromRGB(220,220,220)
 yLabel.TextXAlignment = Enum.TextXAlignment.Center
@@ -299,12 +299,12 @@ yLabel.ZIndex = 20
 
 local yBox = Instance.new("TextBox")
 yBox.Parent = frame
-yBox.Size = UDim2.fromOffset(68, 22)
-yBox.Position = UDim2.fromOffset(startX + 22, 5)
+yBox.Size = UDim2.fromOffset(72, 20)
+yBox.Position = UDim2.fromOffset(startX + 20, 6)
 yBox.Text = "100000"
 yBox.ClearTextOnFocus = false
 yBox.Font = Enum.Font.SourceSans
-yBox.TextSize = 13
+yBox.TextSize = 12
 yBox.TextColor3 = Color3.fromRGB(255,255,255)
 yBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
 yBox.ZIndex = 20
@@ -314,7 +314,7 @@ Instance.new("UICorner", yBox).CornerRadius = UDim.new(0,4)
 local spLabel = Instance.new("TextLabel")
 spLabel.Parent = frame
 spLabel.Size = UDim2.fromOffset(22, 20)
-spLabel.Position = UDim2.fromOffset(startX + 22 + 68 + gap, 6)
+spLabel.Position = UDim2.fromOffset(startX + 20 + 72 + gap, 7)
 spLabel.BackgroundTransparency = 1
 spLabel.Text = "Sp"
 spLabel.TextSize = 12
@@ -326,7 +326,7 @@ spLabel.ZIndex = 20
 local spBox = Instance.new("TextBox")
 spBox.Parent = frame
 spBox.Size = UDim2.fromOffset(68, 22)
-spBox.Position = UDim2.fromOffset(startX + 22 + 68 + gap + 22, 5)
+spBox.Position = UDim2.fromOffset(startX + 20 + 72 + gap + 20, 6)
 spBox.Text = "2000"
 spBox.ClearTextOnFocus = false
 spBox.Font = Enum.Font.SourceSans
