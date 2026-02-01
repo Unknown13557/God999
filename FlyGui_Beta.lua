@@ -262,131 +262,79 @@ for i = 1, 6 do
 end
 
 
-
-
-local test = Instance.new("TextLabel")
-test.Parent = Slots[1].Frame
-test.Size = UDim2.fromScale(1, 1)
-test.BackgroundTransparency = 1
-test.Text = "SLOT 1 OK"
-test.TextColor3 = Color3.fromRGB(255,255,255)
-test.TextScaled = true
-
-
-
 local slot1 = Slots[1]
 local frame = slot1.Frame
 
-frame.ClipsDescendants = true
+frame.ClipsDescendants = false
 frame.AutomaticSize = Enum.AutomaticSize.None
-slot1.Frame.ZIndex = 20
 
-local startX = 6
-local gap = 4
+local row = Instance.new("Frame")
+row.Parent = frame
+row.BackgroundTransparency = 1
+row.Size = UDim2.new(1, -12, 1, -8)
+row.Position = UDim2.fromOffset(6, 4)
+row.ZIndex = 20
 
-task.defer(function()
-    local frame = Slots[1].Frame
-    local centerY = 14
+local layout = Instance.new("UIListLayout")
+layout.Parent = row
+layout.FillDirection = Enum.FillDirection.Horizontal
+layout.VerticalAlignment = Enum.VerticalAlignment.Center
+layout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+layout.Padding = UDim.new(0, 6)
 
 local yLabel = Instance.new("TextLabel")
-yLabel.Parent = frame
-yLabel.Text = "Y"
-yLabel.Size = UDim2.fromOffset(14, 22)
-yLabel.Position = UDim2.fromOffset(startX, centerY)
+yLabel.Parent = row
+yLabel.Size = UDim2.fromOffset(16, 24)
 yLabel.BackgroundTransparency = 1
+yLabel.Text = "Y"
 yLabel.Font = Enum.Font.SourceSansBold
-yLabel.TextSize = 12
+yLabel.TextSize = 16
 yLabel.TextColor3 = Color3.fromRGB(220,220,220)
-yLabel.TextXAlignment = Enum.TextXAlignment.Center
-
-yLabel.ZIndex = 50
+yLabel.TextXAlignment = Enum.TextXAlignment.Left
+yLabel.ZIndex = 30
 
 local yBox = Instance.new("TextBox")
-yBox.Parent = frame
+yBox.Parent = row
+yBox.Size = UDim2.fromOffset(90, 28)
 yBox.Text = "100000"
-yBox.Size = UDim2.fromOffset(90, 22)
-yBox.Position = UDim2.fromOffset(startX + 14 + gap, centerY)
-yBox.AnchorPoint = Vector2.new(0, 0)
 yBox.ClearTextOnFocus = false
-yBox.Font = Enum.Font.SourceSans
-yBox.TextSize = 13
-yBox.TextColor3 = Color3.fromRGB(255,255,255)
-yBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
-Instance.new("UICorner", yBox).CornerRadius = UDim.new(0,4)
-
-yBox.Text = "100000"
 yBox.PlaceholderText = ""
-yBox.ClearTextOnFocus = false
-
-yBox.TextTransparency = 0
-yBox.BackgroundTransparency = 0
-
+yBox.Font = Enum.Font.SourceSans
+yBox.TextSize = 16
 yBox.TextColor3 = Color3.fromRGB(255,255,255)
 yBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
-
-yBox.ZIndex = 50
-
+yBox.TextXAlignment = Enum.TextXAlignment.Center
+yBox.ZIndex = 40
+Instance.new("UICorner", yBox).CornerRadius = UDim.new(0,6)
 
 local spLabel = Instance.new("TextLabel")
-spLabel.Parent = frame
-spLabel.Text = "Sp"
-spLabel.Size = UDim2.fromOffset(18, 22)
-spLabel.Position = UDim2.fromOffset(startX + 14 + gap + 90 + gap, centerY)
+spLabel.Parent = row
+spLabel.Size = UDim2.fromOffset(22, 24)
 spLabel.BackgroundTransparency = 1
+spLabel.Text = "Sp"
 spLabel.Font = Enum.Font.SourceSansBold
-spLabel.TextSize = 12
+spLabel.TextSize = 16
 spLabel.TextColor3 = Color3.fromRGB(220,220,220)
-spLabel.TextXAlignment = Enum.TextXAlignment.Center
+spLabel.ZIndex = 30
 
-spLabel.ZIndex = 50
-		
 local spBox = Instance.new("TextBox")
-spBox.Parent = frame
+spBox.Parent = row
+spBox.Size = UDim2.fromOffset(60, 28)
 spBox.Text = "2000"
-spBox.AnchorPoint = Vector2.new(0, 0)
-spBox.Size = UDim2.fromOffset(60, 22)
-spBox.Position = UDim2.fromOffset(
-	startX + 14 + gap + 90 + gap + 18 + gap,
-	centerY
-)
-
 spBox.ClearTextOnFocus = false
-spBox.Font = Enum.Font.SourceSans
-spBox.TextSize = 13
-spBox.TextColor3 = Color3.fromRGB(255,255,255)
-spBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
-Instance.new("UICorner", spBox).CornerRadius = UDim.new(0,4)
-
-spBox.Text = "100000"
 spBox.PlaceholderText = ""
-spBox.ClearTextOnFocus = false
-
-spBox.TextTransparency = 0
-spBox.BackgroundTransparency = 0
-
+spBox.Font = Enum.Font.SourceSans
+spBox.TextSize = 16
 spBox.TextColor3 = Color3.fromRGB(255,255,255)
 spBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
+spBox.TextXAlignment = Enum.TextXAlignment.Center
+spBox.ZIndex = 40
+Instance.new("UICorner", spBox).CornerRadius = UDim.new(0,6)
 
-spBox.ZIndex = 50
 
 
-Settings.ConsoleY = tonumber(yBox.Text) or 100000
-Settings.ConsoleSpeed = tonumber(spBox.Text) or 2000
 
-yBox:GetPropertyChangedSignal("Text"):Connect(function()
-	local n = tonumber(yBox.Text)
-	if n then
-		Settings.ConsoleY = n
-	end
-end)
 
-spBox:GetPropertyChangedSignal("Text"):Connect(function()
-	local n = tonumber(spBox.Text)
-	if n then
-		Settings.ConsoleSpeed = n
-	end
-  end)
-end)
 
 local function syncSlotUI(slot, state)
 	if not slot.Pill then return end
