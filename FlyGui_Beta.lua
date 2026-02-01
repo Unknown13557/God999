@@ -284,72 +284,6 @@ layout.VerticalAlignment = Enum.VerticalAlignment.Center
 layout.HorizontalAlignment = Enum.HorizontalAlignment.Left
 layout.Padding = UDim.new(0, 1)
 
-local groupY = Instance.new("Frame")
-groupY.Parent = row
-groupY.BackgroundTransparency = 1
-groupY.Size = UDim2.fromOffset(110, 28)
-groupY.ZIndex  = 22
-
-local ly = Instance.new("UIListLayout")
-ly.Parent = groupY
-ly.FillDirection = Enum.FillDirection.Horizontal
-ly.VerticalAlignment = Enum.VerticalAlignment.Center
-ly.Padding = UDim.new(0, 3)
-
-local yLabel = Instance.new("TextLabel")
-yLabel.Parent = groupY
-yLabel.Size = UDim2.fromOffset(12, 24)
-yLabel.BackgroundTransparency = 1
-yLabel.Text = "Y"
-yLabel.Font = Enum.Font.SourceSansBold
-yLabel.TextSize = 16
-yLabel.TextColor3 = Color3.fromRGB(220,220,220)
-yLabel.ZIndex = 23
-
-local yBox = Instance.new("TextBox")
-yBox.Parent = groupY
-yBox.Size = UDim2.fromOffset(90, 28)
-yBox.Text = "100000"
-yBox.ClearTextOnFocus = false
-yBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
-yBox.TextColor3 = Color3.fromRGB(255,255,255)
-yBox.TextXAlignment = Enum.TextXAlignment.Center
-Instance.new("UICorner", yBox).CornerRadius = UDim.new(0,6)
-yBox.ZIndex   = 23
-
-local groupSp = Instance.new("Frame")
-groupSp.Parent = row
-groupSp.BackgroundTransparency = 1
-groupSp.Size = UDim2.fromOffset(90, 28)
-groupSp.ZIndex = 22
-
-
-local ls = Instance.new("UIListLayout")
-ls.Parent = groupSp
-ls.FillDirection = Enum.FillDirection.Horizontal
-ls.VerticalAlignment = Enum.VerticalAlignment.Center
-ls.Padding = UDim.new(0, 3)
-
-local spLabel = Instance.new("TextLabel")
-spLabel.Parent = groupSp
-spLabel.Size = UDim2.fromOffset(18, 24)
-spLabel.BackgroundTransparency = 1
-spLabel.Text = "Sp"
-spLabel.Font = Enum.Font.SourceSansBold
-spLabel.TextSize = 16
-spLabel.TextColor3 = Color3.fromRGB(220,220,220)
-spLabel.ZIndex = 23
-
-local spBox = Instance.new("TextBox")
-spBox.Parent = groupSp
-spBox.Size = UDim2.fromOffset(60, 28)
-spBox.Text = "2000"
-spBox.ClearTextOnFocus = false
-spBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
-spBox.TextColor3 = Color3.fromRGB(255,255,255)
-spBox.TextXAlignment = Enum.TextXAlignment.Center
-Instance.new("UICorner", spBox).CornerRadius = UDim.new(0,6)
-spBox.ZIndex   = 23
 
 local function syncSlotUI(slot, state)
 	if not slot.Pill then return end
@@ -364,6 +298,42 @@ local function syncSlotUI(slot, state)
 	end
 end
 
+-- LABEL Y
+local yLabel = Instance.new("TextLabel")
+yLabel.Parent = slot
+yLabel.Text = "Y"
+yLabel.Size = UDim2.fromOffset(14, 28)
+yLabel.Position = UDim2.fromOffset(8, 6)
+yLabel.BackgroundTransparency = 1
+yLabel.TextXAlignment = Left
+yLabel.ZIndex = slot.ZIndex + 1
+
+-- BOX Y
+local yBox = Instance.new("TextBox")
+yBox.Parent = slot
+yBox.Text = "100000"
+yBox.Size = UDim2.fromOffset(90, 28)
+yBox.Position = UDim2.fromOffset(26, 6)
+yBox.ZIndex = slot.ZIndex + 1
+
+-- LABEL SP
+local spLabel = Instance.new("TextLabel")
+spLabel.Parent = slot
+spLabel.Text = "Sp"
+spLabel.Size = UDim2.fromOffset(22, 28)
+spLabel.Position = UDim2.fromOffset(124, 6)
+spLabel.BackgroundTransparency = 1
+spLabel.ZIndex = slot.ZIndex + 1
+
+-- BOX SP
+local spBox = Instance.new("TextBox")
+spBox.Parent = slot
+spBox.Text = "2000"
+spBox.Size = UDim2.fromOffset(60, 28)
+spBox.Position = UDim2.fromOffset(148, 6)
+spBox.ZIndex = slot.ZIndex + 1
+
+slot.ClipsDescendants = false
 
 
 
