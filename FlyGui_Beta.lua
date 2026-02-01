@@ -184,164 +184,155 @@ SettingsGrid.VerticalAlignment = Enum.VerticalAlignment.Center
 local Slots = {}
 
 for i = 1, 6 do
-	local slot = Instance.new("Frame")
-	slot.Name = "Slot"..i
-	slot.Parent = SettingsFrame
-	slot.BackgroundColor3 = Color3.fromRGB(60,60,60)
-	slot.BorderSizePixel = 0
-	slot.ZIndex = 10
+    local slot = Instance.new("Frame")
+    slot.Name = "Slot"..i
+    slot.Parent = SettingsFrame
+    slot.BackgroundColor3 = Color3.fromRGB(60,60,60)
+    slot.BorderSizePixel = 0
+    slot.ZIndex = 10
+    slot.ClipsDescendants = true
+    slot.Size = UDim2.new(1, -8, 0, 46)
 
-	slot.ClipsDescendants = true
-	slot.AutomaticSize = Enum.AutomaticSize.None
+    if i == 1 then
 
-	if i == 1 then
+        local row = Instance.new("Frame")
+        row.Parent = slot
+        row.BackgroundTransparency = 1
+        row.Size = UDim2.fromScale(1, 1)
 
-		local row = Instance.new("Frame")
-		row.Parent = slot
-		row.BackgroundTransparency = 1
-		row.Size = UDim2.fromScale(1, 1)
+        local layout = Instance.new("UIListLayout")
+        layout.Parent = row
+        layout.FillDirection = Enum.FillDirection.Horizontal
+        layout.VerticalAlignment = Enum.VerticalAlignment.Center
+        layout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+        layout.Padding = UDim.new(0, 1)
 
-		local layout = Instance.new("UIListLayout")
-		layout.Parent = row
-		layout.FillDirection = Enum.FillDirection.Horizontal
-		layout.HorizontalAlignment = Enum.HorizontalAlignment.Left
-		layout.VerticalAlignment = Enum.VerticalAlignment.Center
+        local pad = Instance.new("UIPadding")
+        pad.Parent = row
+        pad.PaddingLeft = UDim.new(0, 4)
+        pad.PaddingRight = UDim.new(0, 4)
 
+        local function makeLabel(text, w)
+            local lb = Instance.new("TextLabel")
+            lb.BackgroundTransparency = 1
+            lb.Size = UDim2.fromOffset(w, 20)
+            lb.Text = text
+            lb.Font = Enum.Font.SourceSansBold
+            lb.TextSize = 12
+            lb.TextColor3 = Color3.fromRGB(220,220,220)
+            lb.TextXAlignment = Enum.TextXAlignment.Center
+            return lb
+        end
 
+        local function makeBox(default, w)
+            local box = Instance.new("TextBox")
+            box.Size = UDim2.fromOffset(w, 22)
+            box.Text = default
+            box.Font = Enum.Font.SourceSans
+            box.TextSize = 13
+            box.ClearTextOnFocus = false
+            box.BackgroundColor3 = Color3.fromRGB(40,40,40)
+            box.TextColor3 = Color3.fromRGB(255,255,255)
+            Instance.new("UICorner", box).CornerRadius = UDim.new(0,4)
+            return box
+        end
 
+        makeLabel("Y", 14).Parent = row
+        local yBox = makeBox("100000", 90)
+        yBox.Parent = row
 
+        makeLabel("Sp", 16).Parent = row
+        local spBox = makeBox("2000", 70)
+        spBox.Parent = row
+
+        Settings.ConsoleY = tonumber(yBox.Text) or 100000
+        Settings.ConsoleSpeed = tonumber(spBox.Text) or 2000
+
+        yBox:GetPropertyChangedSignal("Text"):Connect(function()
+            local n = tonumber(yBox.Text)
+            if n then
+                Settings.ConsoleY = n
+            end
+        end)
+
+        spBox:GetPropertyChangedSignal("Text"):Connect(function()
+            local n = tonumber(spBox.Text)
+            if n then
+                Settings.ConsoleSpeed = n
+            end
+        end)
+
+        Slots[1] = {
+            Frame = slot,
+            Type = "Console"
+        }
+
+    else
+
+        local content = Instance.new("Frame")
+        content.Parent = slot
+        content.BackgroundTransparency = 1
+        content.Position = UDim2.fromOffset(10, 0)
+        content.Size = UDim2.new(1, -20, 1, 0)
+
+        local label = Instance.new("TextLabel")
+        label.Parent = content
+        label.BackgroundTransparency = 1
+        label.Size = UDim2.fromScale(0.7, 1)
+        label.Font = Enum.Font.SourceSansBold
+        label.TextSize = 18
+        label.TextXAlignment = Enum.TextXAlignment.Left
+        label.TextColor3 = Color3.fromRGB(220,220,220)
+        label.Text = "Slot "..i
+        label.ZIndex = 11
+
+        local pill = Instance.new("TextButton")
+        pill.Parent = content
+        pill.Text = ""
+        pill.AutoButtonColor = false
+        pill.AnchorPoint = Vector2.new(1, 0.5)
+        pill.Position = UDim2.fromScale(1, 0.5)
+        pill.Size = UDim2.fromOffset(36, 18)
+        pill.BackgroundColor3 = Color3.fromRGB(80,80,80)
+        pill.BorderSizePixel = 0
+        pill.ZIndex = 11
+        Instance.new("UICorner", pill).CornerRadius = UDim.new(1, 0)
+
+        local knob = Instance.new("Frame")
+        knob.Parent = pill
+        knob.Size = UDim2.fromOffset(14,14)
+        knob.Position = UDim2.fromOffset(2,2)
+        knob.BackgroundColor3 = Color3.fromRGB(220,220,220)
+        knob.BorderSizePixel = 0
+        knob.ZIndex = 12
+        Instance.new("UICorner", knob).CornerRadius = UDim.new(1, 0)
+
+        Slots[i] = {
+            Frame = slot,
+            Label = label,
+            Pill = pill,
+            SlotKnob = knob,
+            State = false,
+            Type = "Toggle"
+        }
+    end
+end
 		
-		layout.Padding = UDim.new(0, 1)
-
-
-
-
-		
-		local pad = Instance.new("UIPadding")
-		pad.Parent = row
-
-
-
-		
-		pad.PaddingLeft = UDim.new(0, 1)
-		pad.PaddingRight = UDim.new(0, 1)
-
-
-		
-
-		local function makeLabel(text, w)
-			local lb = Instance.new("TextLabel")
-			lb.Size = UDim2.fromOffset(w, 20)
-			lb.BackgroundTransparency = 1
-			lb.Text = text
-			lb.TextSize = 12
-			lb.Font = Enum.Font.SourceSansBold
-			lb.TextXAlignment = Enum.TextXAlignment.Center
-			lb.TextColor3 = Color3.fromRGB(220,220,220)
-			return lb
-		end
-
-		local function makeBox(default, w)
-			local box = Instance.new("TextBox")
-			box.Size = UDim2.fromOffset(w, 22)
-			box.Text = default
-			box.TextSize = 13
-			box.Font = Enum.Font.SourceSans
-			box.ClearTextOnFocus = false
-			box.BackgroundColor3 = Color3.fromRGB(40,40,40)
-			box.TextColor3 = Color3.fromRGB(255,255,255)
-			Instance.new("UICorner", box).CornerRadius = UDim.new(0,4)
-			return box
-		end
-
-		makeLabel("Y", 14).Parent = row
-		local yBox = makeBox("100000", 90)
-		yBox.Parent = row
-
-		makeLabel("Sp", 16).Parent = row
-		local spBox = makeBox("2000", 70)
-		spBox.Parent = row
-
-		Settings.ConsoleY = tonumber(yBox.Text) or 100000
-		Settings.ConsoleSpeed = tonumber(spBox.Text) or 2000
-
-		yBox:GetPropertyChangedSignal("Text"):Connect(function()
-			local n = tonumber(yBox.Text)
-			if n then Settings.ConsoleY = n end
-		end)
-
-		spBox:GetPropertyChangedSignal("Text"):Connect(function()
-			local n = tonumber(spBox.Text)
-			if n then Settings.ConsoleSpeed = n end
-		end)
-	end
-	
-if i ~= 1 then
-		
-    local content = Instance.new("Frame")
-    content.Name = "Content"
-    content.Parent = slot
-    content.Position = UDim2.fromOffset(10, 0)
-    content.Size = UDim2.new(1, -20, 1, 0)
-    content.BackgroundTransparency = 1
-
-    local label = Instance.new("TextLabel")
-    label.Name = "Label"
-    label.Parent = content
-    label.Size = UDim2.fromScale(0.65, 1)
-    label.BackgroundTransparency = 1
-    label.Text = "Empty"
-    label.TextColor3 = Color3.fromRGB(220,220,220)
-    label.Font = Enum.Font.SourceSansBold
-    label.TextSize = 18
-    label.TextXAlignment = Enum.TextXAlignment.Left
-    label.ZIndex = 11
-
-    local pill = Instance.new("TextButton")
-    pill.Name = "Pill"
-    pill.Parent = content
-    pill.Text = ""
-    pill.AutoButtonColor = false
-    pill.Size = UDim2.fromOffset(36, 18)
-    pill.Position = UDim2.fromScale(1, 0.5)
-    pill.AnchorPoint = Vector2.new(1, 0.5)
-    pill.BackgroundColor3 = Color3.fromRGB(80,80,80)
-    pill.BorderSizePixel = 0
-    pill.ZIndex = 11
-
-    local slotKnob = Instance.new("Frame")
-    slotKnob.Name = "SlotKnob"
-    slotKnob.Parent = pill
-    slotKnob.Size = UDim2.fromOffset(14,14)
-    slotKnob.Position = UDim2.fromOffset(2,2)
-    slotKnob.BackgroundColor3 = Color3.fromRGB(220,220,220)
-    slotKnob.ZIndex = 12
-
-    Slots[i] = {
-        Frame = slot,
-        Label = label,
-        Pill = pill,
-        SlotKnob = slotKnob,
-        State = false
-    }
-else
-		
-    Slots[1] = { Frame = slot }
-	end
-	
-	
 local function syncSlotUI(slot, state)
+	if not slot or slot.Type ~= "Toggle" then
+		return
+	end
+
 	slot.State = state
 
 	if state then
 		slot.Pill.BackgroundColor3 = Color3.fromRGB(120,200,120)
-		slot.SlotKnob.Position = UDim2.fromOffset(20,2)
+		slot.SlotKnob.Position = UDim2.fromOffset(20, 2)
 	else
 		slot.Pill.BackgroundColor3 = Color3.fromRGB(80,80,80)
-		slot.SlotKnob.Position = UDim2.fromOffset(2,2)
+		slot.SlotKnob.Position = UDim2.fromOffset(2, 2)
 	end
 end
-
 
 local slot2 = Slots[2]
 slot2.Label.Text = "Bypass Tween"
