@@ -227,7 +227,7 @@ local rowLayout = Instance.new("UIListLayout")
 rowLayout.Parent = row
 rowLayout.FillDirection = Enum.FillDirection.Horizontal
 rowLayout.VerticalAlignment = Enum.VerticalAlignment.Center
-rowLayout.Padding = UDim.new(0, 8)
+rowLayout.Padding = UDim.new(0, 2)
 
 local input = Instance.new("TextBox")
 input.Parent = row
@@ -271,7 +271,7 @@ upIcon.Size = UDim2.fromScale(1,1)
 upIcon.BackgroundTransparency = 1
 upIcon.Text = "⌃"
 
-upIcon.Font = Enum.Font.GothamBlack
+upIcon.Font = Enum.Font.SourceSansBold
 upIcon.TextSize = 26
 upIcon.TextColor3 = Color3.fromRGB(255,255,255)
 upIcon.TextXAlignment = Enum.TextXAlignment.Center
@@ -298,7 +298,7 @@ downIcon.ZIndex = upBtn.ZIndex + 1
 downIcon.Size = UDim2.fromScale(1,1)
 downIcon.BackgroundTransparency = 1
 downIcon.Text = "⌄"
-downIcon.Font = Enum.Font.GothamBlack
+downIcon.Font = Enum.Font.SourceSansBold
 downIcon.TextSize = 26
 downIcon.TextColor3 = Color3.fromRGB(255,255,255)
 downIcon.TextXAlignment = Enum.TextXAlignment.Center
@@ -311,25 +311,6 @@ end)
 local downCorner = Instance.new("UICorner")
 downCorner.CornerRadius = UDim.new(0,6)
 downCorner.Parent = downBtn
-
-local GAP = 3
-local y = 10
-
-input.Size = UDim2.fromOffset(96, 28)
-upBtn.Size = UDim2.fromOffset(28, 28)
-downBtn.Size = UDim2.fromOffset(28, 28)
-
-input.Position = UDim2.fromOffset(12, y)
-
-upBtn.Position = UDim2.fromOffset(
-	12 + input.Size.X.Offset + GAP,
-	y
-)
-
-downBtn.Position = UDim2.fromOffset(
-	12 + input.Size.X.Offset + GAP + upBtn.Size.X.Offset + GAP,
-	y
-)
 
 local MIN_SAFE_Y = 30
 
