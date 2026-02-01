@@ -272,9 +272,11 @@ local frame = slot1.Frame
 
 frame.Size = UDim2.fromOffset(260, 56)
 
+frame.Parent = SettingsFrame
+frame.LayoutOrder = -1000
 
-SettingsGrid.Parent = nil
-SettingsGrid.Parent = SettingsFrame
+frame.Size = UDim2.fromOffset(260, 56)
+frame.Position = UDim2.fromOffset(10, 10)
 
 frame.ClipsDescendants = true
 
