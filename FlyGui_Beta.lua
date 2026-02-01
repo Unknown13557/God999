@@ -191,94 +191,69 @@ for i = 1, 6 do
 	slot.BorderSizePixel = 0
 	slot.ZIndex = 10
 
-local col = (i - 1) % 2
-local row = math.floor((i - 1) / 2)
+	local col = (i - 1) % 2
+	local row = math.floor((i - 1) / 2)
 
-slot.Size = UDim2.fromScale(0.48, 0.27)
-slot.Position = UDim2.fromScale(
-    0.02 + col * 0.5,
-    0.05 + row * 0.31
-)
-
-slot.ClipsDescendants = true
-slot.AutomaticSize = Enum.AutomaticSize.None
+	slot.Size = UDim2.fromScale(0.48, 0.27)
+	slot.Position = UDim2.fromScale(
+		0.02 + col * 0.5,
+		0.05 + row * 0.31
+	)
 
 	slot.ClipsDescendants = true
 	slot.AutomaticSize = Enum.AutomaticSize.None
 
-	
-	local content = Instance.new("Frame")
-    content.Name = "Content"
-    content.Parent = slot
-    content.Position = UDim2.fromOffset(10, 0)
-    content.Size = UDim2.new(1, -20, 1, 0)
-    content.BackgroundTransparency = 1
+	if i == 1 then
+		Slots[1] = {
+			Frame = slot,
+			Type = "Console"
+		}
+	else
+		local content = Instance.new("Frame")
+		content.Parent = slot
+		content.Position = UDim2.fromOffset(10, 0)
+		content.Size = UDim2.new(1, -20, 1, 0)
+		content.BackgroundTransparency = 1
 
-	local label = Instance.new("TextLabel")
-	label.Name = "Label"
-	label.Parent = content
-	label.Size = UDim2.fromScale(0.65, 1)
-	label.Position = UDim2.fromScale(0, 0)
-	label.BackgroundTransparency = 1
-	label.Text = "Empty"
-	label.TextColor3 = Color3.fromRGB(220,220,220)
-	label.Font = Enum.Font.SourceSansBold
-	label.TextSize = 18
-	label.TextXAlignment = Enum.TextXAlignment.Left
-	label.TextYAlignment = Enum.TextYAlignment.Center
-	label.ZIndex = 11
+		local label = Instance.new("TextLabel")
+		label.Parent = content
+		label.Size = UDim2.fromScale(0.65, 1)
+		label.BackgroundTransparency = 1
+		label.Text = "Empty"
+		label.Font = Enum.Font.SourceSansBold
+		label.TextSize = 18
+		label.TextXAlignment = Left
+		label.TextColor3 = Color3.fromRGB(220,220,220)
 
-	if label and label:IsA("TextLabel") then
-    local pad = Instance.new("UIPadding")
-    pad.PaddingLeft = UDim.new(0, 1)
-    pad.Parent = label
+		local pill = Instance.new("TextButton")
+		pill.Parent = content
+		pill.Size = UDim2.fromOffset(36, 18)
+		pill.Position = UDim2.fromScale(1, 0.5)
+		pill.AnchorPoint = Vector2.new(1, 0.5)
+		pill.BackgroundColor3 = Color3.fromRGB(80,80,80)
+
+		local knob = Instance.new("Frame")
+		knob.Parent = pill
+		knob.Size = UDim2.fromOffset(14,14)
+		knob.Position = UDim2.fromOffset(2,2)
+		knob.BackgroundColor3 = Color3.fromRGB(220,220,220)
+
+		Slots[i] = {
+			Frame = slot,
+			Label = label,
+			Pill = pill,
+			SlotKnob = knob,
+			State = false
+		}
 	end
-
-	local pill = Instance.new("TextButton")
-	pill.Name = "Pill"
-	pill.Parent = content
-	pill.Text = ""
-	pill.AutoButtonColor = false
-	pill.Size = UDim2.fromOffset(36, 18)
-	pill.Position = UDim2.fromScale(1, 0.5)
-	pill.AnchorPoint = Vector2.new(1, 0.5)
-	pill.BackgroundColor3 = Color3.fromRGB(80,80,80)
-	pill.BorderSizePixel = 0
-	pill.ZIndex = 11
-
-	local pillCorner = Instance.new("UICorner")
-	pillCorner.CornerRadius = UDim.new(1,0)
-	pillCorner.Parent = pill
-
-	local slotKnob = Instance.new("Frame")
-	slotKnob.Name = "SlotKnob"
-	slotKnob.Parent = pill
-	slotKnob.Size = UDim2.fromOffset(14,14)
-	slotKnob.Position = UDim2.fromOffset(2,2)
-	slotKnob.BackgroundColor3 = Color3.fromRGB(220,220,220)
-	slotKnob.BorderSizePixel = 0
-	slotKnob.ZIndex = 12
-	slotKnob.Active = false
-
-    local slotKnobCorner = Instance.new("UICorner")
-    slotKnobCorner.CornerRadius = UDim.new(1, 0)
-    slotKnobCorner.Parent = slotKnob
-
-	Slots[i] = {
-		Frame = slot,
-		Label = label,
-		Pill = pill,
-		SlotKnob = slotKnob,
-		State = false
-	}
 end
+	
 
 local slot1 = Slots[1]
 local frame = slot1.Frame
 
-slot1Frame.ClipsDescendants = true
-slot1Frame.AutomaticSize = Enum.AutomaticSize.None
-
+frame.ClipsDescendants = true
+frame.AutomaticSize = Enum.AutomaticSize.None
 
 local startX = 6
 local gap = 4
@@ -359,10 +334,8 @@ spBox:GetPropertyChangedSignal("Text"):Connect(function()
   end)
 end)
 
-
-
 local function syncSlotUI(slot, state)
-  if not slot.Pill then return end
+	if not slot.Pill then return end
 	slot.State = state
 
 	if state then
@@ -373,6 +346,8 @@ local function syncSlotUI(slot, state)
 		slot.SlotKnob.Position = UDim2.fromOffset(2,2)
 	end
 end
+
+
 
 
 local slot2 = Slots[2]
