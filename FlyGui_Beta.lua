@@ -18,7 +18,6 @@ local WS               = Workspace
 local UIS              = UserInputService
 
 local Settings = {
-	BypassUp         = false,
 	BypassSafe       = true
 }
 
@@ -165,33 +164,14 @@ local function syncSlotUI(slot, state)
 	end
 end
 
-local slot1 = Slots[1]
-slot1.Label.Text = "Bypass UP"
 
-slot1.Pill.MouseButton1Click:Connect(function()
-	slot1.State = not slot1.State
-	Settings.BypassUp = slot1.State
 
-	if slot1.State then
-		slot1.Pill.BackgroundColor3 = Color3.fromRGB(120,200,120)
-		slot1.SlotKnob:TweenPosition(
-			UDim2.fromOffset(20,2),
-			Enum.EasingDirection.Out,
-			Enum.EasingStyle.Quad,
-			0.15,
-			true
-		)
-	else
-		slot1.Pill.BackgroundColor3 = Color3.fromRGB(80,80,80)
-		slot1.SlotKnob:TweenPosition(
-			UDim2.fromOffset(2,2),
-			Enum.EasingDirection.Out,
-			Enum.EasingStyle.Quad,
-			0.15,
-			true
-		)
-	end
-end)
+
+
+
+
+
+
 
 local slot2 = Slots[2]
 slot2.Label.Text = "Bypass Safe"
