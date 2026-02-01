@@ -381,7 +381,6 @@ end)
 repeat task.wait() until SettingsFrame and SettingsFrame.Parent
 
 local slot3Data = Slots[3]
-local slot3Value = 0
 local slot3Frame = slot3Data.Frame
 
 slot3Frame.AutomaticSize = Enum.AutomaticSize.None
