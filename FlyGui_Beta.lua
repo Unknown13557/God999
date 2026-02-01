@@ -275,76 +275,60 @@ for i = 1, 6 do
 			if n then Settings.ConsoleSpeed = n end
 		end)
 	end
+	
 if i ~= 1 then
-	local content = Instance.new("Frame")
+		
+    local content = Instance.new("Frame")
     content.Name = "Content"
     content.Parent = slot
     content.Position = UDim2.fromOffset(10, 0)
     content.Size = UDim2.new(1, -20, 1, 0)
     content.BackgroundTransparency = 1
 
-	local label = Instance.new("TextLabel")
-	label.Name = "Label"
-	label.Parent = content
-	label.Size = UDim2.fromScale(0.65, 1)
-	label.Position = UDim2.fromScale(0, 0)
-	label.BackgroundTransparency = 1
-	label.Text = "Empty"
-	label.TextColor3 = Color3.fromRGB(220,220,220)
-	label.Font = Enum.Font.SourceSansBold
-	label.TextSize = 18
-	label.TextXAlignment = Enum.TextXAlignment.Left
-	label.TextYAlignment = Enum.TextYAlignment.Center
-	label.ZIndex = 11
+    local label = Instance.new("TextLabel")
+    label.Name = "Label"
+    label.Parent = content
+    label.Size = UDim2.fromScale(0.65, 1)
+    label.BackgroundTransparency = 1
+    label.Text = "Empty"
+    label.TextColor3 = Color3.fromRGB(220,220,220)
+    label.Font = Enum.Font.SourceSansBold
+    label.TextSize = 18
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.ZIndex = 11
 
-if label and label:IsA("TextLabel") then
-    local pad = Instance.new("UIPadding")
-    pad.PaddingLeft = UDim.new(0, 1)
-    pad.Parent = label
+    local pill = Instance.new("TextButton")
+    pill.Name = "Pill"
+    pill.Parent = content
+    pill.Text = ""
+    pill.AutoButtonColor = false
+    pill.Size = UDim2.fromOffset(36, 18)
+    pill.Position = UDim2.fromScale(1, 0.5)
+    pill.AnchorPoint = Vector2.new(1, 0.5)
+    pill.BackgroundColor3 = Color3.fromRGB(80,80,80)
+    pill.BorderSizePixel = 0
+    pill.ZIndex = 11
+
+    local slotKnob = Instance.new("Frame")
+    slotKnob.Name = "SlotKnob"
+    slotKnob.Parent = pill
+    slotKnob.Size = UDim2.fromOffset(14,14)
+    slotKnob.Position = UDim2.fromOffset(2,2)
+    slotKnob.BackgroundColor3 = Color3.fromRGB(220,220,220)
+    slotKnob.ZIndex = 12
+
+    Slots[i] = {
+        Frame = slot,
+        Label = label,
+        Pill = pill,
+        SlotKnob = slotKnob,
+        State = false
+    }
+else
+		
+    Slots[1] = { Frame = slot }
 	end
-
-	local pill = Instance.new("TextButton")
-	pill.Name = "Pill"
-	pill.Parent = content
-	pill.Text = ""
-	pill.AutoButtonColor = false
-	pill.Size = UDim2.fromOffset(36, 18)
-	pill.Position = UDim2.fromScale(1, 0.5)
-	pill.AnchorPoint = Vector2.new(1, 0.5)
-	pill.BackgroundColor3 = Color3.fromRGB(80,80,80)
-	pill.BorderSizePixel = 0
-	pill.ZIndex = 11
-
-	local pillCorner = Instance.new("UICorner")
-	pillCorner.CornerRadius = UDim.new(1,0)
-	pillCorner.Parent = pill
-
-	local slotKnob = Instance.new("Frame")
-	slotKnob.Name = "SlotKnob"
-	slotKnob.Parent = pill
-	slotKnob.Size = UDim2.fromOffset(14,14)
-	slotKnob.Position = UDim2.fromOffset(2,2)
-	slotKnob.BackgroundColor3 = Color3.fromRGB(220,220,220)
-	slotKnob.BorderSizePixel = 0
-	slotKnob.ZIndex = 12
-	slotKnob.Active = false
-
-    local slotKnobCorner = Instance.new("UICorner")
-    slotKnobCorner.CornerRadius = UDim.new(1, 0)
-    slotKnobCorner.Parent = slotKnob
-
-	Slots[i] = {
-		Frame = slot,
-		Label = label,
-		Pill = pill,
-		SlotKnob = slotKnob,
-		State = false
-	}
-end
 	
-   Slots[1] = {
-    Frame = slot
-	}
 	
 local function syncSlotUI(slot, state)
 	slot.State = state
