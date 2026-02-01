@@ -404,75 +404,75 @@ rowLayout.FillDirection = Enum.FillDirection.Horizontal
 rowLayout.VerticalAlignment = Enum.VerticalAlignment.Center
 rowLayout.Padding = UDim.new(0, 2)
 
-local input = Instance.new("TextBox")
-input.Parent = row3
+local slot3Input = Instance.new("TextBox")
+slot3Input.Parent = row3
 
-input.Size = UDim2.fromOffset(80, 28)
+slot3Input.Size = UDim2.fromOffset(80, 28)
 
-input.Text = "500000"
-input.PlaceholderText = "Input"
-input.TextColor3 = Color3.fromRGB(230,230,230)
-input.PlaceholderColor3 = Color3.fromRGB(160,160,160)
-input.BackgroundColor3 = Color3.fromRGB(40,40,40)
-input.ClearTextOnFocus = false
-input.Font = Enum.Font.SourceSansBold
-input.TextSize = 16
-input.TextXAlignment = Enum.TextXAlignment.Center
-input.TextYAlignment = Enum.TextYAlignment.Center
-input.ZIndex = 15
+slot3Input.Text = "500000"
+slot3Input.PlaceholderText = "Input"
+slot3Input.TextColor3 = Color3.fromRGB(230,230,230)
+slot3Input.PlaceholderColor3 = Color3.fromRGB(160,160,160)
+slot3Input.BackgroundColor3 = Color3.fromRGB(40,40,40)
+slot3Input.ClearTextOnFocus = false
+slot3Input.Font = Enum.Font.SourceSansBold
+slot3Input.TextSize = 16
+slot3Input.TextXAlignment = Enum.TextXAlignment.Center
+slot3Input.TextYAlignment = Enum.TextYAlignment.Center
+slot3Input.ZIndex = 15
 
-local inputCorner = Instance.new("UICorner")
-inputCorner.CornerRadius = UDim.new(0,6)
-inputCorner.Parent = input
+local slot3InputCorner = Instance.new("UICorner")
+slot3InputCorner.CornerRadius = UDim.new(0,6)
+slot3InputCorner.Parent = input
 
-input:GetPropertyChangedSignal("Text"):Connect(function()	
-local filtered = input.Text:gsub("%D", "")
-	if input.Text ~= filtered then
-		input.Text = filtered
-local n = tonumber(input.Text)
+slot3Input:GetPropertyChangedSignal("Text"):Connect(function()	
+local filtered = slot3Input.Text:gsub("%D", "")
+	if slot3Input.Text ~= filtered then
+		slot3Input.Text = filtered
+local n = tonumber(slot3Input.Text)
 	if n then
 		slot3Value = n
 	end
 end)
 
-local upBtn = Instance.new("TextButton")
-upBtn.Parent = row3
-upBtn.Size = UDim2.fromOffset(34, 28)
-upBtn.Text = ""
-upBtn.BackgroundColor3 = Color3.fromRGB(80,180,120)
-upBtn.ZIndex = 15
+local slot3UpBtn = Instance.new("TextButton")
+slot3UpBtn.Parent = row3
+slot3UpBtn.Size = UDim2.fromOffset(34, 28)
+slot3UpBtn.Text = ""
+slot3UpBtn.BackgroundColor3 = Color3.fromRGB(80,180,120)
+slot3UpBtn.ZIndex = 15
 
-local upIcon = Instance.new("ImageLabel")
-upIcon.Parent = upBtn
-upIcon.BackgroundTransparency = 1
-upIcon.Size = UDim2.fromScale(0.85, 0.85)
-upIcon.Position = UDim2.fromScale(0.075, 0.075)
-upIcon.Image = "rbxassetid://6031090990"
-upIcon.ZIndex = upBtn.ZIndex + 1
+local slot3UpIcon = Instance.new("ImageLabel")
+slot3UpIcon.Parent = slot3UpBtn
+slot3UpIcon.BackgroundTransparency = 1
+slot3UpIcon.Size = UDim2.fromScale(0.85, 0.85)
+slot3UpIcon.Position = UDim2.fromScale(0.075, 0.075)
+slot3UpIcon.Image = "rbxassetid://6031090990"
+slot3UpIcon.ZIndex = slot3UpBtn.ZIndex + 1
 
-local upCorner = Instance.new("UICorner")
-upCorner.CornerRadius = UDim.new(0,6)
-upCorner.Parent = upBtn
+local slot3UpCorner = Instance.new("UICorner")
+slot3UpCorner.CornerRadius = UDim.new(0,6)
+slot3UpCorner.Parent = slot3UpBtn
 
-local downBtn = Instance.new("TextButton")
-downBtn.Parent = row3
-downBtn.Size = UDim2.fromOffset(34, 28)
-downBtn.Text = ""
-downBtn.BackgroundColor3 = Color3.fromRGB(180,80,80)
-downBtn.ZIndex = 15
+local slot3DownBtn = Instance.new("TextButton")
+slot3DownBtn.Parent = row3
+slot3DownBtn.Size = UDim2.fromOffset(34, 28)
+slot3DownBtn.Text = ""
+slot3DownBtn.BackgroundColor3 = Color3.fromRGB(180,80,80)
+slot3DownBtn.ZIndex = 15
 
-local downIcon = Instance.new("ImageLabel")
-downIcon.Parent = downBtn
-downIcon.BackgroundTransparency = 1
-downIcon.Size = UDim2.fromScale(0.85, 0.85)
-downIcon.Position = UDim2.fromScale(0.075, 0.075)
-downIcon.Image = "rbxassetid://6031090990"
-downIcon.Rotation = 180
-downIcon.ZIndex = downBtn.ZIndex + 1
+local slot3DownIcon = Instance.new("ImageLabel")
+slot3DownIcon.Parent = slot3DownBtn
+slot3DownIcon.BackgroundTransparency = 1
+slot3DownIcon.Size = UDim2.fromScale(0.85, 0.85)
+slot3DownIcon.Position = UDim2.fromScale(0.075, 0.075)
+slot3DownIcon.Image = "rbxassetid://6031090990"
+slot3DownIcon.Rotation = 180
+slot3DownIcon.ZIndex = slot3DownBtn.ZIndex + 1
 
-local downCorner = Instance.new("UICorner")
-downCorner.CornerRadius = UDim.new(0,6)
-downCorner.Parent = downBtn
+local slot3DownCorner = Instance.new("UICorner")
+slot3DownCorner.CornerRadius = UDim.new(0,6)
+slot3DownCorner.Parent = slot3DownBtn
 
 local MIN_TWEEN_Y = 30
 
@@ -513,24 +513,12 @@ local function applyOffset(dir)
 	)
 end
 
-up.MouseButton1Click:Connect(function()
-	local char = LocalPlayer.Character
-	local hrp = char and char:FindFirstChild("HumanoidRootPart")
-	if not hrp then return end
-	if slot3Value == 0 then return end
-
-	local pos = hrp.Position
-	hrp.CFrame = CFrame.new(pos.X, pos.Y + slot3Value, pos.Z)
+upBtn.MouseButton1Click:Connect(function()
+    applyOffset(1)
 end)
 
-down.MouseButton1Click:Connect(function()
-	local char = LocalPlayer.Character
-	local hrp = char and char:FindFirstChild("HumanoidRootPart")
-	if not hrp then return end
-	if slot3Value == 0 then return end
-
-	local pos = hrp.Position
-	hrp.CFrame = CFrame.new(pos.X, pos.Y - slot3Value, pos.Z)
+downBtn.MouseButton1Click:Connect(function()
+    applyOffset(-1)
 end)
 
 
