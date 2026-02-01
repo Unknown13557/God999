@@ -110,7 +110,7 @@ for i = 1, 6 do
 
 	if label and label:IsA("TextLabel") then
     local pad = Instance.new("UIPadding")
-    pad.PaddingLeft = UDim.new(0, 6)
+    pad.PaddingLeft = UDim.new(0, 3)
     pad.Parent = label
 	end
 
@@ -279,7 +279,7 @@ end)
 
 local upBtn = Instance.new("TextButton")
 upBtn.Parent = row
-upBtn.Size = UDim2.fromOffset(33, 28)
+upBtn.Size = UDim2.fromOffset(34, 28)
 upBtn.Text = ""
 upBtn.BackgroundColor3 = Color3.fromRGB(80,180,120)
 upBtn.ZIndex = 15
@@ -298,7 +298,7 @@ upCorner.Parent = upBtn
 
 local downBtn = Instance.new("TextButton")
 downBtn.Parent = row
-downBtn.Size = UDim2.fromOffset(33, 28)
+downBtn.Size = UDim2.fromOffset(34, 28)
 downBtn.Text = ""
 downBtn.BackgroundColor3 = Color3.fromRGB(180,80,80)
 downBtn.ZIndex = 15
