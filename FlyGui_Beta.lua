@@ -261,6 +261,96 @@ for i = 1, 6 do
 	}
 end
 
+local slot1 = Slots[1]
+local frame = slot1.Frame
+
+frame.ClipsDescendants = true
+
+for _, c in ipairs(frame:GetChildren()) do
+	if c:IsA("GuiObject") then
+		c:Destroy()
+	end
+end
+
+local startX = 6
+local gap = 4
+local centerY = math.floor((frame.AbsoluteSize.Y > 0 and frame.AbsoluteSize.Y or 56)/2 - 11)
+
+
+local yLabel = Instance.new("TextLabel")
+yLabel.Parent = frame
+yLabel.Text = "Y"
+yLabel.Size = UDim2.fromOffset(14, 22)
+yLabel.Position = UDim2.fromOffset(startX, centerY)
+yLabel.BackgroundTransparency = 1
+yLabel.Font = Enum.Font.SourceSansBold
+yLabel.TextSize = 12
+yLabel.TextColor3 = Color3.fromRGB(220,220,220)
+yLabel.TextXAlignment = Enum.TextXAlignment.Center
+
+
+local yBox = Instance.new("TextBox")
+yBox.Parent = frame
+yBox.Text = "100000"
+yBox.Size = UDim2.fromOffset(90, 22)
+yBox.Position = UDim2.fromOffset(startX + 14 + gap, centerY)
+yBox.ClearTextOnFocus = false
+yBox.Font = Enum.Font.SourceSans
+yBox.TextSize = 13
+yBox.TextColor3 = Color3.fromRGB(255,255,255)
+yBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
+Instance.new("UICorner", yBox).CornerRadius = UDim.new(0,4)
+
+
+local spLabel = Instance.new("TextLabel")
+spLabel.Parent = frame
+spLabel.Text = "Sp"
+spLabel.Size = UDim2.fromOffset(18, 22)
+spLabel.Position = UDim2.fromOffset(startX + 14 + gap + 90 + gap, centerY)
+spLabel.BackgroundTransparency = 1
+spLabel.Font = Enum.Font.SourceSansBold
+spLabel.TextSize = 12
+spLabel.TextColor3 = Color3.fromRGB(220,220,220)
+spLabel.TextXAlignment = Enum.TextXAlignment.Center
+
+
+local spBox = Instance.new("TextBox")
+spBox.Parent = frame
+spBox.Text = "2000"
+spBox.Size = UDim2.fromOffset(60, 22)
+spBox.Position = UDim2.fromOffset(
+	startX + 14 + gap + 90 + gap + 18 + gap,
+	centerY
+)
+
+spBox.ClearTextOnFocus = false
+spBox.Font = Enum.Font.SourceSans
+spBox.TextSize = 13
+spBox.TextColor3 = Color3.fromRGB(255,255,255)
+spBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
+Instance.new("UICorner", spBox).CornerRadius = UDim.new(0,4)
+
+
+Settings.ConsoleY = tonumber(yBox.Text) or 100000
+Settings.ConsoleSpeed = tonumber(spBox.Text) or 2000
+
+yBox:GetPropertyChangedSignal("Text"):Connect(function()
+	local n = tonumber(yBox.Text)
+	if n then
+		Settings.ConsoleY = n
+	end
+end)
+
+spBox:GetPropertyChangedSignal("Text"):Connect(function()
+	local n = tonumber(spBox.Text)
+	if n then
+		Settings.ConsoleSpeed = n
+	end
+end)
+
+
+
+
 local function syncSlotUI(slot, state)
 	slot.State = state
 
@@ -272,9 +362,6 @@ local function syncSlotUI(slot, state)
 		slot.SlotKnob.Position = UDim2.fromOffset(2,2)
 	end
 end
-
-
-yBox.Font = Enum.Font.SourceSans
 
 
 local slot2 = Slots[2]
@@ -467,92 +554,6 @@ end)
 
 
 
-local slot1 = Slots[1]
-local frame = slot1.Frame
-
-frame.ClipsDescendants = true
-
-for _, c in ipairs(frame:GetChildren()) do
-	if c:IsA("GuiObject") then
-		c:Destroy()
-	end
-end
-
-local startX = 6
-local gap = 4
-local centerY = frame.Size.Y.Offset/2 - 11
-
-
-local yLabel = Instance.new("TextLabel")
-yLabel.Parent = frame
-yLabel.Text = "Y"
-yLabel.Size = UDim2.fromOffset(14, 22)
-yLabel.Position = UDim2.fromOffset(startX, centerY)
-yLabel.BackgroundTransparency = 1
-yLabel.Font = Enum.Font.SourceSansBold
-yLabel.TextSize = 12
-yLabel.TextColor3 = Color3.fromRGB(220,220,220)
-yLabel.TextXAlignment = Enum.TextXAlignment.Center
-
-
-local yBox = Instance.new("TextBox")
-yBox.Parent = frame
-yBox.Text = "100000"
-yBox.Size = UDim2.fromOffset(90, 22)
-yBox.Position = UDim2.fromOffset(startX + 14 + gap, centerY)
-yBox.ClearTextOnFocus = false
-yBox.Font = Enum.Font.SourceSans
-yBox.TextSize = 13
-yBox.TextColor3 = Color3.fromRGB(255,255,255)
-yBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
-Instance.new("UICorner", yBox).CornerRadius = UDim.new(0,4)
-
-
-local spLabel = Instance.new("TextLabel")
-spLabel.Parent = frame
-spLabel.Text = "Sp"
-spLabel.Size = UDim2.fromOffset(18, 22)
-spLabel.Position = UDim2.fromOffset(startX + 14 + gap + 90 + gap, centerY)
-spLabel.BackgroundTransparency = 1
-spLabel.Font = Enum.Font.SourceSansBold
-spLabel.TextSize = 12
-spLabel.TextColor3 = Color3.fromRGB(220,220,220)
-spLabel.TextXAlignment = Enum.TextXAlignment.Center
-
-
-local spBox = Instance.new("TextBox")
-spBox.Parent = frame
-spBox.Text = "2000"
-spBox.Size = UDim2.fromOffset(60, 22)
-spBox.Position = UDim2.fromOffset(
-	startX + 14 + gap + 90 + gap + 18 + gap,
-	centerY
-)
-
-spBox.ClearTextOnFocus = false
-spBox.Font = Enum.Font.SourceSans
-spBox.TextSize = 13
-spBox.TextColor3 = Color3.fromRGB(255,255,255)
-spBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
-Instance.new("UICorner", spBox).CornerRadius = UDim.new(0,4)
-
-
-Settings.ConsoleY = tonumber(yBox.Text) or 100000
-Settings.ConsoleSpeed = tonumber(spBox.Text) or 2000
-
-yBox:GetPropertyChangedSignal("Text"):Connect(function()
-	local n = tonumber(yBox.Text)
-	if n then
-		Settings.ConsoleY = n
-	end
-end)
-
-spBox:GetPropertyChangedSignal("Text"):Connect(function()
-	local n = tonumber(spBox.Text)
-	if n then
-		Settings.ConsoleSpeed = n
-	end
-end)
 
 
 
