@@ -17,6 +17,8 @@ local RS               = RunService
 local WS               = Workspace
 local UIS              = UserInputService
 
+local function attachDrag(target, ignoreButton)
+
 local Settings = {
 	BypassTween       = true
 }
@@ -423,8 +425,6 @@ Frame.BorderColor3 = Color3.fromRGB(103, 221, 213)
 Frame.Position = UDim2.new(0.100320168, 0, 0.379746825, 0)
 Frame.Size = UDim2.new(0, 190, 0, 57)
 
-attachDrag(Frame, onof)
-
 up.Name = "up"
 up.Parent = Frame
 up.BackgroundColor3 = Color3.fromRGB(79, 255, 152)
@@ -493,6 +493,12 @@ onof.TextColor3 = Color3.fromRGB(0, 0, 0)
 onof.BorderSizePixel = 1
 onof.TextSize = 21
 onof.ZIndex = 50
+
+task.defer(function()
+	if Frame and Frame.Parent and onof then
+		attachDrag(Frame, onof)
+	end
+end)	
 
 TextLabel.Parent = Frame
 TextLabel.BackgroundColor3 = Color3.fromRGB(242, 60, 255)
@@ -603,7 +609,10 @@ local function over(inst, pos)
 	return pos.X >= p.X and pos.X <= p.X + s.X and pos.Y >= p.Y and pos.Y <= p.Y + s.Y
 end
 
-local function attachDrag(target, ignoreButton)
+
+
+
+		
 	local dragging = false
 	local dragStart, startPos
 
