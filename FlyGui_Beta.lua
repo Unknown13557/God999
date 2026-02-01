@@ -31,7 +31,8 @@ main.Name = "main"
 main.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 main.ResetOnSpawn = false
 main.IgnoreGuiInset = true
-local TweenTriggered = false
+
+
 local Frame           = Instance.new("Frame")
 local up              = Instance.new("TextButton")
 local escape          = Instance.new("Frame")
@@ -243,11 +244,6 @@ numericOnly(yInput)
 
 
 
-
-
-
-
-
 local slot2 = Slots[2]
 slot2.Label.Text = "Bypass Tween"
 slot2.State = true
@@ -257,7 +253,6 @@ slot2.SlotKnob.Position = UDim2.fromOffset(20,2)
 slot2.Pill.MouseButton1Click:Connect(function()
 	slot2.State = not slot2.State
 	Settings.BypassTween = slot2.State
-	TweenTriggered = false
 
 	if slot2.State then
 		slot2.Pill.BackgroundColor3 = Color3.fromRGB(120,200,120)
@@ -278,7 +273,9 @@ slot2.Pill.MouseButton1Click:Connect(function()
 			true
 		)
 	end
-end) 
+end)
+
+
 
 repeat task.wait() until SettingsFrame and SettingsFrame.Parent
 local slot3Data = Slots[3]
@@ -1108,11 +1105,8 @@ Players.LocalPlayer.CharacterAdded:Connect(function(char)
 
 	nowe = false
 	tpwalking = false
-syncSlotUI(Slots[1], Settings.BypassUp)
-syncSlotUI(Slots[2], Settings.BypassSafe)
-
-safeTriggered = false
-isAscending = false
+		
+syncSlotUI(Slots[2], Settings.BypassTween)
     lastClick = 0
 	
 	stopFlyVisuals()
