@@ -283,61 +283,66 @@ layout.VerticalAlignment = Enum.VerticalAlignment.Center
 layout.HorizontalAlignment = Enum.HorizontalAlignment.Left
 layout.Padding = UDim.new(0, 1)
 
+local groupY = Instance.new("Frame")
+groupY.Parent = row
+groupY.BackgroundTransparency = 1
+groupY.Size = UDim2.fromOffset(110, 28)
+
+local ly = Instance.new("UIListLayout")
+ly.Parent = groupY
+ly.FillDirection = Enum.FillDirection.Horizontal
+ly.VerticalAlignment = Enum.VerticalAlignment.Center
+ly.Padding = UDim.new(0, 3)
+
 local yLabel = Instance.new("TextLabel")
-yLabel.Parent = row
+yLabel.Parent = groupY
 yLabel.Size = UDim2.fromOffset(12, 24)
 yLabel.BackgroundTransparency = 1
 yLabel.Text = "Y"
 yLabel.Font = Enum.Font.SourceSansBold
 yLabel.TextSize = 16
 yLabel.TextColor3 = Color3.fromRGB(220,220,220)
-yLabel.TextXAlignment = Enum.TextXAlignment.Center
-yLabel.ZIndex = 30
-yLabel.LayoutOrder = 1
 
 local yBox = Instance.new("TextBox")
-yBox.Parent = row
-yBox.AnchorPoint = Vector2.new(0, 0.5)
-yBox.Size = UDim2.fromOffset(52, 26)
+yBox.Parent = groupY
+yBox.Size = UDim2.fromOffset(90, 28)
 yBox.Text = "100000"
 yBox.ClearTextOnFocus = false
-yBox.PlaceholderText = ""
-yBox.Font = Enum.Font.SourceSans
-yBox.TextSize = 16
-yBox.TextColor3 = Color3.fromRGB(255,255,255)
 yBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
+yBox.TextColor3 = Color3.fromRGB(255,255,255)
 yBox.TextXAlignment = Enum.TextXAlignment.Center
-yBox.ZIndex = 40
 Instance.new("UICorner", yBox).CornerRadius = UDim.new(0,6)
-yBox.LayoutOrder   = 2
 
+
+local groupSp = Instance.new("Frame")
+groupSp.Parent = row
+groupSp.BackgroundTransparency = 1
+groupSp.Size = UDim2.fromOffset(90, 28)
+
+local ls = Instance.new("UIListLayout")
+ls.Parent = groupSp
+ls.FillDirection = Enum.FillDirection.Horizontal
+ls.VerticalAlignment = Enum.VerticalAlignment.Center
+ls.Padding = UDim.new(0, 3)
 
 local spLabel = Instance.new("TextLabel")
-spLabel.Parent = row
+spLabel.Parent = groupSp
 spLabel.Size = UDim2.fromOffset(18, 24)
 spLabel.BackgroundTransparency = 1
 spLabel.Text = "Sp"
 spLabel.Font = Enum.Font.SourceSansBold
 spLabel.TextSize = 16
 spLabel.TextColor3 = Color3.fromRGB(220,220,220)
-spLabel.ZIndex = 30
-spLabel.LayoutOrder= 3
 
 local spBox = Instance.new("TextBox")
-spBox.Parent = row
-spBox.AnchorPoint = Vector2.new(0, 0.5)
-spBox.Size = UDim2.fromOffset(52, 26)
+spBox.Parent = groupSp
+spBox.Size = UDim2.fromOffset(60, 28)
 spBox.Text = "2000"
 spBox.ClearTextOnFocus = false
-spBox.PlaceholderText = ""
-spBox.Font = Enum.Font.SourceSans
-spBox.TextSize = 16
-spBox.TextColor3 = Color3.fromRGB(255,255,255)
 spBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
+spBox.TextColor3 = Color3.fromRGB(255,255,255)
 spBox.TextXAlignment = Enum.TextXAlignment.Center
-spBox.ZIndex = 40
 Instance.new("UICorner", spBox).CornerRadius = UDim.new(0,6)
-spBox.LayoutOrder  = 4
 
 
 local function syncSlotUI(slot, state)
@@ -412,7 +417,7 @@ local rowLayout = Instance.new("UIListLayout")
 rowLayout.Parent = row3
 rowLayout.FillDirection = Enum.FillDirection.Horizontal
 rowLayout.VerticalAlignment = Enum.VerticalAlignment.Center
-rowLayout.Padding = UDim.new(0, 2)
+rowLayout.Padding = UDim.new(0, 1)
 
 local SLOT3MIN_TWEEN_Y = 30
 local SLOT3MAX_TWEEN_Y = 2000000000
