@@ -216,11 +216,22 @@ slot3Data.Pill.Visible = false
 slot3Data.State = nil
 slot3Data.Label.Visible = false
 
-local input = Instance.new("TextBox")
-input.Parent = slot3Frame
+local row = Instance.new("Frame")
+row.Parent = slot3Frame
+row.Size = UDim2.new(1, -12, 1, -8)
+row.Position = UDim2.fromOffset(6, 4)
+row.BackgroundTransparency = 1
 
-input.Position = UDim2.fromScale(0.04, 0.15)
-input.Size = UDim2.fromScale(0.62, 0.7)
+local rowLayout = Instance.new("UIListLayout")
+rowLayout.Parent = row
+rowLayout.FillDirection = Enum.FillDirection.Horizontal
+rowLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+rowLayout.Padding = UDim.new(0, 8)
+
+local input = Instance.new("TextBox")
+input.Parent = row
+
+input.Size = UDim2.fromScale(0.55, 0.7)
 
 input.Text = "500000"
 input.PlaceholderText = "Input"
@@ -246,9 +257,8 @@ input:GetPropertyChangedSignal("Text"):Connect(function()
 end)
 
 local upBtn = Instance.new("TextButton")
-upBtn.Parent = slot3Frame
+upBtn.Parent = row
 upBtn.Size = UDim2.fromOffset(44, 28)
-upBtn.Position = UDim2.fromOffset(96, 10)
 upBtn.Text = ""
 upBtn.AutoButtonColor = true
 
@@ -272,17 +282,14 @@ local upCorner = Instance.new("UICorner")
 upCorner.CornerRadius = UDim.new(0,6)
 upCorner.Parent = upBtn
 
--- ===== DOWN BUTTON =====
 local downBtn = Instance.new("TextButton")
-downBtn.Parent = slot3Frame                 -- BẮT BUỘC
+downBtn.Parent = row
 downBtn.Size = UDim2.fromOffset(44, 28)
-downBtn.Position = UDim2.fromOffset(144, 10)
-downBtn.Text = ""                           -- XOÁ TEXT "DOWN"
+downBtn.Text = ""
 downBtn.AutoButtonColor = true
 downBtn.BackgroundColor3 = Color3.fromRGB(180,80,80)
 downBtn.ZIndex = 15
 
--- ICON ⌄
 local downIcon = Instance.new("TextLabel")
 downIcon.Parent = downBtn
 downIcon.BackgroundTransparency = 1
@@ -302,12 +309,6 @@ end)
 local downCorner = Instance.new("UICorner")
 downCorner.CornerRadius = UDim.new(0,6)
 downCorner.Parent = downBtn
-
-local y = 12
-
-input.Position = UDim2.fromOffset(12, y)
-upBtn.Position = UDim2.fromOffset(140, y)
-downBtn.Position = UDim2.fromOffset(200, y)
 
 local MIN_SAFE_Y = 30
 
