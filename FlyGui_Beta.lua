@@ -275,7 +275,7 @@ for i = 1, 6 do
 			if n then Settings.ConsoleSpeed = n end
 		end)
 	end
-
+if i ~= 1 then
 	local content = Instance.new("Frame")
     content.Name = "Content"
     content.Parent = slot
@@ -297,7 +297,7 @@ for i = 1, 6 do
 	label.TextYAlignment = Enum.TextYAlignment.Center
 	label.ZIndex = 11
 
-	if label and label:IsA("TextLabel") then
+if label and label:IsA("TextLabel") then
     local pad = Instance.new("UIPadding")
     pad.PaddingLeft = UDim.new(0, 1)
     pad.Parent = label
@@ -341,7 +341,11 @@ for i = 1, 6 do
 		State = false
 	}
 end
-
+	
+   Slots[1] = {
+    Frame = slot
+	}
+	
 local function syncSlotUI(slot, state)
 	slot.State = state
 
