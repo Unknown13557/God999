@@ -645,140 +645,17 @@ local nowe = false
 local noclipConn = nil
 local noclipCache = {}
 
-local SPEED, TARGET_Y = 1500, 1000000
-local LOW_HP, SAFE_HP = 0.40, 0.80
-
-local Enabled = false
-local EscapeEnabled = false
-
-local Flying, TweenObj = false, nil
-local Humanoid, RootPart
-local healthConn
-local magictis_cancelFlight, magictis_startFlight, magictis_onHealthChanged, magictis_bindCharacter
-
-local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
-local isOn = Enabled
-
-local function setToggle(state)
-	isOn = state
-	local bgOn = Color3.fromRGB(88, 200, 120)
-	local bgOff = Color3.fromRGB(220, 50, 50)
-	if isOn then
-		TweenService:Create(toggle, tweenInfo, {BackgroundColor3 = bgOn}):Play()
-		TweenService:Create(flyKnob, tweenInfo, {Position = UDim2.fromOffset(22, 2)}):Play()
-	else
-		TweenService:Create(toggle, tweenInfo, {BackgroundColor3 = bgOff}):Play()
-		TweenService:Create(flyKnob, tweenInfo, {Position = UDim2.fromOffset(2, 2)}):Play()
-	end
-end
-
-magictis_cancelFlight = function()
-	if TweenObj then TweenObj:Cancel() TweenObj = nil end
-	Flying = false
-end
-
-magictis_startFlight = function()
-	if not Enabled or Flying or not RootPart then return end
-	local yNow = RootPart.Position.Y
-	if yNow >= TARGET_Y - 1 then return end
-	local dist = TARGET_Y - yNow
-	local duration = dist / SPEED
-	Flying = true
-	local cf = RootPart.CFrame
-	TweenObj = TweenService:Create(
-		RootPart,
-		TweenInfo.new(duration, Enum.EasingStyle.Linear),
-		{CFrame = CFrame.new(cf.X, TARGET_Y, cf.Z)}
-	)
-	TweenObj.Completed:Connect(function()
-		TweenObj = nil
-		Flying = false
-	end)
-	TweenObj:Play()
-end
-
-magictis_onHealthChanged = function(h)
-	if not Humanoid or not EscapeEnabled or not Enabled then
-	return
-end
-	if not Enabled then return end
-	local mh = Humanoid.MaxHealth
-	if mh <= 0 then return end
-
-	local hpPercent = h / mh
-
-	if hpPercent < LOW_HP then
-		if not safeTriggered then
-			safeTriggered = true
-
-			if Settings.BypassSafe then
-				if RootPart then
-					local pos = RootPart.Position
-					RootPart.CFrame = CFrame.new(
-						pos.X,
-						TARGET_Y,
-						pos.Z
-					)
-				end
-			else
-				if not Flying then
-					magictis_startFlight()
-				end
-			end
-		end
-
-	elseif hpPercent >= SAFE_HP then
-		safeTriggered = false
-
-		if Flying then
-			magictis_cancelFlight()
-		end
-	end
-end
-
-magictis_bindCharacter = function(char)
-	Humanoid = char:WaitForChild("Humanoid")
-	RootPart = char:WaitForChild("HumanoidRootPart")
-	if healthConn then
-		healthConn:Disconnect()
-		healthConn = nil
-	end
-	if Enabled then
-		healthConn = Humanoid.HealthChanged:Connect(magictis_onHealthChanged)
-	end
-end
-
-local function magictis_applyEnabled(state)
-	safeTriggered = false
-	Enabled = state
-	if not Enabled then
-		magictis_cancelFlight()
-		Flying = false
-		if healthConn then
-			healthConn:Disconnect()
-			healthConn = nil
-		end
-	else
-		if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-			Humanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
-			if healthConn then
-				healthConn:Disconnect()
-			end
-			healthConn = Humanoid.HealthChanged:Connect(magictis_onHealthChanged)
-			magictis_onHealthChanged(Humanoid.Health)
-		end
-	end
-end
-
 local toggling = false
+local isOn = false
+
 local function magictis_onToggleClick()
     if toggling then return end
     toggling = true
+
     local nextState = not isOn
-setToggle(nextState)
-EscapeEnabled = nextState
-magictis_applyEnabled(nextState)
-isOn = nextState
+    setToggle(nextState)
+    isOn = nextState
+
     task.delay(0.15, function()
         toggling = false
     end)
@@ -787,16 +664,6 @@ end
 toggle.Activated:Connect(magictis_onToggleClick)
 flyKnob.Activated:Connect(magictis_onToggleClick)
 
-if LocalPlayer.Character then
-	magictis_bindCharacter(LocalPlayer.Character)
-end
-
-LocalPlayer.CharacterAdded:Connect(magictis_bindCharacter)
-
-task.defer(function()
-    setToggle(Enabled)
-    magictis_applyEnabled(Enabled)
-end)
 
 local function cacheAndDisablePart(part)
 	if not part or not part:IsA("BasePart") then return end
@@ -896,70 +763,19 @@ local function stopUpTextVisual()
     if s then s.Enabled = false end
 end
 
-local ASCEND_SPEED = 1500
-local UP_TARGET_Y = 10000000
-local isAscending = false
-local ascendTween
-
 local function stopAscending()
-	if not isAscending then return end
-	isAscending = false
-
-	if ascendTween then
-		ascendTween:Cancel()
-		ascendTween = nil
-	end
-
-	stopUpTextVisual()
+    stopUpTextVisual()
 end
 
 function magiskk.StopVertical()
-	stopAscending()
+    stopUpTextVisual()
 end
 
 up.MouseButton1Click:Connect(function()
-	local char = LocalPlayer.Character
-	local hrp = char and char:FindFirstChild("HumanoidRootPart")
-	local hum = char and char:FindFirstChildOfClass("Humanoid")
-	if not hrp or not hum then return end
-
-	if isAscending then
-		stopAscending()
-		return
-	end
-
-	isAscending = true
-	startUpTextVisual()
-
-	local startPos = hrp.Position
-	local dist = UP_TARGET_Y - startPos.Y
-	if dist <= 0 then
-		stopAscending()
-		return
-	end
-
-    if Settings.BypassUp then
-	hrp.CFrame = CFrame.new(startPos.X, UP_TARGET_Y, startPos.Z)
-	stopAscending()
-	return
-end
-
-	local duration = dist / ASCEND_SPEED
-
-	ascendTween = TweenService:Create(
-		hrp,
-		TweenInfo.new(duration, Enum.EasingStyle.Linear),
-		{ CFrame = CFrame.new(startPos.X, UP_TARGET_Y, startPos.Z) }
-	)
-
-	ascendTween.Completed:Connect(function()
-		ascendTween = nil
-		if isAscending then
-			stopAscending()
-		end
-	end)
-
-	ascendTween:Play()
+    startUpTextVisual()
+    task.delay(0.1, function()
+        stopUpTextVisual()
+    end)
 end)
 
 local tpwalking = false
@@ -1244,17 +1060,12 @@ syncSlotUI(Slots[2], Settings.BypassSafe)
 safeTriggered = false
 isAscending = false
     lastClick = 0
-    setToggle(false)
-	EscapeEnabled = false
 	
 	stopFlyVisuals()
 	stopUpTextVisual()
+		
 	if not Enabled then
-		magictis_cancelFlight()
 		Flying = false
-		if healthConn then
-			healthConn:Disconnect()
-			healthConn = nil
 		end
 	end
 
