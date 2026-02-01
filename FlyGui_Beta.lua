@@ -53,6 +53,7 @@ SettingsFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 SettingsFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
 SettingsFrame.BorderSizePixel = 2
 SettingsFrame.Active = true
+SettingsFrame.Position = UDim2.fromScale(0.5, 0.5)
 
 task.defer(function()
 	local cam = WS.CurrentCamera
@@ -313,8 +314,8 @@ local function applyOffset(dir)
 	local value = tonumber(input.Text)
 	if not value or value <= 0 then return end
 
-	local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-    local hum = char:WaitForChild("Humanoid")
+	local char = LocalPlayer.Character
+    if not char then return end
     local hrp = char:WaitForChild("HumanoidRootPart")
 
 	local currentY = hrp.Position.Y
@@ -724,6 +725,7 @@ magictis_bindCharacter = function(char)
 end
 
 local function magictis_applyEnabled(state)
+	safeTriggered = false
 	Enabled = state
 	if not Enabled then
 		magictis_cancelFlight()
