@@ -279,6 +279,7 @@ local frame = slot1.Frame
 
 frame.ClipsDescendants = true
 frame.AutomaticSize = Enum.AutomaticSize.None
+slot1.Frame.ZIndex = 20
 
 local startX = 6
 local gap = 4
@@ -298,6 +299,7 @@ yLabel.TextSize = 12
 yLabel.TextColor3 = Color3.fromRGB(220,220,220)
 yLabel.TextXAlignment = Enum.TextXAlignment.Center
 
+yLabel.ZIndex = 50
 
 local yBox = Instance.new("TextBox")
 yBox.Parent = frame
@@ -311,6 +313,18 @@ yBox.TextColor3 = Color3.fromRGB(255,255,255)
 yBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
 Instance.new("UICorner", yBox).CornerRadius = UDim.new(0,4)
 
+yBox.Text = "100000"
+yBox.PlaceholderText = ""
+yBox.ClearTextOnFocus = false
+
+yBox.TextTransparency = 0
+yBox.BackgroundTransparency = 0
+
+yBox.TextColor3 = Color3.fromRGB(255,255,255)
+yBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
+
+yBox.ZIndex = 50
+
 
 local spLabel = Instance.new("TextLabel")
 spLabel.Parent = frame
@@ -323,7 +337,8 @@ spLabel.TextSize = 12
 spLabel.TextColor3 = Color3.fromRGB(220,220,220)
 spLabel.TextXAlignment = Enum.TextXAlignment.Center
 
-
+spLabel.ZIndex = 50
+		
 local spBox = Instance.new("TextBox")
 spBox.Parent = frame
 spBox.Text = "2000"
@@ -339,6 +354,18 @@ spBox.TextSize = 13
 spBox.TextColor3 = Color3.fromRGB(255,255,255)
 spBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
 Instance.new("UICorner", spBox).CornerRadius = UDim.new(0,4)
+
+spBox.Text = "100000"
+spBox.PlaceholderText = ""
+spBox.ClearTextOnFocus = false
+
+spBox.TextTransparency = 0
+spBox.BackgroundTransparency = 0
+
+spBox.TextColor3 = Color3.fromRGB(255,255,255)
+spBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
+
+spBox.ZIndex = 50
 
 
 Settings.ConsoleY = tonumber(yBox.Text) or 100000
