@@ -165,13 +165,76 @@ local function syncSlotUI(slot, state)
 end
 
 
+local slot1Frame = Slots[1].Frame
 
+for _, c in ipairs(slot1Frame:GetChildren()) do
+	if not c:IsA("UIListLayout") then
+		c:Destroy()
+	end
+end
 
+local row = Instance.new("Frame")
+row.Parent = slot1Frame
+row.BackgroundTransparency = 1
+row.Size = UDim2.new(1, -12, 1, -8)
+row.Position = UDim2.fromOffset(6, 4)
+row.ZIndex = 20
 
+local layout = Instance.new("UIListLayout")
+layout.Parent = row
+layout.FillDirection = Enum.FillDirection.Horizontal
+layout.VerticalAlignment = Enum.VerticalAlignment.Center
+layout.Padding = UDim.new(0, 6)
 
+local speedLabel = Instance.new("TextLabel")
+speedLabel.Parent = row
+speedLabel.Size = UDim2.fromOffset(50, 28)
+speedLabel.Text = "Speed"
+speedLabel.Font = Enum.Font.SourceSansBold
+speedLabel.TextSize = 16
+speedLabel.TextColor3 = Color3.fromRGB(220,220,220)
+speedLabel.BackgroundTransparency = 1
+speedLabel.TextXAlignment = Enum.TextXAlignment.Left
 
+local speedInput = Instance.new("TextBox")
+speedInput.Parent = row
+speedInput.Size = UDim2.fromOffset(70, 28)
+speedInput.Text = "2000"
+speedInput.PlaceholderText = "Input"
+speedInput.ClearTextOnFocus = false
+speedInput.Font = Enum.Font.SourceSansBold
+speedInput.TextSize = 16
+speedInput.TextColor3 = Color3.fromRGB(230,230,230)
+speedInput.BackgroundColor3 = Color3.fromRGB(40,40,40)
 
+local speedCorner = Instance.new("UICorner")
+speedCorner.CornerRadius = UDim.new(0,6)
+speedCorner.Parent = speedInput
 
+local yLabel = Instance.new("TextLabel")
+yLabel.Parent = row
+yLabel.Size = UDim2.fromOffset(20, 28)
+yLabel.Text = "Y"
+yLabel.Font = Enum.Font.SourceSansBold
+yLabel.TextSize = 16
+yLabel.TextColor3 = Color3.fromRGB(220,220,220)
+yLabel.BackgroundTransparency = 1
+yLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+local yInput = Instance.new("TextBox")
+yInput.Parent = row
+yInput.Size = UDim2.fromOffset(90, 28)
+yInput.Text = "100000"
+yInput.PlaceholderText = "Input"
+yInput.ClearTextOnFocus = false
+yInput.Font = Enum.Font.SourceSansBold
+yInput.TextSize = 16
+yInput.TextColor3 = Color3.fromRGB(230,230,230)
+yInput.BackgroundColor3 = Color3.fromRGB(40,40,40)
+
+local yCorner = Instance.new("UICorner")
+yCorner.CornerRadius = UDim.new(0,6)
+yCorner.Parent = yInput
 
 local slot2 = Slots[2]
 slot2.Label.Text = "Bypass Safe"
