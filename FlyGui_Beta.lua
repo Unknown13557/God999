@@ -389,14 +389,14 @@ local function applyOffset(dir)
 	if dir > 0 then
 		targetY = currentY + value
 	else
-		if currentY <= MIN_SAFE_Y then
+		if currentY <= MIN_TWEEN_Y then
 			return
 		end
 
 		targetY = currentY - value
 
-		if targetY < MIN_SAFE_Y then
-			targetY = MIN_SAFE_Y
+		if targetY < MIN_TWEEN_Y then
+			targetY = MIN_TWEEN_Y
 		end
 	end
 
