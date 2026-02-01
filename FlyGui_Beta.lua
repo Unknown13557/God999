@@ -259,7 +259,7 @@ end)
 
 local upBtn = Instance.new("TextButton")
 upBtn.Parent = row
-upBtn.Size = UDim2.fromOffset(28, 28)
+upBtn.Size = UDim2.fromOffset(35, 28)
 upBtn.Text = ""
 upBtn.BackgroundColor3 = Color3.fromRGB(80,180,120)
 upBtn.ZIndex = 15
@@ -267,9 +267,9 @@ upBtn.ZIndex = 15
 local upIcon = Instance.new("ImageLabel")
 upIcon.Parent = upBtn
 upIcon.BackgroundTransparency = 1
-upIcon.Size = UDim2.fromScale(0.7, 0.7)
-upIcon.Position = UDim2.fromScale(0.15, 0.15)
-upIcon.Image = "rbxassetid://6031090990" -- mũi tên lên
+upIcon.Size = UDim2.fromScale(0.85, 0.85)
+upIcon.Position = UDim2.fromScale(0.075, 0.075)
+upIcon.Image = "rbxassetid://6031090990"
 upIcon.ZIndex = upBtn.ZIndex + 1
 
 local upCorner = Instance.new("UICorner")
@@ -278,7 +278,7 @@ upCorner.Parent = upBtn
 
 local downBtn = Instance.new("TextButton")
 downBtn.Parent = row
-downBtn.Size = UDim2.fromOffset(28, 28)
+downBtn.Size = UDim2.fromOffset(35, 28)
 downBtn.Text = ""
 downBtn.BackgroundColor3 = Color3.fromRGB(180,80,80)
 downBtn.ZIndex = 15
@@ -286,8 +286,8 @@ downBtn.ZIndex = 15
 local downIcon = Instance.new("ImageLabel")
 downIcon.Parent = downBtn
 downIcon.BackgroundTransparency = 1
-downIcon.Size = UDim2.fromScale(0.7, 0.7)
-downIcon.Position = UDim2.fromScale(0.15, 0.15)
+downIcon.Size = UDim2.fromScale(0.85, 0.85)
+downIcon.Position = UDim2.fromScale(0.075, 0.075)
 downIcon.Image = "rbxassetid://6031091002"
 downIcon.ZIndex = downBtn.ZIndex + 1
 
