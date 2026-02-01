@@ -108,10 +108,10 @@ for i = 1, 6 do
 	label.TextYAlignment = Enum.TextYAlignment.Center
 	label.ZIndex = 11
 
-	do
-        local pad = Instance.new("UIPadding")
-        pad.PaddingLeft = UDim.new(0, 6)
-        pad.Parent = label
+	if label and label:IsA("TextLabel") then
+    local pad = Instance.new("UIPadding")
+    pad.PaddingLeft = UDim.new(0, 6)
+    pad.Parent = label
 	end
 
 	local pill = Instance.new("TextButton")
