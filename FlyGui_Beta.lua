@@ -180,12 +180,6 @@ task.defer(function()
 	end
 end)
 
-local SettingsGrid = Instance.new("UIGridLayout")
-SettingsGrid.Parent = GridHolder
-SettingsGrid.CellSize = UDim2.fromScale(0.48, 0.27)
-SettingsGrid.CellPadding = UDim2.fromOffset(4, 6)
-SettingsGrid.HorizontalAlignment = Enum.HorizontalAlignment.Center
-SettingsGrid.VerticalAlignment = Enum.VerticalAlignment.Center
 
 local Slots = {}
 
@@ -196,6 +190,18 @@ for i = 1, 6 do
 	slot.BackgroundColor3 = Color3.fromRGB(60,60,60)
 	slot.BorderSizePixel = 0
 	slot.ZIndex = 10
+
+local col = (i - 1) % 2
+local row = math.floor((i - 1) / 2)
+
+slot.Size = UDim2.fromScale(0.48, 0.27)
+slot.Position = UDim2.fromScale(
+    0.02 + col * 0.5,
+    0.05 + row * 0.31
+)
+
+slot.ClipsDescendants = true
+slot.AutomaticSize = Enum.AutomaticSize.None
 
 	slot.ClipsDescendants = true
 	slot.AutomaticSize = Enum.AutomaticSize.None
@@ -270,21 +276,9 @@ end
 local slot1 = Slots[1]
 local frame = slot1.Frame
 
-frame.Size = UDim2.fromOffset(260, 56)
+slot1Frame.ClipsDescendants = true
+slot1Frame.AutomaticSize = Enum.AutomaticSize.None
 
-frame.Parent = SettingsFrame
-frame.LayoutOrder = -1000
-
-frame.Size = UDim2.fromOffset(260, 56)
-frame.Position = UDim2.fromOffset(10, 10)
-
-frame.ClipsDescendants = true
-
-for _, c in ipairs(frame:GetChildren()) do
-	if c:IsA("TextLabel") or c:IsA("TextBox") or c:IsA("TextButton") or c:IsA("Frame") then
-		c:Destroy()
-	end
-end
 
 local startX = 6
 local gap = 4
