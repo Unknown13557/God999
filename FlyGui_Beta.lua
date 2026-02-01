@@ -266,9 +266,11 @@ upBtn.ZIndex = 15
 
 local upIcon = Instance.new("TextLabel")
 upIcon.Parent = upBtn
+upIcon.ZIndex = upBtn.ZIndex + 1
 upIcon.Size = UDim2.fromScale(1,1)
 upIcon.BackgroundTransparency = 1
 upIcon.Text = "⌃"
+
 upIcon.Font = Enum.Font.GothamBlack
 upIcon.TextSize = 26
 upIcon.TextColor3 = Color3.fromRGB(255,255,255)
@@ -292,6 +294,7 @@ downBtn.ZIndex = 15
 
 local downIcon = Instance.new("TextLabel")
 downIcon.Parent = downBtn
+downIcon.ZIndex = upBtn.ZIndex + 1
 downIcon.Size = UDim2.fromScale(1,1)
 downIcon.BackgroundTransparency = 1
 downIcon.Text = "⌄"
