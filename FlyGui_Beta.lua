@@ -215,17 +215,10 @@ slot3Data.State = nil
 slot3Data.Label.Visible = false
 
 local input = Instance.new("TextBox")
-input.Parent = slot3
+input.Parent = slot3Frame
 
-input.Size = UDim2.fromOffset(80, 28)
 input.Position = UDim2.fromScale(0.04, 0.15)
 input.Size = UDim2.fromScale(0.62, 0.7)
-
-upBtn.Position = UDim2.fromScale(0.70, 0.15)
-upBtn.Size = UDim2.fromScale(0.14, 0.7)
-
-downBtn.Position = UDim2.fromScale(0.86, 0.15)
-downBtn.Size = UDim2.fromScale(0.14, 0.7)
 
 input.Text = "500000"
 input.PlaceholderText = "Input"
@@ -251,30 +244,62 @@ input:GetPropertyChangedSignal("Text"):Connect(function()
 end)
 
 local upBtn = Instance.new("TextButton")
+upBtn.Parent = slot3Frame
 upBtn.Size = UDim2.fromOffset(44, 28)
 upBtn.Position = UDim2.fromOffset(96, 10)
-upBtn.Text = "UP"
-upBtn.Parent = slot3
-upBtn.BackgroundColor3 = Color3.fromRGB(80,180,120)
-upBtn.TextColor3 = Color3.fromRGB(255,255,255)
-upBtn.Font = Enum.Font.SourceSansBold
-upBtn.TextSize = 14
-upBtn.ZIndex = 15
+upBtn.Text = ""
+upBtn.AutoButtonColor = true
+
+local upIcon = Instance.new("TextLabel")
+upIcon.Parent = upBtn
+upIcon.BackgroundTransparency = 1
+upIcon.Size = UDim2.fromScale(1, 1)
+upIcon.Position = UDim2.fromScale(0, 0)
+
+upIcon.Text = "⌃"
+upIcon.Font = Enum.Font.GothamBlack
+upIcon.TextColor3 = Color3.fromRGB(255,255,255)
+upIcon.TextXAlignment = Enum.TextXAlignment.Center
+upIcon.TextYAlignment = Enum.TextYAlignment.Center
+
+task.defer(function()
+	upIcon.TextSize = math.floor(upBtn.AbsoluteSize.Y * 0.9)
+end)
 
 local upCorner = Instance.new("UICorner")
 upCorner.CornerRadius = UDim.new(0,6)
 upCorner.Parent = upBtn
 
+-- ===== DOWN BUTTON =====
 local downBtn = Instance.new("TextButton")
+downBtn.Parent = slot3Frame                 -- BẮT BUỘC
 downBtn.Size = UDim2.fromOffset(44, 28)
 downBtn.Position = UDim2.fromOffset(144, 10)
-downBtn.Text = "DOWN"
-downBtn.Parent = slot3
+downBtn.Text = ""                           -- XOÁ TEXT "DOWN"
+downBtn.AutoButtonColor = true
 downBtn.BackgroundColor3 = Color3.fromRGB(180,80,80)
-downBtn.TextColor3 = Color3.fromRGB(255,255,255)
-downBtn.Font = Enum.Font.SourceSansBold
-downBtn.TextSize = 14
 downBtn.ZIndex = 15
+
+-- ICON ⌄
+local downIcon = Instance.new("TextLabel")
+downIcon.Parent = downBtn
+downIcon.BackgroundTransparency = 1
+downIcon.Size = UDim2.fromScale(1, 1)
+downIcon.Position = UDim2.fromScale(0, 0)
+
+downIcon.Text = "⌄"
+downIcon.Font = Enum.Font.GothamBlack
+downIcon.TextColor3 = Color3.fromRGB(255,255,255)
+downIcon.TextXAlignment = Enum.TextXAlignment.Center
+downIcon.TextYAlignment = Enum.TextYAlignment.Center
+
+task.defer(function()
+	downIcon.TextSize = math.floor(downBtn.AbsoluteSize.Y * 0.9)
+end)
+
+local downCorner = Instance.new("UICorner")
+downCorner.CornerRadius = UDim.new(0,6)
+downCorner.Parent = downBtn
 
 local y = 12
 
