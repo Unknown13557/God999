@@ -232,7 +232,7 @@ rowLayout.Padding = UDim.new(0, 8)
 local input = Instance.new("TextBox")
 input.Parent = row
 
-input.Size = UDim2.fromScale(120, 28)
+input.Size = UDim2.fromOffset(120, 28)
 
 input.Text = "500000"
 input.PlaceholderText = "Input"
@@ -272,11 +272,11 @@ upIcon.Text = "⌃"
 upIcon.Font = Enum.Font.GothamBlack
 upIcon.TextSize = 26
 upIcon.TextColor3 = Color3.fromRGB(255,255,255)
-upIcon.TextXAlignment = Center
-upIcon.TextYAlignment = Center
+upIcon.TextXAlignment = Enum.TextXAlignment.Center
+upIcon.TextYAlignment = Enum.TextYAlignment.Center
 
 task.defer(function()
-	upIcon.TextSize = math.floor(upBtn.AbsoluteSize.Y * 0.5)
+   upIcon.TextSize = math.floor(upBtn.AbsoluteSize.Y * 0.85)
 end)
 
 local upCorner = Instance.new("UICorner")
@@ -298,11 +298,11 @@ downIcon.Text = "⌄"
 downIcon.Font = Enum.Font.GothamBlack
 downIcon.TextSize = 26
 downIcon.TextColor3 = Color3.fromRGB(255,255,255)
-downIcon.TextXAlignment = Center
-downIcon.TextYAlignment = Center
+downIcon.TextXAlignment = Enum.TextXAlignment.Center
+downIcon.TextYAlignment = Enum.TextYAlignment.Center
 
 task.defer(function()
-	downIcon.TextSize = math.floor(downBtn.AbsoluteSize.Y * 0.5)
+    downIcon.TextSize = math.floor(downBtn.AbsoluteSize.Y * 0.85)
 end)
 
 local downCorner = Instance.new("UICorner")
