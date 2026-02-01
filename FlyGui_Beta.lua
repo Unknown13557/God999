@@ -1105,8 +1105,7 @@ Players.LocalPlayer.CharacterAdded:Connect(function(char)
 
 	nowe = false
 	tpwalking = false
-		
-syncSlotUI(Slots[2], Settings.BypassTween)
+	
     lastClick = 0
 	
 	stopFlyVisuals()
