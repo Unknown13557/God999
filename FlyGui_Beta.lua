@@ -191,6 +191,76 @@ for i = 1, 6 do
 	slot.BorderSizePixel = 0
 	slot.ZIndex = 10
 
+	slot.ClipsDescendants = true
+	slot.AutomaticSize = Enum.AutomaticSize.None
+
+	if i == 1 then
+		-- SLOT 1 : CONSOLE (LAYOUT GIỐNG SLOT 3)
+
+		local row = Instance.new("Frame")
+		row.Parent = slot
+		row.BackgroundTransparency = 1
+		row.Size = UDim2.fromScale(1, 1)
+
+		local layout = Instance.new("UIListLayout")
+		layout.Parent = row
+		layout.FillDirection = Enum.FillDirection.Horizontal
+		layout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+		layout.VerticalAlignment = Enum.VerticalAlignment.Center
+		layout.Padding = UDim.new(0, 4)
+
+		local pad = Instance.new("UIPadding")
+		pad.Parent = row
+		pad.PaddingLeft = UDim.new(0, 6)
+		pad.PaddingRight = UDim.new(0, 6)
+
+		local function makeLabel(text, w)
+			local lb = Instance.new("TextLabel")
+			lb.Size = UDim2.fromOffset(w, 20)
+			lb.BackgroundTransparency = 1
+			lb.Text = text
+			lb.TextSize = 12
+			lb.Font = Enum.Font.SourceSansBold
+			lb.TextXAlignment = Enum.TextXAlignment.Center
+			lb.TextColor3 = Color3.fromRGB(220,220,220)
+			return lb
+		end
+
+		local function makeBox(default, w)
+			local box = Instance.new("TextBox")
+			box.Size = UDim2.fromOffset(w, 22)
+			box.Text = default
+			box.TextSize = 13
+			box.Font = Enum.Font.SourceSans
+			box.ClearTextOnFocus = false
+			box.BackgroundColor3 = Color3.fromRGB(40,40,40)
+			box.TextColor3 = Color3.fromRGB(255,255,255)
+			Instance.new("UICorner", box).CornerRadius = UDim.new(0,4)
+			return box
+		end
+
+		makeLabel("Y", 16).Parent = row
+		local yBox = makeBox("100000", 90)
+		yBox.Parent = row
+
+		makeLabel("Sp", 18).Parent = row
+		local spBox = makeBox("2000", 70)
+		spBox.Parent = row
+
+		Settings.ConsoleY = tonumber(yBox.Text) or 100000
+		Settings.ConsoleSpeed = tonumber(spBox.Text) or 2000
+
+		yBox:GetPropertyChangedSignal("Text"):Connect(function()
+			local n = tonumber(yBox.Text)
+			if n then Settings.ConsoleY = n end
+		end)
+
+		spBox:GetPropertyChangedSignal("Text"):Connect(function()
+			local n = tonumber(spBox.Text)
+			if n then Settings.ConsoleSpeed = n end
+		end)
+	end
+
 	local content = Instance.new("Frame")
     content.Name = "Content"
     content.Parent = slot
