@@ -183,6 +183,7 @@ slot2.SlotKnob.Position = UDim2.fromOffset(20,2)
 slot2.Pill.MouseButton1Click:Connect(function()
 	slot2.State = not slot2.State
 	Settings.BypassSafe = slot2.State
+	safeTriggered = false
 
 	if slot2.State then
 		slot2.Pill.BackgroundColor3 = Color3.fromRGB(120,200,120)
@@ -677,7 +678,9 @@ magictis_startFlight = function()
 end
 
 magictis_onHealthChanged = function(h)
-	if not Humanoid or not EscapeEnabled then return end
+	if not Humanoid or not EscapeEnabled or not Enabled then
+	return
+end
 	if not Enabled then return end
 	local mh = Humanoid.MaxHealth
 	if mh <= 0 then return end
@@ -1035,7 +1038,9 @@ end
 		if nowe == true then
 			plr.Character.Humanoid.PlatformStand = true
 		end
-		while nowe == true or LocalPlayer.Character.Humanoid.Health == 0 do
+			while nowe == true and LocalPlayer.Character
+	and LocalPlayer.Character:FindFirstChild("Humanoid")
+	and LocalPlayer.Character.Humanoid.Health > 0 do
 			RS.RenderStepped:Wait()
 
 			if ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0 then
@@ -1089,7 +1094,9 @@ end
 		if nowe == true then
 			plr.Character.Humanoid.PlatformStand = true
 		end
-		while nowe == true or LocalPlayer.Character.Humanoid.Health == 0 do
+		while nowe == true and LocalPlayer.Character
+	and LocalPlayer.Character:FindFirstChild("Humanoid")
+	and LocalPlayer.Character.Humanoid.Health > 0 do
 			task.wait()
 
 			if ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0 then
