@@ -264,6 +264,7 @@ end
 
 local slot1 = Slots[1]
 local frame = slot1.Frame
+slot1.Frame.ZIndex = 20
 
 frame.ClipsDescendants = false
 frame.AutomaticSize = Enum.AutomaticSize.None
@@ -273,7 +274,7 @@ row.Parent = frame
 row.BackgroundTransparency = 1
 row.Size = UDim2.new(1, -12, 1, -8)
 row.Position = UDim2.fromOffset(6, 4)
-row.ZIndex = 20
+row.ZIndex = 21
 row.ClipsDescendants = true
 
 local layout = Instance.new("UIListLayout")
@@ -287,6 +288,7 @@ local groupY = Instance.new("Frame")
 groupY.Parent = row
 groupY.BackgroundTransparency = 1
 groupY.Size = UDim2.fromOffset(110, 28)
+groupY.ZIndex  = 22
 
 local ly = Instance.new("UIListLayout")
 ly.Parent = groupY
@@ -302,6 +304,7 @@ yLabel.Text = "Y"
 yLabel.Font = Enum.Font.SourceSansBold
 yLabel.TextSize = 16
 yLabel.TextColor3 = Color3.fromRGB(220,220,220)
+yLabel.ZIndex = 23
 
 local yBox = Instance.new("TextBox")
 yBox.Parent = groupY
@@ -312,12 +315,14 @@ yBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
 yBox.TextColor3 = Color3.fromRGB(255,255,255)
 yBox.TextXAlignment = Enum.TextXAlignment.Center
 Instance.new("UICorner", yBox).CornerRadius = UDim.new(0,6)
-
+yBox.ZIndex   = 23
 
 local groupSp = Instance.new("Frame")
 groupSp.Parent = row
 groupSp.BackgroundTransparency = 1
 groupSp.Size = UDim2.fromOffset(90, 28)
+groupSp.ZIndex = 22
+
 
 local ls = Instance.new("UIListLayout")
 ls.Parent = groupSp
@@ -333,6 +338,7 @@ spLabel.Text = "Sp"
 spLabel.Font = Enum.Font.SourceSansBold
 spLabel.TextSize = 16
 spLabel.TextColor3 = Color3.fromRGB(220,220,220)
+spLabel.ZIndex = 23
 
 local spBox = Instance.new("TextBox")
 spBox.Parent = groupSp
@@ -343,7 +349,7 @@ spBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
 spBox.TextColor3 = Color3.fromRGB(255,255,255)
 spBox.TextXAlignment = Enum.TextXAlignment.Center
 Instance.new("UICorner", spBox).CornerRadius = UDim.new(0,6)
-
+spBox.ZIndex   = 23
 
 local function syncSlotUI(slot, state)
 	if not slot.Pill then return end
