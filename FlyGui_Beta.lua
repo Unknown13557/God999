@@ -232,7 +232,7 @@ rowLayout.Padding = UDim.new(0, 8)
 local input = Instance.new("TextBox")
 input.Parent = row
 
-input.Size = UDim2.fromOffset(120, 28)
+input.Size = UDim2.fromOffset(70, 28)
 
 input.Text = "500000"
 input.PlaceholderText = "Input"
