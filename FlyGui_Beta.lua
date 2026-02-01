@@ -62,14 +62,6 @@ task.defer(function()
 	end
 end)
 
-local AbsoluteLayer = Instance.new("Frame")
-AbsoluteLayer.Name = "AbsoluteLayer"
-AbsoluteLayer.Parent = SettingsGui
-AbsoluteLayer.Size = UDim2.fromScale(1, 1)
-AbsoluteLayer.Position = UDim2.fromScale(0, 0)
-AbsoluteLayer.BackgroundTransparency = 1
-AbsoluteLayer.ZIndex = 50
-
 local SettingsGrid = Instance.new("UIGridLayout")
 SettingsGrid.Parent = SettingsFrame
 SettingsGrid.CellSize = UDim2.fromScale(0.48, 0.27)
@@ -140,22 +132,6 @@ for i = 1, 6 do
 	}
 end
 
-local slot3 = Slots[3].Frame
-local slot4 = Slots[4].Frame
-
-slot4.BackgroundTransparency = 1
-for _, c in ipairs(slot4:GetChildren()) do
-	if c:IsA("GuiObject") then
-		c.Visible = false
-	end
-end
-
-slot3.Parent = AbsoluteLayer
-slot3.ZIndex = 60
-slot3.ClipsDescendants = true
-
-slot3.Size = UDim2.fromScale(0.96, 0.30)
-slot3.Position = UDim2.fromScale(0.02, 0.34)
 
 local function syncSlotUI(slot, state)
 	slot.State = state
@@ -240,10 +216,18 @@ slot3Data.Label.Visible = false
 
 local input = Instance.new("TextBox")
 input.Parent = slot3
-input.Size = UDim2.fromOffset(80, 28)
-input.Position = UDim2.fromOffset(8, 10)
 
-input.Text = ""
+input.Size = UDim2.fromOffset(80, 28)
+input.Position = UDim2.fromScale(0.04, 0.15)
+input.Size = UDim2.fromScale(0.62, 0.7)
+
+upBtn.Position = UDim2.fromScale(0.70, 0.15)
+upBtn.Size = UDim2.fromScale(0.14, 0.7)
+
+downBtn.Position = UDim2.fromScale(0.86, 0.15)
+downBtn.Size = UDim2.fromScale(0.14, 0.7)
+
+input.Text = "500000"
 input.PlaceholderText = "Input"
 input.TextColor3 = Color3.fromRGB(230,230,230)
 input.PlaceholderColor3 = Color3.fromRGB(160,160,160)
