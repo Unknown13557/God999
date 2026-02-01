@@ -21,6 +21,22 @@ local Settings = {
 	BypassTween       = true
 }
 
+local function pointerPos(input)
+	if input.UserInputType == Enum.UserInputType.Touch then
+		return Vector2.new(input.Position.X, input.Position.Y)
+	end
+
+	if UIS.GetMouseLocation then
+		return UIS:GetMouseLocation()
+	end
+	return Vector2.new(0, 0)
+end
+
+local function over(inst, pos)
+	local p, s = inst.AbsolutePosition, inst.AbsoluteSize
+	return pos.X >= p.X and pos.X <= p.X + s.X and pos.Y >= p.Y and pos.Y <= p.Y + s.Y
+end
+
 local function attachDrag(target, ignoreButton)
 
 local dragging = false
@@ -679,21 +695,7 @@ closebutton.MouseButton1Click:Connect(function()
 	end)
 end)
 
-local function pointerPos(input)
-	if input.UserInputType == Enum.UserInputType.Touch then
-		return Vector2.new(input.Position.X, input.Position.Y)
-	end
 
-	if UIS.GetMouseLocation then
-		return UIS:GetMouseLocation()
-	end
-	return Vector2.new(0, 0)
-end
-
-local function over(inst, pos)
-	local p, s = inst.AbsolutePosition, inst.AbsoluteSize
-	return pos.X >= p.X and pos.X <= p.X + s.X and pos.Y >= p.Y and pos.Y <= p.Y + s.Y
-end
 
 
 
