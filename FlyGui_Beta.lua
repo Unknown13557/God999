@@ -178,8 +178,8 @@ end)
 
 local SettingsGrid = Instance.new("UIGridLayout")
 SettingsGrid.Parent = SettingsFrame
-SettingsGrid.CellSize = UDim2.fromScale(0.48, 0.33)
-SettingsGrid.CellPadding = UDim2.fromOffset(4, 6)
+SettingsGrid.CellSize = UDim2.fromOffset(260, 56)
+SettingsGrid.CellPadding = UDim2.fromOffset(6, 6)
 SettingsGrid.HorizontalAlignment = Enum.HorizontalAlignment.Center
 SettingsGrid.VerticalAlignment = Enum.VerticalAlignment.Center
 
@@ -193,7 +193,7 @@ for i = 1, 6 do
     slot.BorderSizePixel = 0
     slot.ZIndex = 10
     slot.ClipsDescendants = (i ~= 1)
-    slot.Size = UDim2.new(1, -8, 0, 54)
+    slot.Size = UDim2.fromOffset(260, 56)
 
     if i == 1 then
 
@@ -207,12 +207,13 @@ for i = 1, 6 do
         layout.FillDirection = Enum.FillDirection.Horizontal
         layout.VerticalAlignment = Enum.VerticalAlignment.Center
         layout.HorizontalAlignment = Enum.HorizontalAlignment.Left
-        layout.Padding = UDim.new(0, 1)
+		
+        layout.Padding = UDim.new(0, 2)
 
         local pad = Instance.new("UIPadding")
         pad.Parent = row
-        pad.PaddingLeft = UDim.new(0, 4)
-        pad.PaddingRight = UDim.new(0, 4)
+        pad.PaddingLeft = UDim.new(0, 6)
+        pad.PaddingRight = UDim.new(0, 6)
 
         local function makeLabel(text, w)
             local lb = Instance.new("TextLabel")
@@ -239,12 +240,12 @@ for i = 1, 6 do
             return box
         end
 
-        makeLabel("Y", 14).Parent = row
-        local yBox = makeBox("100000", 90)
+        makeLabel("Y", 12).Parent = row
+        local yBox = makeBox("100000", 96)
         yBox.Parent = row
 
         makeLabel("Sp", 16).Parent = row
-        local spBox = makeBox("2000", 70)
+        local spBox = makeBox("2000", 72)
         spBox.Parent = row
 
         Settings.ConsoleY = tonumber(yBox.Text) or 100000
