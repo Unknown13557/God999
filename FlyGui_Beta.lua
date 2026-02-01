@@ -87,9 +87,16 @@ for i = 1, 6 do
 	slot.BorderSizePixel = 0
 	slot.ZIndex = 10
 
+	local content = Instance.new("Frame")
+    content.Name = "Content"
+    content.Parent = slot
+    content.Size = UDim2.new(1, -20, 1, 0)
+    content.Position = UDim2.fromOffset(10, 0)
+    content.BackgroundTransparency = 1
+
 	local label = Instance.new("TextLabel")
 	label.Name = "Label"
-	label.Parent = slot
+	label.Parent = content
 	label.Size = UDim2.fromScale(0.65, 1)
 	label.Position = UDim2.fromScale(0, 0)
 	label.BackgroundTransparency = 1
@@ -103,7 +110,7 @@ for i = 1, 6 do
 
 	local pill = Instance.new("TextButton")
 	pill.Name = "Pill"
-	pill.Parent = slot
+	pill.Parent = content
 	pill.Text = ""
 	pill.AutoButtonColor = false
 	pill.Size = UDim2.fromOffset(36, 18)
