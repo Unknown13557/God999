@@ -178,7 +178,7 @@ end)
 
 local SettingsGrid = Instance.new("UIGridLayout")
 SettingsGrid.Parent = SettingsFrame
-SettingsGrid.CellSize = UDim2.fromScale(0.48, 0.27)
+SettingsGrid.CellSize = UDim2.fromScale(0.48, 0.33)
 SettingsGrid.CellPadding = UDim2.fromOffset(4, 6)
 SettingsGrid.HorizontalAlignment = Enum.HorizontalAlignment.Center
 SettingsGrid.VerticalAlignment = Enum.VerticalAlignment.Center
@@ -192,8 +192,8 @@ for i = 1, 6 do
     slot.BackgroundColor3 = Color3.fromRGB(60,60,60)
     slot.BorderSizePixel = 0
     slot.ZIndex = 10
-    slot.ClipsDescendants = true
-    slot.Size = UDim2.new(1, -8, 0, 46)
+    slot.ClipsDescendants = (i ~= 1)
+    slot.Size = UDim2.new(1, -8, 0, 54)
 
     if i == 1 then
 
