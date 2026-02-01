@@ -423,6 +423,8 @@ Frame.BorderColor3 = Color3.fromRGB(103, 221, 213)
 Frame.Position = UDim2.new(0.100320168, 0, 0.379746825, 0)
 Frame.Size = UDim2.new(0, 190, 0, 57)
 
+attachDrag(Frame, onof)
+
 up.Name = "up"
 up.Parent = Frame
 up.BackgroundColor3 = Color3.fromRGB(79, 255, 152)
@@ -686,7 +688,15 @@ local function attachDrag(target, ignoreButton)
 	WS:GetPropertyChangedSignal("CurrentCamera"):Connect(hookViewportChanged)
 end
 
-attachDrag(Frame, onof)
+
+
+
+
+
+
+
+
+
 attachDrag(SettingsFrame, nil)
 
 local magiskk = {}
@@ -704,7 +714,6 @@ local function magictis_onToggleClick()
     toggling = true
 
     local nextState = not isOn
-    setToggle(nextState)
     isOn = nextState
 
     task.delay(0.15, function()
@@ -1110,11 +1119,6 @@ Players.LocalPlayer.CharacterAdded:Connect(function(char)
 	
 	stopFlyVisuals()
 	stopUpTextVisual()
-		
-	if not Enabled then
-		Flying = false
-		end
-	end
 
 	task.wait(0.15)
 
