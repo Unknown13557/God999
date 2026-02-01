@@ -293,17 +293,12 @@ yLabel.TextSize = 16
 yLabel.TextColor3 = Color3.fromRGB(220,220,220)
 yLabel.TextXAlignment = Enum.TextXAlignment.Center
 yLabel.ZIndex = 30
+yLabel.LayoutOrder = 1
 
 local yBox = Instance.new("TextBox")
 yBox.Parent = row
 yBox.AnchorPoint = Vector2.new(0, 0.5)
-
-
-
-yBox.Size = UDim2.fromOffset(70, 28)
-
-
-
+yBox.Size = UDim2.fromOffset(60, 28)
 yBox.Text = "100000"
 yBox.ClearTextOnFocus = false
 yBox.PlaceholderText = ""
@@ -314,6 +309,8 @@ yBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
 yBox.TextXAlignment = Enum.TextXAlignment.Center
 yBox.ZIndex = 40
 Instance.new("UICorner", yBox).CornerRadius = UDim.new(0,6)
+yBox.LayoutOrder   = 2
+
 
 local spLabel = Instance.new("TextLabel")
 spLabel.Parent = row
@@ -324,6 +321,7 @@ spLabel.Font = Enum.Font.SourceSansBold
 spLabel.TextSize = 16
 spLabel.TextColor3 = Color3.fromRGB(220,220,220)
 spLabel.ZIndex = 30
+spLabel.LayoutOrder= 3
 
 local spBox = Instance.new("TextBox")
 spBox.Parent = row
@@ -339,10 +337,7 @@ spBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
 spBox.TextXAlignment = Enum.TextXAlignment.Center
 spBox.ZIndex = 40
 Instance.new("UICorner", spBox).CornerRadius = UDim.new(0,6)
-
-
-
-
+spBox.LayoutOrder  = 4
 
 
 local function syncSlotUI(slot, state)
