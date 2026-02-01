@@ -221,6 +221,7 @@ row.Parent = slot3Frame
 row.Size = UDim2.new(1, -12, 1, -8)
 row.Position = UDim2.fromOffset(6, 4)
 row.BackgroundTransparency = 1
+row.ZIndex = 20
 
 local rowLayout = Instance.new("UIListLayout")
 rowLayout.Parent = row
@@ -260,22 +261,22 @@ local upBtn = Instance.new("TextButton")
 upBtn.Parent = row
 upBtn.Size = UDim2.fromOffset(44, 28)
 upBtn.Text = ""
-upBtn.AutoButtonColor = true
+upBtn.BackgroundColor3 = Color3.fromRGB(80,180,120)
+upBtn.ZIndex = 15
 
 local upIcon = Instance.new("TextLabel")
 upIcon.Parent = upBtn
+upIcon.Size = UDim2.fromScale(1,1)
 upIcon.BackgroundTransparency = 1
-upIcon.Size = UDim2.fromScale(1, 1)
-upIcon.Position = UDim2.fromScale(0, 0)
-
 upIcon.Text = "⌃"
 upIcon.Font = Enum.Font.GothamBlack
+upIcon.TextSize = 26
 upIcon.TextColor3 = Color3.fromRGB(255,255,255)
-upIcon.TextXAlignment = Enum.TextXAlignment.Center
-upIcon.TextYAlignment = Enum.TextYAlignment.Center
+upIcon.TextXAlignment = Center
+upIcon.TextYAlignment = Center
 
 task.defer(function()
-	upIcon.TextSize = math.floor(upBtn.AbsoluteSize.Y * 0.9)
+	upIcon.TextSize = math.floor(upBtn.AbsoluteSize.Y * 0.5)
 end)
 
 local upCorner = Instance.new("UICorner")
@@ -286,24 +287,22 @@ local downBtn = Instance.new("TextButton")
 downBtn.Parent = row
 downBtn.Size = UDim2.fromOffset(44, 28)
 downBtn.Text = ""
-downBtn.AutoButtonColor = true
 downBtn.BackgroundColor3 = Color3.fromRGB(180,80,80)
 downBtn.ZIndex = 15
 
 local downIcon = Instance.new("TextLabel")
 downIcon.Parent = downBtn
+downIcon.Size = UDim2.fromScale(1,1)
 downIcon.BackgroundTransparency = 1
-downIcon.Size = UDim2.fromScale(1, 1)
-downIcon.Position = UDim2.fromScale(0, 0)
-
 downIcon.Text = "⌄"
 downIcon.Font = Enum.Font.GothamBlack
+downIcon.TextSize = 26
 downIcon.TextColor3 = Color3.fromRGB(255,255,255)
-downIcon.TextXAlignment = Enum.TextXAlignment.Center
-downIcon.TextYAlignment = Enum.TextYAlignment.Center
+downIcon.TextXAlignment = Center
+downIcon.TextYAlignment = Center
 
 task.defer(function()
-	downIcon.TextSize = math.floor(downBtn.AbsoluteSize.Y * 0.9)
+	downIcon.TextSize = math.floor(downBtn.AbsoluteSize.Y * 0.5)
 end)
 
 local downCorner = Instance.new("UICorner")
