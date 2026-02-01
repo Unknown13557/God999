@@ -303,31 +303,31 @@ local function applyOffset(dir)
 	if not value or value <= 0 then return end
 
 	local char = LocalPlayer.Character
-    if not char then return end
-    local hrp = char:WaitForChild("HumanoidRootPart")
+	if not char then return end
+
+	local hrp = char:FindFirstChild("HumanoidRootPart")
+	if not hrp then return end
 
 	local currentY = hrp.Position.Y
-	local targetY = currentY + dir * value
-if dir < 0 then
-	local currentY = flyTargetY or hrp.Position.Y
+	local targetY = currentY
 
-	if currentY <= MIN_SAFE_Y then
-		return
+	if dir > 0 then
+		targetY = currentY + value
+	else
+		if currentY <= MIN_SAFE_Y then
+			return
+		end
+
+		targetY = currentY - value
+
+		if targetY < MIN_SAFE_Y then
+			targetY = MIN_SAFE_Y
+		end
 	end
-		
-	local targetY = currentY - value
 
-	if targetY < MIN_SAFE_Y then
-		targetY = MIN_SAFE_Y
-	end
-
-	flyTargetY = targetY
 	hrp.AssemblyLinearVelocity = Vector3.zero
 	hrp.AssemblyAngularVelocity = Vector3.zero
 
-       return
-	end
-	
 	hrp.CFrame = CFrame.new(
 		hrp.Position.X,
 		targetY,
