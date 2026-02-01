@@ -443,10 +443,12 @@ slot3Input:GetPropertyChangedSignal("Text"):Connect(function()
 
 	if num < 0 then
 		num = 0
-end
+	end
+
 	if num > SLOT3MAX_TWEEN_Y then
 		num = SLOT3MAX_TWEEN_Y
-end
+	end
+
 	local fixed = tostring(math.floor(num))
 	if slot3Input.Text ~= fixed then
 		slot3Input.Text = fixed
