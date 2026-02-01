@@ -232,7 +232,7 @@ rowLayout.Padding = UDim.new(0, 8)
 local input = Instance.new("TextBox")
 input.Parent = row
 
-input.Size = UDim2.fromScale(0.55, 0.7)
+input.Size = UDim2.fromScale(120, 28)
 
 input.Text = "500000"
 input.PlaceholderText = "Input"
@@ -259,7 +259,7 @@ end)
 
 local upBtn = Instance.new("TextButton")
 upBtn.Parent = row
-upBtn.Size = UDim2.fromOffset(44, 28)
+upBtn.Size = UDim2.fromOffset(28, 28)
 upBtn.Text = ""
 upBtn.BackgroundColor3 = Color3.fromRGB(80,180,120)
 upBtn.ZIndex = 15
@@ -285,7 +285,7 @@ upCorner.Parent = upBtn
 
 local downBtn = Instance.new("TextButton")
 downBtn.Parent = row
-downBtn.Size = UDim2.fromOffset(44, 28)
+downBtn.Size = UDim2.fromOffset(28, 28)
 downBtn.Text = ""
 downBtn.BackgroundColor3 = Color3.fromRGB(180,80,80)
 downBtn.ZIndex = 15
