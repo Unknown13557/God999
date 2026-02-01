@@ -404,6 +404,9 @@ rowLayout.FillDirection = Enum.FillDirection.Horizontal
 rowLayout.VerticalAlignment = Enum.VerticalAlignment.Center
 rowLayout.Padding = UDim.new(0, 2)
 
+local SLOT3MIN_TWEEN_Y = 30
+local SLOT3MAX_TWEEN_Y = 2000000000
+
 local slot3Input = Instance.new("TextBox")
 slot3Input.Parent = row3
 
@@ -425,18 +428,14 @@ local slot3InputCorner = Instance.new("UICorner")
 slot3InputCorner.CornerRadius = UDim.new(0,6)
 slot3InputCorner.Parent = slot3Input
 
-slot3Input:GetPropertyChangedSignal("Text"):Connect(function()	
-local filtered = slot3Input.Text:gsub("%D", "")
-	if slot3Input.Text ~= filtered then
-		slot3Input.Text = filtered
-local n = tonumber(slot3Input.Text)
-	if n then
-		slot3Value = n
-	end
-end)
-
 slot3Input:GetPropertyChangedSignal("Text"):Connect(function()
 	local text = slot3Input.Text
+	text = text:gsub("%D", "")
+	if text == "" then
+		slot3Input.Text = ""
+		return
+	end
+
 	local num = tonumber(text)
 	if not num then
 		slot3Input.Text = ""
@@ -449,7 +448,10 @@ end
 	if num > SLOT3MAX_TWEEN_Y then
 		num = SLOT3MAX_TWEEN_Y
 end
-	slot3Input.Text = tostring(math.floor(num))
+	local fixed = tostring(math.floor(num))
+	if slot3Input.Text ~= fixed then
+		slot3Input.Text = fixed
+	end
 end)
 
 local slot3UpBtn = Instance.new("TextButton")
@@ -490,9 +492,6 @@ slot3DownIcon.ZIndex = slot3DownBtn.ZIndex + 1
 local slot3DownCorner = Instance.new("UICorner")
 slot3DownCorner.CornerRadius = UDim.new(0,6)
 slot3DownCorner.Parent = slot3DownBtn
-
-local SLOT3MIN_TWEEN_Y = 30
-local SLOT3MAX_TWEEN_Y = 2000000000
 
 local function applyOffset(dir)
 	local value = tonumber(slot3Input.Text)
