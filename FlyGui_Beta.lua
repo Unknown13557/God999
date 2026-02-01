@@ -269,10 +269,13 @@ frame.Size = UDim2.fromOffset(260, 56)
 slot1.Frame.Parent = nil
 slot1.Frame.Parent = SettingsFrame
 
+SettingsGrid.Parent = nil
+SettingsGrid.Parent = SettingsFrame
+
 frame.ClipsDescendants = true
 
 for _, c in ipairs(frame:GetChildren()) do
-	if c:IsA("GuiObject") then
+	if c:IsA("TextLabel") or c:IsA("TextBox") or c:IsA("TextButton") or c:IsA("Frame") then
 		c:Destroy()
 	end
 end
