@@ -264,6 +264,11 @@ end
 local slot1 = Slots[1]
 local frame = slot1.Frame
 
+frame.Size = UDim2.fromOffset(260, 56)
+
+slot1.Frame.Parent = nil
+slot1.Frame.Parent = SettingsFrame
+
 frame.ClipsDescendants = true
 
 for _, c in ipairs(frame:GetChildren()) do
@@ -274,8 +279,10 @@ end
 
 local startX = 6
 local gap = 4
-local centerY = math.floor((frame.AbsoluteSize.Y > 0 and frame.AbsoluteSize.Y or 56)/2 - 11)
 
+task.defer(function()
+    local frame = Slots[1].Frame
+    local centerY = math.floor(frame.AbsoluteSize.Y/2 - 11)
 
 local yLabel = Instance.new("TextLabel")
 yLabel.Parent = frame
@@ -346,8 +353,8 @@ spBox:GetPropertyChangedSignal("Text"):Connect(function()
 	if n then
 		Settings.ConsoleSpeed = n
 	end
+  end)
 end)
-
 
 
 
