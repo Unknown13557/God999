@@ -16,7 +16,9 @@ local WS               = Workspace
 local UIS              = UserInputService
 
 local Settings = {
-	BypassTween       = true
+	BypassTween = true,
+	ConsoleY = 100000,
+	ConsoleSpeed = 2000
 }
 
 local function pointerPos(input)
