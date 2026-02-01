@@ -18,7 +18,7 @@ local WS               = Workspace
 local UIS              = UserInputService
 
 local Settings = {
-	BypassSafe       = true
+	BypassTween       = true
 }
 
 local main = Instance.new("ScreenGui")
@@ -31,7 +31,7 @@ main.Name = "main"
 main.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 main.ResetOnSpawn = false
 main.IgnoreGuiInset = true
-local safeTriggered = false
+local TweenTriggered = false
 local Frame           = Instance.new("Frame")
 local up              = Instance.new("TextButton")
 local escape          = Instance.new("Frame")
@@ -164,17 +164,16 @@ local function syncSlotUI(slot, state)
 	end
 end
 
+local consoleFrame = Slots[1].Frame
 
-local slot1Frame = Slots[1].Frame
-
-for _, c in ipairs(slot1Frame:GetChildren()) do
+for _, c in ipairs(consoleFrame:GetChildren()) do
 	if not c:IsA("UIListLayout") then
 		c:Destroy()
 	end
 end
 
 local row = Instance.new("Frame")
-row.Parent = slot1Frame
+row.Parent = consoleFrame
 row.BackgroundTransparency = 1
 row.Size = UDim2.new(1, -12, 1, -8)
 row.Position = UDim2.fromOffset(6, 4)
@@ -189,11 +188,11 @@ layout.Padding = UDim.new(0, 6)
 local speedLabel = Instance.new("TextLabel")
 speedLabel.Parent = row
 speedLabel.Size = UDim2.fromOffset(50, 28)
+speedLabel.BackgroundTransparency = 1
 speedLabel.Text = "Speed"
 speedLabel.Font = Enum.Font.SourceSansBold
 speedLabel.TextSize = 16
 speedLabel.TextColor3 = Color3.fromRGB(220,220,220)
-speedLabel.BackgroundTransparency = 1
 speedLabel.TextXAlignment = Enum.TextXAlignment.Left
 
 local speedInput = Instance.new("TextBox")
@@ -204,21 +203,18 @@ speedInput.PlaceholderText = "Input"
 speedInput.ClearTextOnFocus = false
 speedInput.Font = Enum.Font.SourceSansBold
 speedInput.TextSize = 16
-speedInput.TextColor3 = Color3.fromRGB(230,230,230)
+speedInput.TextColor3 = Color3.fromRGB(235,235,235)
 speedInput.BackgroundColor3 = Color3.fromRGB(40,40,40)
-
-local speedCorner = Instance.new("UICorner")
-speedCorner.CornerRadius = UDim.new(0,6)
-speedCorner.Parent = speedInput
+Instance.new("UICorner", speedInput).CornerRadius = UDim.new(0,6)
 
 local yLabel = Instance.new("TextLabel")
 yLabel.Parent = row
-yLabel.Size = UDim2.fromOffset(20, 28)
+yLabel.Size = UDim2.fromOffset(18, 28)
+yLabel.BackgroundTransparency = 1
 yLabel.Text = "Y"
 yLabel.Font = Enum.Font.SourceSansBold
 yLabel.TextSize = 16
 yLabel.TextColor3 = Color3.fromRGB(220,220,220)
-yLabel.BackgroundTransparency = 1
 yLabel.TextXAlignment = Enum.TextXAlignment.Left
 
 local yInput = Instance.new("TextBox")
@@ -229,23 +225,39 @@ yInput.PlaceholderText = "Input"
 yInput.ClearTextOnFocus = false
 yInput.Font = Enum.Font.SourceSansBold
 yInput.TextSize = 16
-yInput.TextColor3 = Color3.fromRGB(230,230,230)
+yInput.TextColor3 = Color3.fromRGB(235,235,235)
 yInput.BackgroundColor3 = Color3.fromRGB(40,40,40)
+Instance.new("UICorner", yInput).CornerRadius = UDim.new(0,6)
 
-local yCorner = Instance.new("UICorner")
-yCorner.CornerRadius = UDim.new(0,6)
-yCorner.Parent = yInput
+local function numericOnly(box)
+	box:GetPropertyChangedSignal("Text"):Connect(function()
+		local t = box.Text:gsub("%D", "")
+		if box.Text ~= t then
+			box.Text = t
+		end
+	end)
+end
+
+numericOnly(speedInput)
+numericOnly(yInput)
+
+
+
+
+
+
+
 
 local slot2 = Slots[2]
-slot2.Label.Text = "Bypass Safe"
+slot2.Label.Text = "Bypass Tween"
 slot2.State = true
 slot2.Pill.BackgroundColor3 = Color3.fromRGB(120,200,120)
 slot2.SlotKnob.Position = UDim2.fromOffset(20,2)
 
 slot2.Pill.MouseButton1Click:Connect(function()
 	slot2.State = not slot2.State
-	Settings.BypassSafe = slot2.State
-	safeTriggered = false
+	Settings.BypassTween = slot2.State
+	TweenTriggered = false
 
 	if slot2.State then
 		slot2.Pill.BackgroundColor3 = Color3.fromRGB(120,200,120)
