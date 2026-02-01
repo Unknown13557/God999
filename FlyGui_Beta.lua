@@ -309,6 +309,25 @@ local downCorner = Instance.new("UICorner")
 downCorner.CornerRadius = UDim.new(0,6)
 downCorner.Parent = downBtn
 
+local GAP = 3
+local y = 10
+
+input.Size = UDim2.fromOffset(96, 28)
+upBtn.Size = UDim2.fromOffset(28, 28)
+downBtn.Size = UDim2.fromOffset(28, 28)
+
+input.Position = UDim2.fromOffset(12, y)
+
+upBtn.Position = UDim2.fromOffset(
+	12 + input.Size.X.Offset + GAP,
+	y
+)
+
+downBtn.Position = UDim2.fromOffset(
+	12 + input.Size.X.Offset + GAP + upBtn.Size.X.Offset + GAP,
+	y
+)
+
 local MIN_SAFE_Y = 30
 
 local function applyOffset(dir)
@@ -321,13 +340,26 @@ local function applyOffset(dir)
 
 	local currentY = hrp.Position.Y
 	local targetY = currentY + dir * value
+if dir < 0 then
+	local currentY = flyTargetY or hrp.Position.Y
 
-	if dir < 0 then
-		if targetY < MIN_SAFE_Y then
-			targetY = MIN_SAFE_Y
-		end
+	if currentY <= MIN_SAFE_Y then
+		return
+	end
+		
+	local targetY = currentY - value
+
+	if targetY < MIN_SAFE_Y then
+		targetY = MIN_SAFE_Y
 	end
 
+	flyTargetY = targetY
+	hrp.AssemblyLinearVelocity = Vector3.zero
+	hrp.AssemblyAngularVelocity = Vector3.zero
+
+       return
+	end
+	
 	hrp.CFrame = CFrame.new(
 		hrp.Position.X,
 		targetY,
