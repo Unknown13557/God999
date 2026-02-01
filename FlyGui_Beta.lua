@@ -678,6 +678,7 @@ end
 
 magictis_onHealthChanged = function(h)
 	if not Humanoid or not EscapeEnabled then return end
+	if not Enabled then return end
 	local mh = Humanoid.MaxHealth
 	if mh <= 0 then return end
 
