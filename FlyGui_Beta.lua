@@ -138,6 +138,7 @@ main.IgnoreGuiInset = true
 
 
 local Frame           = Instance.new("Frame")
+Frame.Parent          = main
 local up              = Instance.new("TextButton")
 local escape          = Instance.new("Frame")
 local toggle          = Instance.new("TextButton")
@@ -269,84 +270,80 @@ local function syncSlotUI(slot, state)
 	end
 end
 
-local consoleFrame = Slots[1].Frame
+local frame = slot1.Frame
 
-for _, c in ipairs(consoleFrame:GetChildren()) do
-	if not c:IsA("UIListLayout") then
+for _, c in ipairs(frame:GetChildren()) do
+	if not c:IsA("UICorner") then
 		c:Destroy()
 	end
 end
 
 local row = Instance.new("Frame")
-row.Parent = consoleFrame
+row.Parent = frame
 row.BackgroundTransparency = 1
-row.Size = UDim2.new(1, -12, 1, -8)
-row.Position = UDim2.fromOffset(6, 4)
-row.ZIndex = 20
+row.Size = UDim2.fromScale(1, 1)
 
 local layout = Instance.new("UIListLayout")
 layout.Parent = row
 layout.FillDirection = Enum.FillDirection.Horizontal
+layout.HorizontalAlignment = Enum.HorizontalAlignment.Left
 layout.VerticalAlignment = Enum.VerticalAlignment.Center
-layout.Padding = UDim.new(0, 6)
+layout.Padding = UDim.new(0, 8)
 
-local speedLabel = Instance.new("TextLabel")
-speedLabel.Parent = row
-speedLabel.Size = UDim2.fromOffset(50, 28)
-speedLabel.BackgroundTransparency = 1
-speedLabel.Text = "Speed"
-speedLabel.Font = Enum.Font.SourceSansBold
-speedLabel.TextSize = 16
-speedLabel.TextColor3 = Color3.fromRGB(220,220,220)
-speedLabel.TextXAlignment = Enum.TextXAlignment.Left
+local function createNumberInput(parent, labelText, defaultValue, onChanged)
+	local box = Instance.new("Frame")
+	box.Parent = parent
+	box.Size = UDim2.fromOffset(160, 32)
+	box.BackgroundColor3 = Color3.fromRGB(35,35,35)
+	box.BorderSizePixel = 0
+	box.Active = true
 
-local speedInput = Instance.new("TextBox")
-speedInput.Parent = row
-speedInput.Size = UDim2.fromOffset(70, 28)
-speedInput.Text = "2000"
-speedInput.PlaceholderText = "Input"
-speedInput.ClearTextOnFocus = false
-speedInput.Font = Enum.Font.SourceSansBold
-speedInput.TextSize = 16
-speedInput.TextColor3 = Color3.fromRGB(235,235,235)
-speedInput.BackgroundColor3 = Color3.fromRGB(40,40,40)
-Instance.new("UICorner", speedInput).CornerRadius = UDim.new(0,6)
+	local corner = Instance.new("UICorner", box)
+	corner.CornerRadius = UDim.new(0, 6)
 
-local yLabel = Instance.new("TextLabel")
-yLabel.Parent = row
-yLabel.Size = UDim2.fromOffset(18, 28)
-yLabel.BackgroundTransparency = 1
-yLabel.Text = "Y"
-yLabel.Font = Enum.Font.SourceSansBold
-yLabel.TextSize = 16
-yLabel.TextColor3 = Color3.fromRGB(220,220,220)
-yLabel.TextXAlignment = Enum.TextXAlignment.Left
+	local label = Instance.new("TextLabel")
+	label.Parent = box
+	label.Text = labelText
+	label.Size = UDim2.fromOffset(50, 32)
+	label.BackgroundTransparency = 1
+	label.TextXAlignment = Left
+	label.Font = Enum.Font.SourceSansBold
+	label.TextSize = 14
+	label.TextColor3 = Color3.fromRGB(200,200,200)
 
-local yInput = Instance.new("TextBox")
-yInput.Parent = row
-yInput.Size = UDim2.fromOffset(90, 28)
-yInput.Text = "100000"
-yInput.PlaceholderText = "Input"
-yInput.ClearTextOnFocus = false
-yInput.Font = Enum.Font.SourceSansBold
-yInput.TextSize = 16
-yInput.TextColor3 = Color3.fromRGB(235,235,235)
-yInput.BackgroundColor3 = Color3.fromRGB(40,40,40)
-Instance.new("UICorner", yInput).CornerRadius = UDim.new(0,6)
+	local input = Instance.new("TextBox")
+	input.Parent = box
+	input.Size = UDim2.fromOffset(90, 26)
+	input.Position = UDim2.fromOffset(60, 3)
+	input.BackgroundColor3 = Color3.fromRGB(25,25,25)
+	input.TextColor3 = Color3.new(1,1,1)
+	input.PlaceholderText = "Input"
+	input.ClearTextOnFocus = false
+	input.Text = tostring(defaultValue or "")
+	input.Font = Enum.Font.SourceSans
+	input.TextSize = 14
 
-local function numericOnly(box)
-	box:GetPropertyChangedSignal("Text"):Connect(function()
-		local t = box.Text:gsub("%D", "")
-		if box.Text ~= t then
-			box.Text = t
+	local ic = Instance.new("UICorner", input)
+	ic.CornerRadius = UDim.new(0, 4)
+
+	input:GetPropertyChangedSignal("Text"):Connect(function()
+		local n = tonumber(input.Text)
+		if n then
+			onChanged(n)
 		end
 	end)
 end
 
-numericOnly(speedInput)
-numericOnly(yInput)
+Settings.ConsoleSpeed = 2000
+Settings.ConsoleY = 100000
 
+createNumberInput(row, "Speed", Settings.ConsoleSpeed, function(v)
+	Settings.ConsoleSpeed = v
+end)
 
+createNumberInput(row, "Y", Settings.ConsoleY, function(v)
+	Settings.ConsoleY = v
+end)
 
 local slot2 = Slots[2]
 slot2.Label.Text = "Bypass Tween"
@@ -521,7 +518,7 @@ end)
 
 syncSlotUI(Slots[2], Settings.BypassTween)
 
-Frame.Parent = main
+
 Frame.BackgroundColor3 = Color3.fromRGB(163, 255, 137)
 Frame.BorderColor3 = Color3.fromRGB(103, 221, 213)
 Frame.Position = UDim2.new(0.100320168, 0, 0.379746825, 0)
