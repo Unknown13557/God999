@@ -272,77 +272,88 @@ end
 local slot1 = Slots[1]
 local frame = slot1.Frame
 
-local oldContent = frame:FindFirstChild("Content")
-if oldContent then
-	oldContent:Destroy()
-end
+frame.ClipsDescendants = true
 
-local row1 = Instance.new("Frame")
-row1.Parent = frame
-row1.BackgroundTransparency = 1
-row1.Size = UDim2.fromScale(1, 1)
-
-local layout = Instance.new("UIListLayout")
-layout.Parent = row1
-layout.FillDirection = Enum.FillDirection.Horizontal
-layout.HorizontalAlignment = Enum.HorizontalAlignment.Left
-layout.VerticalAlignment = Enum.VerticalAlignment.Center
-layout.Padding = UDim.new(0, 8)
-
-local function createNumberInput(parent, labelText, defaultValue, onChanged)
-	local box = Instance.new("Frame")
-	box.Parent = parent
-	box.Size = UDim2.fromOffset(160, 32)
-	box.BackgroundColor3 = Color3.fromRGB(35,35,35)
-	box.BorderSizePixel = 0
-	box.Active = true
-
-	local corner = Instance.new("UICorner", box)
-	corner.CornerRadius = UDim.new(0, 6)
-
-	local label = Instance.new("TextLabel")
-	label.Parent = box
-	label.Text = labelText
-	label.Size = UDim2.fromOffset(50, 32)
-	label.BackgroundTransparency = 1
-	label.TextXAlignment = Enum.TextXAlignment.Left
-	label.Font = Enum.Font.SourceSansBold
-	label.TextSize = 14
-	label.TextColor3 = Color3.fromRGB(200,200,200)
-
-	local input = Instance.new("TextBox")
-	input.Parent = box
-	input.Size = UDim2.fromOffset(90, 26)
-	input.Position = UDim2.fromOffset(60, 3)
-	input.BackgroundColor3 = Color3.fromRGB(25,25,25)
-	input.TextColor3 = Color3.new(1,1,1)
-	input.PlaceholderText = "Input"
-	input.ClearTextOnFocus = false
-	input.Text = tostring(defaultValue or "")
-	input.Font = Enum.Font.SourceSans
-	input.TextSize = 14
-
-	local ic = Instance.new("UICorner", input)
-	ic.CornerRadius = UDim.new(0, 4)
-
-	input:GetPropertyChangedSignal("Text"):Connect(function()
-		local n = tonumber(input.Text)
-		if n then
-			onChanged(n)
+for _, c in ipairs(frame:GetChildren()) do
+	if c:IsA("Frame") or c:IsA("TextLabel") or c:IsA("TextButton") then
+		if c.Name ~= "Slot1Keep" then
+			c:Destroy()
 		end
-	end)
+	end
 end
 
-Settings.ConsoleSpeed = 2000
-Settings.ConsoleY = 100000
+local startX = 6
+local gap = 4
 
-createNumberInput(row1, "Speed", Settings.ConsoleSpeed, function(v)
-	Settings.ConsoleSpeed = v
+local yLabel = Instance.new("TextLabel")
+yLabel.Parent = frame
+yLabel.Size = UDim2.fromOffset(22, 20)
+yLabel.Position = UDim2.fromOffset(startX, 6)
+yLabel.BackgroundTransparency = 1
+yLabel.Text = "Y"
+yLabel.TextSize = 12
+yLabel.Font = Enum.Font.SourceSansBold
+yLabel.TextColor3 = Color3.fromRGB(220,220,220)
+yLabel.TextXAlignment = Enum.TextXAlignment.Center
+yLabel.ZIndex = 20
+
+local yBox = Instance.new("TextBox")
+yBox.Parent = frame
+yBox.Size = UDim2.fromOffset(68, 22)
+yBox.Position = UDim2.fromOffset(startX + 22, 5)
+yBox.Text = "100000"
+yBox.ClearTextOnFocus = false
+yBox.Font = Enum.Font.SourceSans
+yBox.TextSize = 13
+yBox.TextColor3 = Color3.fromRGB(255,255,255)
+yBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
+yBox.ZIndex = 20
+
+Instance.new("UICorner", yBox).CornerRadius = UDim.new(0,4)
+
+local spLabel = Instance.new("TextLabel")
+spLabel.Parent = frame
+spLabel.Size = UDim2.fromOffset(22, 20)
+spLabel.Position = UDim2.fromOffset(startX + 22 + 68 + gap, 6)
+spLabel.BackgroundTransparency = 1
+spLabel.Text = "Sp"
+spLabel.TextSize = 12
+spLabel.Font = Enum.Font.SourceSansBold
+spLabel.TextColor3 = Color3.fromRGB(220,220,220)
+spLabel.TextXAlignment = Enum.TextXAlignment.Center
+spLabel.ZIndex = 20
+
+local spBox = Instance.new("TextBox")
+spBox.Parent = frame
+spBox.Size = UDim2.fromOffset(68, 22)
+spBox.Position = UDim2.fromOffset(startX + 22 + 68 + gap + 22, 5)
+spBox.Text = "2000"
+spBox.ClearTextOnFocus = false
+spBox.Font = Enum.Font.SourceSans
+spBox.TextSize = 13
+spBox.TextColor3 = Color3.fromRGB(255,255,255)
+spBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
+spBox.ZIndex = 20
+
+Instance.new("UICorner", spBox).CornerRadius = UDim.new(0,4)
+
+Settings.ConsoleY = tonumber(yBox.Text) or 100000
+Settings.ConsoleSpeed = tonumber(spBox.Text) or 2000
+
+yBox:GetPropertyChangedSignal("Text"):Connect(function()
+	local n = tonumber(yBox.Text)
+	if n then
+		Settings.ConsoleY = n
+	end
 end)
 
-createNumberInput(row1, "Y", Settings.ConsoleY, function(v)
-	Settings.ConsoleY = v
+spBox:GetPropertyChangedSignal("Text"):Connect(function()
+	local n = tonumber(spBox.Text)
+	if n then
+		Settings.ConsoleSpeed = n
+	end
 end)
+
 
 local slot2 = Slots[2]
 slot2.Label.Text = "Bypass Tween"
