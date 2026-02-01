@@ -110,7 +110,7 @@ for i = 1, 6 do
 
 	if label and label:IsA("TextLabel") then
     local pad = Instance.new("UIPadding")
-    pad.PaddingLeft = UDim.new(0, 3)
+    pad.PaddingLeft = UDim.new(0, 1)
     pad.Parent = label
 	end
 
