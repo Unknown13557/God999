@@ -1,5 +1,12 @@
 local UserInputService = game:GetService("UserInputService")
 local Players          = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+if not LocalPlayer then
+	Players.PlayerAdded:Wait()
+	LocalPlayer = Players.LocalPlayer
+end
+
+local PlayerGui        = LocalPlayer:WaitForChild("PlayerGui")
 local RunService       = game:GetService("RunService")
 local Workspace        = game:GetService("Workspace")
 local TweenService     = game:GetService("TweenService")
@@ -206,6 +213,7 @@ slot2.Pill.MouseButton1Click:Connect(function()
 	end
 end) 
 
+repeat task.wait() until SettingsFrame and SettingsFrame.Parent
 local slot3Data = Slots[3]
 local slot3Frame = slot3Data.Frame
 
@@ -307,7 +315,7 @@ local function applyOffset(dir)
 	if not char then return end
 
 	local hrp = char:FindFirstChild("HumanoidRootPart")
-	if not hrp then return end
+    if not hrp then return end
 
 	local currentY = hrp.Position.Y
 	local targetY = currentY
