@@ -298,40 +298,42 @@ local function syncSlotUI(slot, state)
 	end
 end
 
--- LABEL Y
+-- Y label
 local yLabel = Instance.new("TextLabel")
-yLabel.Parent = slot
+yLabel.Parent = row
 yLabel.Text = "Y"
 yLabel.Size = UDim2.fromOffset(14, 28)
-yLabel.Position = UDim2.fromOffset(8, 6)
 yLabel.BackgroundTransparency = 1
-yLabel.TextXAlignment = Left
-yLabel.ZIndex = slot.ZIndex + 1
+yLabel.TextXAlignment = Enum.TextXAlignment.Left
+yLabel.LayoutOrder = 1
+yLabel.ZIndex = 22
 
--- BOX Y
+-- Y box
 local yBox = Instance.new("TextBox")
-yBox.Parent = slot
+yBox.Parent = row
 yBox.Text = "100000"
 yBox.Size = UDim2.fromOffset(90, 28)
-yBox.Position = UDim2.fromOffset(26, 6)
-yBox.ZIndex = slot.ZIndex + 1
+yBox.ClearTextOnFocus = false
+yBox.LayoutOrder = 2
+yBox.ZIndex = 22
 
--- LABEL SP
+-- Sp label
 local spLabel = Instance.new("TextLabel")
-spLabel.Parent = slot
+spLabel.Parent = row
 spLabel.Text = "Sp"
 spLabel.Size = UDim2.fromOffset(22, 28)
-spLabel.Position = UDim2.fromOffset(124, 6)
 spLabel.BackgroundTransparency = 1
-spLabel.ZIndex = slot.ZIndex + 1
+spLabel.LayoutOrder = 3
+spLabel.ZIndex = 22
 
--- BOX SP
+-- Sp box
 local spBox = Instance.new("TextBox")
-spBox.Parent = slot
+spBox.Parent = row
 spBox.Text = "2000"
 spBox.Size = UDim2.fromOffset(60, 28)
-spBox.Position = UDim2.fromOffset(148, 6)
-spBox.ZIndex = slot.ZIndex + 1
+spBox.ClearTextOnFocus = false
+spBox.LayoutOrder = 4
+spBox.ZIndex = 22
 
 slot.ClipsDescendants = false
 
