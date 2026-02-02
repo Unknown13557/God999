@@ -191,6 +191,7 @@ for i = 1, 6 do
 	slot.BackgroundColor3 = Color3.fromRGB(60,60,60)
 	slot.BorderSizePixel = 0
 	slot.ZIndex = 10
+
 	
 	if i ~= 1 then
 	slot.ClipsDescendants = true
@@ -276,23 +277,25 @@ frame.ZIndex = 20
 local row = Instance.new("Frame")
 row.Parent = frame
 row.BackgroundTransparency = 1
-row.Size = UDim2.new(1, -12, 1, -8)
 row.Position = UDim2.fromOffset(6, 4)
+row.Size = UDim2.new(1, -12, 1, -8)
 row.ZIndex = 21
-row.ClipsDescendants = false
+
+row.ClipsDescendants = true
 
 local layout = Instance.new("UIListLayout")
 layout.Parent = row
 layout.FillDirection = Enum.FillDirection.Horizontal
-layout.VerticalAlignment = Enum.VerticalAlignment.Center
 layout.HorizontalAlignment = Enum.HorizontalAlignment.Left
-layout.Padding = UDim.new(0, 2)
+layout.VerticalAlignment = Enum.VerticalAlignment.Center
+layout.Padding = UDim.new(0, 4)
 
 
 
 local yBox = Instance.new("TextBox")
 yBox.Parent = row
 yBox.Size = UDim2.fromOffset(80, 28)
+yBox.LayoutOrder = 1
 yBox.Text = "100000"
 yBox.ClearTextOnFocus = false
 yBox.Font = Enum.Font.SourceSansBold
@@ -310,9 +313,9 @@ yBox.TextXAlignment = Enum.TextXAlignment.Center
 local spWrap = Instance.new("Frame")
 spWrap.Parent = row
 spWrap.BackgroundTransparency = 1
-spWrap.Size = UDim2.fromOffset(200, 28)
-spWrap.AutomaticSize = Enum.AutomaticSize.None
-
+spWrap.Size = UDim2.fromOffset(110, 28)
+spWrap.LayoutOrder = 2
+spWrap.ZIndex = 22
 
 local spBox = Instance.new("TextBox")
 spBox.Parent = spWrap
@@ -325,7 +328,10 @@ spBox.TextSize = 16
 spBox.TextColor3 = Color3.fromRGB(230,230,230)
 spBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
 spBox.BorderSizePixel = 0
-spBox.ZIndex = 22
+spBox.ZIndex = 23
+spBox.TextXAlignment = Enum.TextXAlignment.Center
+spBox.TextWrapped = false
+
 Instance.new("UICorner", spBox).CornerRadius = UDim.new(0,6)
 
 spBox.TextWrapped = false
