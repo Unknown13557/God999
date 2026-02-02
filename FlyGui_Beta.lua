@@ -301,48 +301,55 @@ end
 
 slot.ClipsDescendants = true
 
+-- SLOT 1: manual layout, NO auto
+
+-- Y box (dài)
 local yBox = Instance.new("TextBox")
 yBox.Parent = slot
-yBox.Size = UDim2.fromScale(0.65, 0.6)
-yBox.Position = UDim2.fromScale(0.03, 0.2)
+yBox.Position = UDim2.fromOffset(12, 10)
+yBox.Size = UDim2.fromOffset(140, 30)
+yBox.Text = "100000"
+yBox.ClearTextOnFocus = false
 yBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
 yBox.TextColor3 = Color3.fromRGB(230,230,230)
 yBox.Font = Enum.Font.Gotham
 yBox.TextSize = 16
-yBox.Text = "100000"
-yBox.ClearTextOnFocus = false
 yBox.BorderSizePixel = 0
+yBox.ZIndex = 21
 
-local yCorner = Instance.new("UICorner")
-yCorner.CornerRadius = UDim.new(0, 8)
-yCorner.Parent = yBox
+local yc = Instance.new("UICorner")
+yc.CornerRadius = UDim.new(0,8)
+yc.Parent = yBox
 
 
+-- SP box (ngắn)
 local spBox = Instance.new("TextBox")
 spBox.Parent = slot
-spBox.Size = UDim2.fromScale(0.25, 0.6)
-spBox.Position = UDim2.fromScale(0.71, 0.2)
+spBox.Position = UDim2.fromOffset(160, 10)
+spBox.Size = UDim2.fromOffset(70, 30)
+spBox.Text = "2000"
+spBox.ClearTextOnFocus = false
 spBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
 spBox.TextColor3 = Color3.fromRGB(230,230,230)
 spBox.Font = Enum.Font.Gotham
 spBox.TextSize = 16
-spBox.Text = "2000"
-spBox.ClearTextOnFocus = false
 spBox.BorderSizePixel = 0
+spBox.ZIndex = 21
 
-local spCorner = Instance.new("UICorner")
-spCorner.CornerRadius = UDim.new(0, 8)
-spCorner.Parent = spBox
+local sc = Instance.new("UICorner")
+sc.CornerRadius = UDim.new(0,8)
+sc.Parent = spBox
 
 
 Slots[1] = {
 	Frame = slot,
-	Type = "Console",
 	YBox = yBox,
-	SpBox = spBox
+	SpBox = spBox,
+	Type = "Console"
 }
 
 
+frame.ClipsDescendants = false
 
 local slot2 = Slots[2]
 slot2.Label.Text = "Bypass Tween"
