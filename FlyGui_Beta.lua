@@ -469,6 +469,12 @@ local function stopEscape()
 		escapeTween:Cancel()
 		escapeTween = nil
 	end
+
+	local char = Players.LocalPlayer.Character
+	local hum = char and char:FindFirstChildOfClass("Humanoid")
+	if hum and not nowe then
+		hum.PlatformStand = false
+	end
 end
 
 
@@ -513,6 +519,12 @@ local function stopUp()
 	if upTween then
 		upTween:Cancel()
 		upTween = nil
+	end
+
+	local char = Players.LocalPlayer.Character
+	local hum = char and char:FindFirstChildOfClass("Humanoid")
+	if hum and not nowe then
+		hum.PlatformStand = false
 	end
 end
 
@@ -909,24 +921,17 @@ local nowe = false
 local noclipConn = nil
 local noclipCache = {}
 
+
 local toggling = false
-local isOn = false
 
-local function magictis_onToggleClick()
-    if toggling then return end
-    toggling = true
-
-    local nextState = not isOn
-    isOn = nextState
-
-    task.delay(0.15, function()
-        toggling = false
-    end)
+local function escapeDebounce()
+	if toggling then return false end
+	toggling = true
+	task.delay(0.15, function()
+		toggling = false
+	end)
+	return true
 end
-
-toggle.Activated:Connect(magictis_onToggleClick)
-flyKnob.Activated:Connect(magictis_onToggleClick)
-
 
 toggle.MouseButton1Click:Connect(function()
 	escapeEnabled = not escapeEnabled
