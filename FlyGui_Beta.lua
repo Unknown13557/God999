@@ -284,19 +284,6 @@ for i = 1, 6 do
 	end
 end
 
-local ESCAPE_SLOT_INDEX = 1
-
-local escapeSlot = Slots[ESCAPE_SLOT_INDEX]
-if escapeSlot and escapeSlot.Pill then
-	escapeSlot.Pill.MouseButton1Click:Connect(function()
-		escapeEnabled = not escapeEnabled
-		syncSlotUI(escapeSlot, escapeEnabled)
-
-		if not escapeEnabled then
-			stopEscape()
-		end
-	end)
-end
 
 
 local slot1 = Slots[1]
@@ -902,6 +889,22 @@ toggle.Activated:Connect(magictis_onToggleClick)
 flyKnob.Activated:Connect(magictis_onToggleClick)
 
 
+toggle.MouseButton1Click:Connect(function()
+	escapeEnabled = not escapeEnabled
+
+	if escapeEnabled then
+
+		toggle.BackgroundColor3 = Color3.fromRGB(120,200,120)
+		flyKnob.Position = UDim2.fromOffset(22, 2)
+	else
+			
+		toggle.BackgroundColor3 = Color3.fromRGB(88,200,120)
+		flyKnob.Position = UDim2.fromOffset(2, 2)
+		stopEscape()
+	end
+end)
+
+
 local function cacheAndDisablePart(part)
 	if not part or not part:IsA("BasePart") then return end
 	if noclipCache[part] == nil then
@@ -1008,7 +1011,7 @@ function magiskk.StopVertical()
     stopUpTextVisual()
 end
 
--- ===== CONNECT UP BUTTON =====
+
 up.MouseButton1Click:Connect(function()
 	upEnabled = not upEnabled
 
@@ -1322,10 +1325,7 @@ if upTween then
 	upTween = nil
 end
 
-local escapeSlot = Slots and Slots[ESCAPE_SLOT_INDEX]
-if escapeSlot and escapeSlot.Pill then
-	syncSlotUI(escapeSlot, false)
-end
+
 
 stopUp()
 		
