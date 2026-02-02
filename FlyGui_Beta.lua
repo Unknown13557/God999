@@ -290,7 +290,7 @@ layout.Padding = UDim.new(0, 2)
 
 local yBox = Instance.new("TextBox")
 yBox.Parent = row
-yBox.Size = UDim2.fromOffset(120, 28)
+yBox.Size = UDim2.fromOffset(70, 28)
 yBox.Text = "100000"
 yBox.ClearTextOnFocus = false
 yBox.Font = Enum.Font.SourceSansBold
@@ -300,6 +300,10 @@ yBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
 yBox.BorderSizePixel = 0
 yBox.ZIndex = 22
 Instance.new("UICorner", yBox).CornerRadius = UDim.new(0,6)
+
+yBox.TextWrapped = false
+yBox.TextXAlignment = Enum.TextXAlignment.Center
+
 
 local spBox = Instance.new("TextBox")
 spBox.Parent = row
@@ -313,6 +317,10 @@ spBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
 spBox.BorderSizePixel = 0
 spBox.ZIndex = 22
 Instance.new("UICorner", spBox).CornerRadius = UDim.new(0,6)
+
+spBox.TextWrapped = false
+spBox.TextXAlignment = Enum.TextXAlignment.Center
+
 
 slot1.YBox = yBox
 slot1.SpBox = spBox
@@ -376,7 +384,7 @@ local rowLayout = Instance.new("UIListLayout")
 rowLayout.Parent = row3
 rowLayout.FillDirection = Enum.FillDirection.Horizontal
 rowLayout.VerticalAlignment = Enum.VerticalAlignment.Center
-rowLayout.Padding = UDim.new(0, 1)
+rowLayout.Padding = UDim.new(0, 2)
 
 local SLOT3MIN_TWEEN_Y = 30
 local SLOT3MAX_TWEEN_Y = 2000000000
@@ -432,7 +440,7 @@ end)
 
 local slot3UpBtn = Instance.new("TextButton")
 slot3UpBtn.Parent = row3
-slot3UpBtn.Size = UDim2.fromOffset(34, 28)
+slot3UpBtn.Size = UDim2.fromOffset(35, 28)
 slot3UpBtn.Text = ""
 slot3UpBtn.BackgroundColor3 = Color3.fromRGB(80,180,120)
 slot3UpBtn.ZIndex = 15
@@ -451,7 +459,7 @@ slot3UpCorner.Parent = slot3UpBtn
 
 local slot3DownBtn = Instance.new("TextButton")
 slot3DownBtn.Parent = row3
-slot3DownBtn.Size = UDim2.fromOffset(34, 28)
+slot3DownBtn.Size = UDim2.fromOffset(35, 28)
 slot3DownBtn.Text = ""
 slot3DownBtn.BackgroundColor3 = Color3.fromRGB(180,80,80)
 slot3DownBtn.ZIndex = 15
