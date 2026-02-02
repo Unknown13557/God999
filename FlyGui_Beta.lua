@@ -284,6 +284,20 @@ for i = 1, 6 do
 	end
 end
 
+local ESCAPE_SLOT_INDEX = 1
+
+local escapeSlot = Slots[ESCAPE_SLOT_INDEX]
+if escapeSlot and escapeSlot.Pill then
+	escapeSlot.Pill.MouseButton1Click:Connect(function()
+		escapeEnabled = not escapeEnabled
+		syncSlotUI(escapeSlot, escapeEnabled)
+
+		if not escapeEnabled then
+			stopEscape()
+		end
+	end)
+end
+
 
 local slot1 = Slots[1]
 local frame = slot1.Frame
@@ -994,12 +1008,19 @@ function magiskk.StopVertical()
     stopUpTextVisual()
 end
 
+-- ===== CONNECT UP BUTTON =====
 up.MouseButton1Click:Connect(function()
-    startUpTextVisual()
-    task.delay(0.1, function()
-        stopUpTextVisual()
-    end)
+	upEnabled = not upEnabled
+
+	if upEnabled then
+		startUpTextVisual()
+		startUp()
+	else
+		stopUp()
+		stopUpTextVisual()
+	end
 end)
+
 
 local tpwalking = false
 local tpGen = 0
@@ -1282,30 +1303,31 @@ Players.LocalPlayer.CharacterAdded:Connect(function(char)
 	
 	stopFlyVisuals()
 	stopUpTextVisual()
-    
-    -- ===== RESET ESCAPE / UP STATE =====
-	escapeEnabled = false
-	upEnabled = false
 
-	if escapeTween then
-		pcall(function()
-			escapeTween:Cancel()
-		end)
-		escapeTween = nil
-	end
+		
+escapeEnabled = false
+upEnabled = false
 
-	if upTween then
-		pcall(function()
-			upTween:Cancel()
-		end)
-		upTween = nil
-	end
+if escapeTween then
+	pcall(function()
+		escapeTween:Cancel()
+	end)
+	escapeTween = nil
+end
 
-	local escapeSlot = Slots and Slots[ESCAPE_SLOT_INDEX]
-	if escapeSlot and escapeSlot.Pill then
-		syncSlotUI(escapeSlot, false)
-	end
+if upTween then
+	pcall(function()
+		upTween:Cancel()
+	end)
+	upTween = nil
+end
 
+local escapeSlot = Slots and Slots[ESCAPE_SLOT_INDEX]
+if escapeSlot and escapeSlot.Pill then
+	syncSlotUI(escapeSlot, false)
+end
+
+stopUp()
 		
 	task.wait(0.15)
 
@@ -1320,6 +1342,18 @@ Players.LocalPlayer.CharacterAdded:Connect(function(char)
 		anim.Disabled = false
 	end
 end)
+
+local function getHealthPercent()
+	local char = Players.LocalPlayer.Character
+	if not char then return 100 end
+
+	local hum = char:FindFirstChildOfClass("Humanoid")
+	if not hum or hum.MaxHealth <= 0 then
+		return 100
+	end
+
+	return (hum.Health / hum.MaxHealth) * 100
+end
 
 
 RunService.Heartbeat:Connect(function()
