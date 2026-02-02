@@ -354,7 +354,7 @@ end)
 local spBox = Instance.new("TextBox")
 spBox.Parent = row
 spBox.Text = "2000"
-spBox.Size = UDim2.fromOffset(76, 28)
+spBox.Size = UDim2.fromOffset(75, 28)
 spBox.ClearTextOnFocus = false
 spBox.Font = Enum.Font.SourceSansBold
 spBox.TextSize = 16
