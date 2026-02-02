@@ -283,6 +283,24 @@ for i = 1, 6 do
 end
 
 
+local escapeSlot = Slots and Slots[ESCAPE_SLOT_INDEX]
+local escapeButton = escapeSlot and escapeSlot.Pill
+
+if escapeButton then
+	escapeButton.MouseButton1Click:Connect(function()
+		if not escapeDebounce() then return end
+
+		escapeEnabled = not escapeEnabled
+		syncEscapeUI(escapeEnabled)
+
+		if not escapeEnabled then
+			stopEscape()
+		end
+	end)
+end
+
+escapeEnabled = false
+syncEscapeUI(false)
 
 local slot1 = Slots[1]
 local frame = slot1.Frame
@@ -307,16 +325,20 @@ layout.HorizontalAlignment = Enum.HorizontalAlignment.Left
 layout.Padding = UDim.new(0, 1)
 
 
-local function syncSlotUI(slot, state)
-	if not slot.Pill then return end
+local function syncEscapeUI(state)
+	local slot = Slots and Slots[ESCAPE_SLOT_INDEX]
+	if not slot or not slot.Pill then return end
+
 	slot.State = state
 
 	if state then
+		
 		slot.Pill.BackgroundColor3 = Color3.fromRGB(120,200,120)
-		slot.SlotKnob.Position = UDim2.fromOffset(20,2)
+		slot.SlotKnob.Position = UDim2.fromOffset(20, 2)
 	else
-		slot.Pill.BackgroundColor3 = Color3.fromRGB(80,80,80)
-		slot.SlotKnob.Position = UDim2.fromOffset(2,2)
+		
+		slot.Pill.BackgroundColor3 = Color3.fromRGB(200,80,80)
+		slot.SlotKnob.Position = UDim2.fromOffset(2, 2)
 	end
 end
 
