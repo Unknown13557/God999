@@ -271,7 +271,6 @@ end
 local slot1 = Slots[1]
 local frame = slot1.Frame
 
-frame.ClipsDescendants = false
 frame.ZIndex = 20
 
 local row = Instance.new("Frame")
