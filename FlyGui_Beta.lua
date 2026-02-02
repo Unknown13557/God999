@@ -335,7 +335,7 @@ spBox.ClearTextOnFocus = false
 spBox.LayoutOrder = 4
 spBox.ZIndex = 22
 
-slot.ClipsDescendants = false
+frame.ClipsDescendants = false
 
 
 
