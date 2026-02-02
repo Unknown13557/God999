@@ -295,6 +295,10 @@ layout.Padding = UDim.new(0, 2)
 local yBox = Instance.new("TextBox")
 yBox.Parent = row
 yBox.Size = UDim2.fromOffset(80, 28)
+
+yBox.AnchorPoint = Vector2.new(0, 0.5)
+yBox.Position = UDim2.fromScale(0, 0.5)
+
 yBox.LayoutOrder = 1
 yBox.Text = "100000"
 yBox.ClearTextOnFocus = false
@@ -313,14 +317,17 @@ yBox.TextXAlignment = Enum.TextXAlignment.Center
 local spWrap = Instance.new("Frame")
 spWrap.Parent = row
 spWrap.BackgroundTransparency = 1
-spWrap.Size = UDim2.fromOffset(80, 28)
-spWrap.LayoutOrder = 2
+spWrap.Size = UDim2.fromOffset(60, 28)
+spWrap.AutomaticSize = Enum.AutomaticSize.None
 spWrap.ZIndex = 22
 
 local spBox = Instance.new("TextBox")
 spBox.Parent = spWrap
-spBox.Size = UDim2.fromScale(1, 1)
-spBox.Position = UDim2.fromScale(0, 0)
+spBox.Size  = UDim2.fromScale(1, 1)
+
+
+spBox.AnchorPoint = Vector2.new(0, 0.5)
+spBox.Position = UDim2.fromScale(0, 0.5)
 spBox.Text = "2000"
 spBox.ClearTextOnFocus = false
 spBox.Font = Enum.Font.SourceSansBold
