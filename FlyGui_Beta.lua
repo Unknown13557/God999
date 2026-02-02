@@ -305,15 +305,15 @@ Instance.new("UICorner", yBox).CornerRadius = UDim.new(0,6)
 
 yBox.TextWrapped = false
 yBox.TextXAlignment = Enum.TextXAlignment.Center
-yBox.LayoutOrder = 1
+yBox.LayoutOrder = 2
 
 
 local spWrap = Instance.new("Frame")
 spWrap.Parent = row
 spWrap.BackgroundTransparency = 1
-spWrap.Size = UDim2.fromOffset(50, 28)
+spWrap.Size = UDim2.fromOffset(80, 28)
 spWrap.AutomaticSize = Enum.AutomaticSize.None
-spWrap.LayoutOrder = 2
+spWrap.LayoutOrder = 1
 
 
 local spBox = Instance.new("TextBox")
