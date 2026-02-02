@@ -275,7 +275,7 @@ row.BackgroundTransparency = 1
 row.Size = UDim2.new(1, -12, 1, -8)
 row.Position = UDim2.fromOffset(6, 4)
 row.ZIndex = 21
-row.ClipsDescendants = true
+row.ClipsDescendants = false
 
 local layout = Instance.new("UIListLayout")
 layout.Parent = row
@@ -299,25 +299,48 @@ local function syncSlotUI(slot, state)
 end
 
 
--- Y box
+
+
 local yBox = Instance.new("TextBox")
 yBox.Parent = row
 yBox.Text = "100000"
-yBox.Size = UDim2.fromOffset(90, 28)
+yBox.Size = UDim2.fromOffset(80, 28)
 yBox.ClearTextOnFocus = false
+yBox.Font = Enum.Font.SourceSansBold
+yBox.TextSize = 16
+yBox.TextXAlignment = Enum.TextXAlignment.Center
+yBox.TextYAlignment = Enum.TextYAlignment.Center
+yBox.TextColor3 = Color3.fromRGB(230,230,230)
+yBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
+yBox.BorderSizePixel = 0
 yBox.LayoutOrder = 1
 yBox.ZIndex = 22
 
+local yCorner = Instance.new("UICorner")
+yCorner.CornerRadius = UDim.new(0,6)
+yCorner.Parent = yBox
 
 
--- Sp box
+
+
 local spBox = Instance.new("TextBox")
 spBox.Parent = row
 spBox.Text = "2000"
 spBox.Size = UDim2.fromOffset(60, 28)
 spBox.ClearTextOnFocus = false
+spBox.Font = Enum.Font.SourceSansBold
+spBox.TextSize = 16
+spBox.TextXAlignment = Enum.TextXAlignment.Center
+spBox.TextYAlignment = Enum.TextYAlignment.Center
+spBox.TextColor3 = Color3.fromRGB(230,230,230)
+spBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
+spBox.BorderSizePixel = 0
 spBox.LayoutOrder = 2
 spBox.ZIndex = 22
+
+local spCorner = Instance.new("UICorner")
+spCorner.CornerRadius = UDim.new(0,6)
+spCorner.Parent = spBox
 
 frame.ClipsDescendants = false
 
