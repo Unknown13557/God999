@@ -17,6 +17,27 @@ local UIS              = UserInputService
 
 local MAX_INPUT_VALUE = 2000000000
 
+local escapeEnabled = false
+local upEnabled = false
+
+local escapeTween = nil
+local upTween = nil
+
+local ESCAPE_HP_LOW = 40
+local ESCAPE_HP_HIGH = 80
+
+local function getHRP()
+	local char = Players.LocalPlayer.Character
+	if not char then return nil end
+	return char:FindFirstChild("HumanoidRootPart")
+end
+
+local function cancelTween(tw)
+	if tw then
+		tw:Cancel()
+	end
+end
+
 local Settings = {
 	BypassTween       = true
 }
@@ -301,8 +322,6 @@ local function syncSlotUI(slot, state)
 end
 
 
-
-
 local yBox = Instance.new("TextBox")
 yBox.Parent = row
 yBox.Text = "2000000000"
@@ -396,8 +415,66 @@ spBox:GetPropertyChangedSignal("Text"):Connect(function()
 	end
 end)
 
-
 frame.ClipsDescendants = false
+
+local function startEscape()
+	local hrp = getHRP()
+	if not hrp then return end
+
+	cancelTween(escapeTween)
+
+	local targetY = tonumber(yBox.Text) or MAX_INPUT_VALUE
+	local speed = tonumber(spBox.Text) or 2000
+
+	local startCF = hrp.CFrame
+	local targetCF = CFrame.new(startCF.X, targetY, startCF.Z)
+
+	local distance = math.abs(targetY - startCF.Y)
+	local duration = math.clamp(distance / speed, 0.1, 15)
+
+	escapeTween = TweenService:Create(
+		hrp,
+		TweenInfo.new(duration, Enum.EasingStyle.Linear),
+		{CFrame = targetCF}
+	)
+
+	escapeTween:Play()
+end
+
+local function stopEscape()
+	cancelTween(escapeTween)
+	escapeTween = nil
+end
+
+local function startUp()
+	local hrp = getHRP()
+	if not hrp then return end
+
+	cancelTween(escapeTween)
+	cancelTween(upTween)
+
+	local targetY = tonumber(yBox.Text) or MAX_INPUT_VALUE
+	local speed = tonumber(spBox.Text) or 2000
+
+	local startCF = hrp.CFrame
+	local targetCF = CFrame.new(startCF.X, targetY, startCF.Z)
+
+	local distance = math.abs(targetY - startCF.Y)
+	local duration = math.clamp(distance / speed, 0.1, 20)
+
+	upTween = TweenService:Create(
+		hrp,
+		TweenInfo.new(duration, Enum.EasingStyle.Linear),
+		{CFrame = targetCF}
+	)
+
+	upTween:Play()
+end
+
+local function stopUp()
+	cancelTween(upTween)
+	upTween = nil
+end
 
 
 
@@ -1205,7 +1282,31 @@ Players.LocalPlayer.CharacterAdded:Connect(function(char)
 	
 	stopFlyVisuals()
 	stopUpTextVisual()
+    
+    -- ===== RESET ESCAPE / UP STATE =====
+	escapeEnabled = false
+	upEnabled = false
 
+	if escapeTween then
+		pcall(function()
+			escapeTween:Cancel()
+		end)
+		escapeTween = nil
+	end
+
+	if upTween then
+		pcall(function()
+			upTween:Cancel()
+		end)
+		upTween = nil
+	end
+
+	local escapeSlot = Slots and Slots[ESCAPE_SLOT_INDEX]
+	if escapeSlot and escapeSlot.Pill then
+		syncSlotUI(escapeSlot, false)
+	end
+
+		
 	task.wait(0.15)
 
 	local hum = char:FindFirstChildOfClass("Humanoid")
@@ -1217,5 +1318,21 @@ Players.LocalPlayer.CharacterAdded:Connect(function(char)
 	local anim = char:FindFirstChild("Animate")
 	if anim then
 		anim.Disabled = false
+	end
+end)
+
+
+RunService.Heartbeat:Connect(function()
+	if upEnabled then return end
+	if not escapeEnabled then return end
+
+	local hp = getHealthPercent()
+
+	if hp < ESCAPE_HP_LOW then
+		if not escapeTween then
+			startEscape()
+		end
+	elseif hp > ESCAPE_HP_HIGH then
+		stopEscape()
 	end
 end)
