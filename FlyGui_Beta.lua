@@ -222,7 +222,7 @@ end
 		local content = Instance.new("Frame")
 		content.Parent = slot
 		content.BackgroundTransparency = 1
-		content.Size = UDim2.new(1, -1, 1, 0)
+		content.Size = UDim2.new(1, 20, 1, 0)
 		content.Position = UDim2.fromOffset(10, 0)
 		content.ZIndex = 11
 
