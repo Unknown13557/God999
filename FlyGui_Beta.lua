@@ -326,7 +326,7 @@ yCorner.Parent = yBox
 local spBox = Instance.new("TextBox")
 spBox.Parent = row
 spBox.Text = "2000"
-spBox.Size = UDim2.fromOffset(65, 28)
+spBox.Size = UDim2.fromOffset(67, 28)
 spBox.ClearTextOnFocus = false
 spBox.Font = Enum.Font.SourceSansBold
 spBox.TextSize = 16
@@ -458,7 +458,7 @@ end)
 
 local slot3UpBtn = Instance.new("TextButton")
 slot3UpBtn.Parent = row3
-slot3UpBtn.Size = UDim2.fromOffset(34, 28)
+slot3UpBtn.Size = UDim2.fromOffset(35, 28)
 slot3UpBtn.Text = ""
 slot3UpBtn.BackgroundColor3 = Color3.fromRGB(80,180,120)
 slot3UpBtn.ZIndex = 15
@@ -477,7 +477,7 @@ slot3UpCorner.Parent = slot3UpBtn
 
 local slot3DownBtn = Instance.new("TextButton")
 slot3DownBtn.Parent = row3
-slot3DownBtn.Size = UDim2.fromOffset(34, 28)
+slot3DownBtn.Size = UDim2.fromOffset(35, 28)
 slot3DownBtn.Text = ""
 slot3DownBtn.BackgroundColor3 = Color3.fromRGB(180,80,80)
 slot3DownBtn.ZIndex = 15
