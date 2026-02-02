@@ -17,11 +17,14 @@ local UIS              = UserInputService
 
 local MAX_INPUT_VALUE = 2000000000
 
+
 local escapeEnabled = false
 local upEnabled = false
 
+
 local escapeTween = nil
 local upTween = nil
+
 
 local ESCAPE_HP_LOW = 40
 local ESCAPE_HP_HIGH = 80
@@ -418,63 +421,104 @@ end)
 
 frame.ClipsDescendants = false
 
+local function readSlot1Config()
+	local y = tonumber(yBox.Text)
+	local sp = tonumber(spBox.Text)
+
+	if not y then return nil, nil end
+	if not sp or sp <= 0 then sp = 1 end
+
+	return y, sp
+end
+
+
 local function startEscape()
-	local hrp = getHRP()
-	if not hrp then return end
+	local char = Players.LocalPlayer.Character
+	if not char then return end
 
-	cancelTween(escapeTween)
+	local hrp = char:FindFirstChild("HumanoidRootPart")
+	local hum = char:FindFirstChildOfClass("Humanoid")
+	if not hrp or not hum then return end
 
-	local targetY = tonumber(yBox.Text) or MAX_INPUT_VALUE
-	local speed = tonumber(spBox.Text) or 2000
+	local targetY, speed = readSlot1Config()
+	if not targetY then return end
+
+	hum.PlatformStand = true
+
+	if escapeTween then
+		escapeTween:Cancel()
+	end
 
 	local startCF = hrp.CFrame
-	local targetCF = CFrame.new(startCF.X, targetY, startCF.Z)
+	local targetCF = CFrame.new(
+		startCF.Position.X,
+		targetY,
+		startCF.Position.Z
+	) * CFrame.Angles(
+		startCF:ToEulerAnglesXYZ()
+	)
 
-	local distance = math.abs(targetY - startCF.Y)
-	local duration = math.clamp(distance / speed, 0.1, 15)
+	local duration = math.abs(targetY - startCF.Position.Y) / speed
 
 	escapeTween = TweenService:Create(
 		hrp,
 		TweenInfo.new(duration, Enum.EasingStyle.Linear),
-		{CFrame = targetCF}
+		{ CFrame = targetCF }
 	)
 
 	escapeTween:Play()
 end
 
 local function stopEscape()
-	cancelTween(escapeTween)
-	escapeTween = nil
+	if escapeTween then
+		escapeTween:Cancel()
+		escapeTween = nil
+	end
 end
 
+
 local function startUp()
-	local hrp = getHRP()
-	if not hrp then return end
+	local char = Players.LocalPlayer.Character
+	if not char then return end
 
-	cancelTween(escapeTween)
-	cancelTween(upTween)
+	local hrp = char:FindFirstChild("HumanoidRootPart")
+	local hum = char:FindFirstChildOfClass("Humanoid")
+	if not hrp or not hum then return end
 
-	local targetY = tonumber(yBox.Text) or MAX_INPUT_VALUE
-	local speed = tonumber(spBox.Text) or 2000
+	local targetY, speed = readSlot1Config()
+	if not targetY then return end
+
+	hum.PlatformStand = true
+
+	if upTween then
+		upTween:Cancel()
+	end
 
 	local startCF = hrp.CFrame
-	local targetCF = CFrame.new(startCF.X, targetY, startCF.Z)
+	local targetCF = CFrame.new(
+		startCF.Position.X,
+		targetY,
+		startCF.Position.Z
+	) * CFrame.Angles(
+		startCF:ToEulerAnglesXYZ()
+	)
 
-	local distance = math.abs(targetY - startCF.Y)
-	local duration = math.clamp(distance / speed, 0.1, 20)
+	local duration = math.abs(targetY - startCF.Position.Y) / speed
 
 	upTween = TweenService:Create(
 		hrp,
 		TweenInfo.new(duration, Enum.EasingStyle.Linear),
-		{CFrame = targetCF}
+		{ CFrame = targetCF }
 	)
 
 	upTween:Play()
 end
 
 local function stopUp()
-	cancelTween(upTween)
-	upTween = nil
+	if upTween then
+		upTween:Cancel()
+		upTween = nil
+	end
 end
 
 
@@ -1016,8 +1060,8 @@ up.MouseButton1Click:Connect(function()
 	upEnabled = not upEnabled
 
 	if upEnabled then
-		startUpTextVisual()
 		startUp()
+		startUpTextVisual()
 	else
 		stopUp()
 		stopUpTextVisual()
@@ -1307,23 +1351,10 @@ Players.LocalPlayer.CharacterAdded:Connect(function(char)
 	stopFlyVisuals()
 	stopUpTextVisual()
 
-		
-escapeEnabled = false
+	stopUp()
+stopEscape()
 upEnabled = false
-
-if escapeTween then
-	pcall(function()
-		escapeTween:Cancel()
-	end)
-	escapeTween = nil
-end
-
-if upTween then
-	pcall(function()
-		upTween:Cancel()
-	end)
-	upTween = nil
-end
+escapeEnabled = false
 
 
 
@@ -1357,7 +1388,6 @@ end
 
 
 RunService.Heartbeat:Connect(function()
-	if upEnabled then return end
 	if not escapeEnabled then return end
 
 	local hp = getHealthPercent()
