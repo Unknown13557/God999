@@ -266,90 +266,60 @@ local slot1 = Slots[1]
 local frame = slot1.Frame
 slot1.Frame.ZIndex = 20
 
-frame.ClipsDescendants = false
-frame.AutomaticSize = Enum.AutomaticSize.None
+
+slot.ClipsDescendants = false
+slot.ZIndex = 20
 
 local row = Instance.new("Frame")
-row.Parent = frame
+row.Parent = slot
 row.BackgroundTransparency = 1
 row.Size = UDim2.new(1, -12, 1, -8)
 row.Position = UDim2.fromOffset(6, 4)
 row.ZIndex = 21
-row.ClipsDescendants = true
+row.ClipsDescendants = false
 
 local layout = Instance.new("UIListLayout")
 layout.Parent = row
 layout.FillDirection = Enum.FillDirection.Horizontal
 layout.VerticalAlignment = Enum.VerticalAlignment.Center
 layout.HorizontalAlignment = Enum.HorizontalAlignment.Left
-layout.Padding = UDim.new(0, 1)
+layout.Padding = UDim.new(0, 2)
 
-
-local function syncSlotUI(slot, state)
-	if not slot.Pill then return end
-	slot.State = state
-
-	if state then
-		slot.Pill.BackgroundColor3 = Color3.fromRGB(120,200,120)
-		slot.SlotKnob.Position = UDim2.fromOffset(20,2)
-	else
-		slot.Pill.BackgroundColor3 = Color3.fromRGB(80,80,80)
-		slot.SlotKnob.Position = UDim2.fromOffset(2,2)
-	end
-end
-
-
-slot.ClipsDescendants = true
-
--- SLOT 1: manual layout, NO auto
-
--- Y box (dài)
 local yBox = Instance.new("TextBox")
-yBox.Parent = slot
-yBox.Position = UDim2.fromOffset(12, 10)
-yBox.Size = UDim2.fromOffset(140, 30)
+yBox.Parent = row
+yBox.Size = UDim2.fromOffset(120, 28)
 yBox.Text = "100000"
 yBox.ClearTextOnFocus = false
-yBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
-yBox.TextColor3 = Color3.fromRGB(230,230,230)
-yBox.Font = Enum.Font.Gotham
+yBox.Font = Enum.Font.SourceSansBold
 yBox.TextSize = 16
+yBox.TextColor3 = Color3.fromRGB(230,230,230)
+yBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
 yBox.BorderSizePixel = 0
-yBox.ZIndex = 21
+yBox.ZIndex = 22
+Instance.new("UICorner", yBox).CornerRadius = UDim.new(0,6)
 
-local yc = Instance.new("UICorner")
-yc.CornerRadius = UDim.new(0,8)
-yc.Parent = yBox
-
-
--- SP box (ngắn)
 local spBox = Instance.new("TextBox")
-spBox.Parent = slot
-spBox.Position = UDim2.fromOffset(160, 10)
-spBox.Size = UDim2.fromOffset(70, 30)
+spBox.Parent = row
+spBox.Size = UDim2.fromOffset(60, 28)
 spBox.Text = "2000"
 spBox.ClearTextOnFocus = false
-spBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
-spBox.TextColor3 = Color3.fromRGB(230,230,230)
-spBox.Font = Enum.Font.Gotham
+spBox.Font = Enum.Font.SourceSansBold
 spBox.TextSize = 16
+spBox.TextColor3 = Color3.fromRGB(230,230,230)
+spBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
 spBox.BorderSizePixel = 0
-spBox.ZIndex = 21
-
-local sc = Instance.new("UICorner")
-sc.CornerRadius = UDim.new(0,8)
-sc.Parent = spBox
-
+spBox.ZIndex = 22
+Instance.new("UICorner", spBox).CornerRadius = UDim.new(0,6)
 
 Slots[1] = {
 	Frame = slot,
+	Type = "Console",
 	YBox = yBox,
-	SpBox = spBox,
-	Type = "Console"
+	SpBox = spBox
 }
 
 
-frame.ClipsDescendants = false
+
 
 local slot2 = Slots[2]
 slot2.Label.Text = "Bypass Tween"
