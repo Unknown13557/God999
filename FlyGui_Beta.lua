@@ -288,6 +288,12 @@ layout.VerticalAlignment = Enum.VerticalAlignment.Center
 layout.HorizontalAlignment = Enum.HorizontalAlignment.Left
 layout.Padding = UDim.new(0, 2)
 
+local spWrap = Instance.new("Frame")
+spWrap.Parent = row
+spWrap.BackgroundTransparency = 1
+spWrap.Size = UDim2.fromOffset(110, 28)
+spWrap.AutomaticSize = Enum.AutomaticSize.None
+
 local yBox = Instance.new("TextBox")
 yBox.Parent = row
 yBox.Size = UDim2.fromOffset(80, 28)
@@ -306,9 +312,9 @@ yBox.TextXAlignment = Enum.TextXAlignment.Center
 
 
 local spBox = Instance.new("TextBox")
-spBox.Parent = row
-spBox.AutomaticSize = Enum.AutomaticSize.None
-spBox.Size = UDim2.fromOffset(20, 28)
+spBox.Parent = spWrap
+spBox.Size = UDim2.fromScale(1, 1)
+spBox.Position = UDim2.fromScale(0, 0)
 spBox.Text = "2000"
 spBox.ClearTextOnFocus = false
 spBox.Font = Enum.Font.SourceSansBold
@@ -321,7 +327,6 @@ Instance.new("UICorner", spBox).CornerRadius = UDim.new(0,6)
 
 spBox.TextWrapped = false
 spBox.TextXAlignment = Enum.TextXAlignment.Center
-
 
 slot1.YBox = yBox
 slot1.SpBox = spBox
