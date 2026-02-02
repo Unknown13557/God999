@@ -21,6 +21,18 @@ local MAX_INPUT_VALUE = 2000000000
 local escapeEnabled = false
 local upEnabled = false
 
+local function updatePlatformStand()
+	local char = Players.LocalPlayer.Character
+	local hum = char and char:FindFirstChildOfClass("Humanoid")
+	if not hum then return end
+
+	if nowe or upEnabled or escapeEnabled then
+		hum.PlatformStand = true
+	else
+		hum.PlatformStand = false
+	end
+end
+
 
 local escapeTween = nil
 local upTween = nil
@@ -425,7 +437,6 @@ local function startEscape()
 	local targetY, speed = readSlot1Config()
 	if not targetY then return end
 
-	hum.PlatformStand = true
 
 	if escapeTween then
 		escapeTween:Cancel()
@@ -451,6 +462,8 @@ local function startEscape()
 	escapeTween:Play()
 end
 
+updatePlatformStand()
+
 local function stopEscape()
 	if escapeTween then
 		escapeTween:Cancel()
@@ -460,9 +473,10 @@ local function stopEscape()
 	local char = Players.LocalPlayer.Character
 	local hum = char and char:FindFirstChildOfClass("Humanoid")
 	if hum and not nowe then
-		hum.PlatformStand = false
 	end
 end
+
+updatePlatformStand()
 
 
 local function startUp()
@@ -476,7 +490,6 @@ local function startUp()
 	local targetY, speed = readSlot1Config()
 	if not targetY then return end
 
-	hum.PlatformStand = true
 
 	if upTween then
 		upTween:Cancel()
@@ -502,6 +515,9 @@ local function startUp()
 	upTween:Play()
 end
 
+updatePlatformStand()
+
+
 local function stopUp()
 	if upTween then
 		upTween:Cancel()
@@ -511,10 +527,11 @@ local function stopUp()
 	local char = Players.LocalPlayer.Character
 	local hum = char and char:FindFirstChildOfClass("Humanoid")
 	if hum and not nowe then
-		hum.PlatformStand = false
+		
 	end
 end
 
+updatePlatformStand()
 
 
 local slot2 = Slots[2]
@@ -909,9 +926,11 @@ local noclipConn = nil
 local noclipCache = {}
 
 
+
+
 local escapeDebounce = false
 
-toggle.MouseButton1Click:Connect(function()
+local function toggleEscape()
 	if escapeDebounce then return end
 	escapeDebounce = true
 	task.delay(0.15, function()
@@ -922,17 +941,31 @@ toggle.MouseButton1Click:Connect(function()
 
 	if escapeEnabled then
 		toggle.BackgroundColor3 = Color3.fromRGB(120,200,120)
-		flyKnob.Position = UDim2.fromOffset(22, 2)
+		flyKnob:TweenPosition(
+			UDim2.fromOffset(22,2),
+			Enum.EasingDirection.Out,
+			Enum.EasingStyle.Quad,
+			0.15,
+			true
+		)
+		updatePlatformStand()
 	else
 		toggle.BackgroundColor3 = Color3.fromRGB(88,200,120)
-		flyKnob.Position = UDim2.fromOffset(2, 2)
+		flyKnob:TweenPosition(
+			UDim2.fromOffset(2,2),
+			Enum.EasingDirection.Out,
+			Enum.EasingStyle.Quad,
+			0.15,
+			true
+		)
 		stopEscape()
+		updatePlatformStand()
 	end
-end)
+end
 
-      flyKnob.MouseButton1Click:Connect(function()
-	  toggle:Activate()
-end)
+toggle.MouseButton1Click:Connect(toggleEscape)
+flyKnob.MouseButton1Click:Connect(toggleEscape)
+
 
 
 escapeEnabled = false
@@ -1332,7 +1365,7 @@ Players.LocalPlayer.CharacterAdded:Connect(function(char)
 
 	upEnabled = false
 	escapeEnabled = false
-
+    updatePlatformStand()
 	
 	stopUpTextVisual()
 	stopFlyVisuals()
@@ -1378,10 +1411,12 @@ RunService.Heartbeat:Connect(function()
 	local hp = getHealthPercent()
 
 	if hp < ESCAPE_HP_LOW then
-		if not escapeTween then
-			startEscape()
-		end
-	elseif hp > ESCAPE_HP_HIGH then
-		stopEscape()
+	if not escapeTween then
+		startEscape()
+		updatePlatformStand()
+	end
+elseif hp > ESCAPE_HP_HIGH then
+	stopEscape()
+	updatePlatformStand()
 	end
 end)
