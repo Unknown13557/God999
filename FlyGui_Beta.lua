@@ -307,7 +307,7 @@ yBox.TextXAlignment = Enum.TextXAlignment.Center
 
 local spBox = Instance.new("TextBox")
 spBox.Parent = row
-spBox.Size = UDim2.new(1, -30, 0, 28)
+spBox.Size = UDim2.new(1, -40, 0, 28)
 spBox.AutomaticSize = Enum.AutomaticSize.None
 spBox.Text = "2000"
 spBox.ClearTextOnFocus = false
