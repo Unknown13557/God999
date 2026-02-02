@@ -276,7 +276,7 @@ frame.ZIndex = 20
 local row = Instance.new("Frame")
 row.Parent = frame
 row.BackgroundTransparency = 1
-row.Size = UDim2.new(1, -80, 1, -8)
+row.Size = UDim2.new(1, -50, 1, -8)
 row.Position = UDim2.fromOffset(6, 4)
 row.ZIndex = 21
 row.ClipsDescendants = false
@@ -307,7 +307,7 @@ yBox.TextXAlignment = Enum.TextXAlignment.Center
 
 local spBox = Instance.new("TextBox")
 spBox.Parent = row
-spBox.Size = UDim2.new(1, -50, 0, 28)
+spBox.Size = UDim2.new(1, -82, 0, 28)
 spBox.AutomaticSize = Enum.AutomaticSize.None
 spBox.Text = "2000"
 spBox.ClearTextOnFocus = false
