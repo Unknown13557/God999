@@ -944,31 +944,39 @@ local noclipConn = nil
 local noclipCache = {}
 
 
-local toggling = false
-
-local function escapeDebounce()
-	if toggling then return false end
-	toggling = true
-	task.delay(0.15, function()
-		toggling = false
-	end)
-	return true
-end
+local escapeDebounce = false
 
 toggle.MouseButton1Click:Connect(function()
+	if escapeDebounce then return end
+	escapeDebounce = true
+	task.delay(0.15, function()
+		escapeDebounce = false
+	end)
+
 	escapeEnabled = not escapeEnabled
 
 	if escapeEnabled then
-
 		toggle.BackgroundColor3 = Color3.fromRGB(120,200,120)
 		flyKnob.Position = UDim2.fromOffset(22, 2)
 	else
-			
 		toggle.BackgroundColor3 = Color3.fromRGB(88,200,120)
 		flyKnob.Position = UDim2.fromOffset(2, 2)
 		stopEscape()
 	end
 end)
+
+      flyKnob.MouseButton1Click:Connect(function()
+	  toggle:Activate()
+end)
+
+
+escapeEnabled = false
+toggle.BackgroundColor3 = Color3.fromRGB(88,200,120)
+flyKnob.Position = UDim2.fromOffset(2, 2)
+
+
+
+
 
 
 local function cacheAndDisablePart(part)
