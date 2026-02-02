@@ -298,44 +298,49 @@ local function syncSlotUI(slot, state)
 	end
 end
 
--- Y label
-local yLabel = Instance.new("TextLabel")
-yLabel.Parent = row
-yLabel.Text = "Y"
-yLabel.Size = UDim2.fromOffset(14, 28)
-yLabel.BackgroundTransparency = 1
-yLabel.TextXAlignment = Enum.TextXAlignment.Left
-yLabel.LayoutOrder = 1
-yLabel.ZIndex = 22
 
--- Y box
+slot.ClipsDescendants = true
+
 local yBox = Instance.new("TextBox")
-yBox.Parent = row
+yBox.Parent = slot
+yBox.Size = UDim2.fromScale(0.65, 0.6)
+yBox.Position = UDim2.fromScale(0.03, 0.2)
+yBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
+yBox.TextColor3 = Color3.fromRGB(230,230,230)
+yBox.Font = Enum.Font.Gotham
+yBox.TextSize = 16
 yBox.Text = "100000"
-yBox.Size = UDim2.fromOffset(90, 28)
 yBox.ClearTextOnFocus = false
-yBox.LayoutOrder = 2
-yBox.ZIndex = 22
+yBox.BorderSizePixel = 0
 
--- Sp label
-local spLabel = Instance.new("TextLabel")
-spLabel.Parent = row
-spLabel.Text = "Sp"
-spLabel.Size = UDim2.fromOffset(22, 28)
-spLabel.BackgroundTransparency = 1
-spLabel.LayoutOrder = 3
-spLabel.ZIndex = 22
+local yCorner = Instance.new("UICorner")
+yCorner.CornerRadius = UDim.new(0, 8)
+yCorner.Parent = yBox
 
--- Sp box
+
 local spBox = Instance.new("TextBox")
-spBox.Parent = row
+spBox.Parent = slot
+spBox.Size = UDim2.fromScale(0.25, 0.6)
+spBox.Position = UDim2.fromScale(0.71, 0.2)
+spBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
+spBox.TextColor3 = Color3.fromRGB(230,230,230)
+spBox.Font = Enum.Font.Gotham
+spBox.TextSize = 16
 spBox.Text = "2000"
-spBox.Size = UDim2.fromOffset(60, 28)
 spBox.ClearTextOnFocus = false
-spBox.LayoutOrder = 4
-spBox.ZIndex = 22
+spBox.BorderSizePixel = 0
 
-frame.ClipsDescendants = false
+local spCorner = Instance.new("UICorner")
+spCorner.CornerRadius = UDim.new(0, 8)
+spCorner.Parent = spBox
+
+
+Slots[1] = {
+	Frame = slot,
+	Type = "Console",
+	YBox = yBox,
+	SpBox = spBox
+}
 
 
 
