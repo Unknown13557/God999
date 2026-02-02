@@ -278,7 +278,7 @@ local row = Instance.new("Frame")
 row.Parent = frame
 row.BackgroundTransparency = 1
 row.Position = UDim2.fromOffset(6, 4)
-row.Size = UDim2.fromOffset(80 + 50 + 2, 28)
+row.Size = UDim2.fromOffset(80 + 80 + 1, 28)
 row.ZIndex = 21
 
 row.ClipsDescendants = true
@@ -313,7 +313,7 @@ yBox.TextXAlignment = Enum.TextXAlignment.Center
 local spWrap = Instance.new("Frame")
 spWrap.Parent = row
 spWrap.BackgroundTransparency = 1
-spWrap.Size = UDim2.fromOffset(50, 28)
+spWrap.Size = UDim2.fromOffset(80, 28)
 spWrap.LayoutOrder = 2
 spWrap.ZIndex = 22
 
