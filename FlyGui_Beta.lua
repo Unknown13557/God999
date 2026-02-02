@@ -275,7 +275,7 @@ frame.ClipsDescendants = false
 frame.ZIndex = 20
 
 local row = Instance.new("Frame")
-row.Parent = slot
+row.Parent = frame
 row.BackgroundTransparency = 1
 row.Size = UDim2.new(1, -12, 1, -8)
 row.Position = UDim2.fromOffset(6, 4)
@@ -315,12 +315,8 @@ spBox.BorderSizePixel = 0
 spBox.ZIndex = 22
 Instance.new("UICorner", spBox).CornerRadius = UDim.new(0,6)
 
-Slots[1] = {
-	Frame = frame,
-	Type = "Console",
-	YBox = yBox,
-	SpBox = spBox
-}
+slot1.YBox = yBox
+slot1.SpBox = spBox
 
 
 
