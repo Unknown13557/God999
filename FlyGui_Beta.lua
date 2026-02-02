@@ -278,7 +278,7 @@ local row = Instance.new("Frame")
 row.Parent = frame
 row.BackgroundTransparency = 1
 row.Position = UDim2.fromOffset(6, 4)
-row.Size = UDim2.new(1, -12, 1, -8)
+row.Size = UDim2.fromOffset(80 + 50 + 2, 28)
 row.ZIndex = 21
 
 row.ClipsDescendants = true
@@ -288,7 +288,7 @@ layout.Parent = row
 layout.FillDirection = Enum.FillDirection.Horizontal
 layout.HorizontalAlignment = Enum.HorizontalAlignment.Left
 layout.VerticalAlignment = Enum.VerticalAlignment.Center
-layout.Padding = UDim.new(0, 4)
+layout.Padding = UDim.new(0, 2)
 
 
 
@@ -313,7 +313,7 @@ yBox.TextXAlignment = Enum.TextXAlignment.Center
 local spWrap = Instance.new("Frame")
 spWrap.Parent = row
 spWrap.BackgroundTransparency = 1
-spWrap.Size = UDim2.fromOffset(110, 28)
+spWrap.Size = UDim2.fromOffset(50, 28)
 spWrap.LayoutOrder = 2
 spWrap.ZIndex = 22
 
