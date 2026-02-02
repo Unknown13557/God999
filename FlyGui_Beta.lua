@@ -191,7 +191,13 @@ for i = 1, 6 do
 	slot.BackgroundColor3 = Color3.fromRGB(60,60,60)
 	slot.BorderSizePixel = 0
 	slot.ZIndex = 10
+	
+	if i ~= 1 then
 	slot.ClipsDescendants = true
+else
+	slot.ClipsDescendants = false
+end
+	
 	slot.AutomaticSize = Enum.AutomaticSize.None
 
 
@@ -264,11 +270,9 @@ end
 
 local slot1 = Slots[1]
 local frame = slot1.Frame
-slot1.Frame.ZIndex = 20
 
-
-slot.ClipsDescendants = false
-slot.ZIndex = 20
+frame.ClipsDescendants = false
+frame.ZIndex = 20
 
 local row = Instance.new("Frame")
 row.Parent = slot
@@ -312,7 +316,7 @@ spBox.ZIndex = 22
 Instance.new("UICorner", spBox).CornerRadius = UDim.new(0,6)
 
 Slots[1] = {
-	Frame = slot,
+	Frame = frame,
 	Type = "Console",
 	YBox = yBox,
 	SpBox = spBox
