@@ -298,15 +298,6 @@ local function syncSlotUI(slot, state)
 	end
 end
 
--- Y label
-local yLabel = Instance.new("TextLabel")
-yLabel.Parent = row
-yLabel.Text = "Y"
-yLabel.Size = UDim2.fromOffset(14, 28)
-yLabel.BackgroundTransparency = 1
-yLabel.TextXAlignment = Enum.TextXAlignment.Left
-yLabel.LayoutOrder = 1
-yLabel.ZIndex = 22
 
 -- Y box
 local yBox = Instance.new("TextBox")
@@ -314,17 +305,10 @@ yBox.Parent = row
 yBox.Text = "100000"
 yBox.Size = UDim2.fromOffset(90, 28)
 yBox.ClearTextOnFocus = false
-yBox.LayoutOrder = 2
+yBox.LayoutOrder = 1
 yBox.ZIndex = 22
 
--- Sp label
-local spLabel = Instance.new("TextLabel")
-spLabel.Parent = row
-spLabel.Text = "Sp"
-spLabel.Size = UDim2.fromOffset(22, 28)
-spLabel.BackgroundTransparency = 1
-spLabel.LayoutOrder = 3
-spLabel.ZIndex = 22
+
 
 -- Sp box
 local spBox = Instance.new("TextBox")
@@ -332,7 +316,7 @@ spBox.Parent = row
 spBox.Text = "2000"
 spBox.Size = UDim2.fromOffset(60, 28)
 spBox.ClearTextOnFocus = false
-spBox.LayoutOrder = 4
+spBox.LayoutOrder = 2
 spBox.ZIndex = 22
 
 frame.ClipsDescendants = false
