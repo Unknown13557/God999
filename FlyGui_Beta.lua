@@ -307,8 +307,7 @@ yBox.TextXAlignment = Enum.TextXAlignment.Center
 
 local spBox = Instance.new("TextBox")
 spBox.Parent = row
-spBox.Size = UDim2.new(1, -60, 0, 28)
-spBox.AutomaticSize = Enum.AutomaticSize.None
+spBox.Size = UDim2.new(1, -64, 0, 28)
 spBox.Text = "2000"
 spBox.ClearTextOnFocus = false
 spBox.Font = Enum.Font.SourceSansBold
@@ -322,6 +321,8 @@ Instance.new("UICorner", spBox).CornerRadius = UDim.new(0,6)
 spBox.TextWrapped = false
 spBox.TextXAlignment = Enum.TextXAlignment.Center
 
+spBox.AutomaticSize = Enum.AutomaticSize.None
+spBox.SizeConstraint = Enum.SizeConstraint.RelativeXY
 
 slot1.YBox = yBox
 slot1.SpBox = spBox
