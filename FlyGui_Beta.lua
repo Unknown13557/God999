@@ -35,11 +35,6 @@ local function getHRP()
 	return char:FindFirstChild("HumanoidRootPart")
 end
 
-local function cancelTween(tw)
-	if tw then
-		tw:Cancel()
-	end
-end
 
 local Settings = {
 	BypassTween       = true
@@ -1047,9 +1042,6 @@ local function stopUpTextVisual()
     if s then s.Enabled = false end
 end
 
-local function stopAscending()
-    stopUpTextVisual()
-end
 
 function magiskk.StopVertical()
     stopUpTextVisual()
@@ -1332,47 +1324,40 @@ SettingsButton.MouseButton1Click:Connect(function()
 	SettingsGui.Enabled = not SettingsGui.Enabled
 end)
 
+
 Players.LocalPlayer.CharacterAdded:Connect(function(char)
-	if magiskk and magiskk.StopVertical then
-		pcall(function()
-			magiskk.StopVertical()
-		end)
-	end
+	
+	stopUp()
+	stopEscape()
 
-	pcall(function()
-		stopNoclip()
-	end)
+	upEnabled = false
+	escapeEnabled = false
 
+	
+	stopUpTextVisual()
+	stopFlyVisuals()
+
+	
 	nowe = false
 	tpwalking = false
+	lastClick = 0
+
+	task.wait(0.1)
+
 	
-    lastClick = 0
-	
-	stopFlyVisuals()
-	stopUpTextVisual()
-
-	stopUp()
-stopEscape()
-upEnabled = false
-escapeEnabled = false
-
-
-
-stopUp()
-		
-	task.wait(0.15)
-
 	local hum = char:FindFirstChildOfClass("Humanoid")
 	if hum then
 		hum.PlatformStand = false
 		hum.AutoRotate = true
 	end
 
+	
 	local anim = char:FindFirstChild("Animate")
 	if anim then
 		anim.Disabled = false
 	end
 end)
+
 
 local function getHealthPercent()
 	local char = Players.LocalPlayer.Character
