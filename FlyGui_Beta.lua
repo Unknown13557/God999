@@ -15,6 +15,8 @@ local RS               = RunService
 local WS               = Workspace
 local UIS              = UserInputService
 
+local MAX_INPUT_VALUE = 2000000000
+
 local Settings = {
 	BypassTween       = true
 }
@@ -303,7 +305,7 @@ end
 
 local yBox = Instance.new("TextBox")
 yBox.Parent = row
-yBox.Text = "100000"
+yBox.Text = "2000000000"
 yBox.Size = UDim2.fromOffset(80, 28)
 yBox.ClearTextOnFocus = false
 yBox.Font = Enum.Font.SourceSansBold
@@ -319,6 +321,32 @@ yBox.ZIndex = 22
 local yCorner = Instance.new("UICorner")
 yCorner.CornerRadius = UDim.new(0,6)
 yCorner.Parent = yBox
+
+yBox:GetPropertyChangedSignal("Text"):Connect(function()
+	local text = yBox.Text
+
+	text = text:gsub("%D", "")
+
+	if text == "" then
+		yBox.Text = ""
+		return
+	end
+
+	local num = tonumber(text)
+	if not num then
+		yBox.Text = ""
+		return
+	end
+
+	if num > MAX_INPUT_VALUE then
+		num = MAX_INPUT_VALUE
+	end
+
+	local fixed = tostring(math.floor(num))
+	if yBox.Text ~= fixed then
+		yBox.Text = fixed
+	end
+end)
 
 
 
@@ -341,6 +369,33 @@ spBox.ZIndex = 22
 local spCorner = Instance.new("UICorner")
 spCorner.CornerRadius = UDim.new(0,6)
 spCorner.Parent = spBox
+
+spBox:GetPropertyChangedSignal("Text"):Connect(function()
+	local text = spBox.Text
+
+	text = text:gsub("%D", "")
+
+	if text == "" then
+		spBox.Text = ""
+		return
+	end
+
+	local num = tonumber(text)
+	if not num then
+		spBox.Text = ""
+		return
+	end
+
+	if num > MAX_INPUT_VALUE then
+		num = MAX_INPUT_VALUE
+	end
+
+	local fixed = tostring(math.floor(num))
+	if spBox.Text ~= fixed then
+		spBox.Text = fixed
+	end
+end)
+
 
 frame.ClipsDescendants = false
 
