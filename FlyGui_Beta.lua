@@ -290,7 +290,7 @@ layout.Padding = UDim.new(0, 2)
 
 local yBox = Instance.new("TextBox")
 yBox.Parent = row
-yBox.Size = UDim2.fromOffset(80, 28)
+yBox.Size = UDim2.fromOffset(90, 28)
 yBox.Text = "100000"
 yBox.ClearTextOnFocus = false
 yBox.Font = Enum.Font.SourceSansBold
@@ -307,7 +307,7 @@ yBox.TextXAlignment = Enum.TextXAlignment.Center
 
 local spBox = Instance.new("TextBox")
 spBox.Parent = row
-spBox.Size = UDim2.fromOffset(65, 28)
+spBox.Size = UDim2.fromOffset(75, 28)
 spBox.Text = "2000"
 spBox.ClearTextOnFocus = false
 spBox.Font = Enum.Font.SourceSansBold
