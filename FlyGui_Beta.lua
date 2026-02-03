@@ -431,8 +431,6 @@ local function startEscape()
 	if not char then return end
 
 	local hrp = char:FindFirstChild("HumanoidRootPart")
-	local hum = char:FindFirstChildOfClass("Humanoid")
-	if not hrp or not hum then return end
 
 	local targetY, speed = readSlot1Config()
 	if not targetY then return end
@@ -480,8 +478,6 @@ local function startUp()
 	if not char then return end
 
 	local hrp = char:FindFirstChild("HumanoidRootPart")
-	local hum = char:FindFirstChildOfClass("Humanoid")
-	if not hrp or not hum then return end
 
 	local targetY, speed = readSlot1Config()
 	if not targetY then return end
@@ -950,6 +946,7 @@ local function toggleEscape()
 			0.15,
 			true
 		)
+		escapeEnabled = false
 		stopEscape()
 
 	end
@@ -1429,17 +1426,24 @@ RunService.Heartbeat:Connect(function()
 	if not escapeEnabled then return end
 
 	local hp = getHealthPercent()
-		
-if hp < ESCAPE_HP_LOW then
-	if not escapeTween then
-		startEscape()
-		updatePlatformStand()
-	end
-else
-		if hp > ESCAPE_HP_HIGH then
-	if escapeTween then
-		stopEscape()
-		updatePlatformStand()
-	end
+
+	
+	if hp < ESCAPE_HP_LOW then
+		if not escapeTween then
+			startEscape()
+			updatePlatformStand()
 		end
+
+	
+	elseif hp > ESCAPE_HP_HIGH then
+		if escapeTween then
+			stopEscape()
+			updatePlatformStand()
+
+			
+			escapeEnabled = false
+			toggle.BackgroundColor3 = Color3.fromRGB(88,200,120)
+			flyKnob.Position = UDim2.fromOffset(2, 2)
+		end
+	end
 end)
