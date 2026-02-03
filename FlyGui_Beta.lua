@@ -149,79 +149,6 @@ onof.TextSize = 21
 onof.ZIndex = 50
 
 
-task.defer(function()
-	if Frame and Frame.Parent and onof then
-		attachDrag(Frame, onof)
-	end
-end)	
-
-TextLabel.Parent = Frame
-TextLabel.BackgroundColor3 = Color3.fromRGB(242, 60, 255)
-TextLabel.Position = UDim2.new(0.469327301, 0, 0, 0)
-TextLabel.Size = UDim2.new(0, 101, 0, 28)
-TextLabel.Font = Enum.Font.SourceSans
-TextLabel.Text = "︻デ═一"
-TextLabel.TextColor3 = Color3.fromRGB(0, 0, 0)
-TextLabel.TextScaled = true
-TextLabel.TextSize = 14
-TextLabel.TextWrapped = true
-	
-plus.Name = "plus"
-plus.Parent = Frame
-plus.BackgroundColor3 = Color3.fromRGB(133, 145, 255)
-plus.Position = UDim2.new(0.237, 0, 0, 0)
-plus.Size = UDim2.new(0, 44, 0, 28)
-plus.Font = Enum.Font.SourceSans
-plus.Text = "+"
-plus.TextColor3 = Color3.fromRGB(0, 0, 0)
-plus.TextScaled = true
-plus.TextSize = 17
-plus.TextWrapped = true
-
-speed.Name = "speed"
-speed.Parent = Frame
-speed.BackgroundColor3 = Color3.fromRGB(255, 85, 0)
-speed.Position = UDim2.new(0.474, 0, 0.50500074, 0)
-speed.Size = UDim2.new(0, 44, 0, 28)
-speed.Font = Enum.Font.SourceSans
-speed.Text = "18"
-speed.TextColor3 = Color3.fromRGB(0, 0, 0)
-speed.TextScaled = true
-speed.TextSize = 14
-speed.TextWrapped = true
-
-mine.Name = "mine"
-mine.Parent = Frame
-mine.BackgroundColor3 = Color3.fromRGB(123, 255, 247)
-mine.Position = UDim2.new(0.237, 0, 0.50500074, 0)
-mine.Size = UDim2.new(0, 44, 0, 28)
-mine.Font = Enum.Font.SourceSans
-mine.Text = "-"
-mine.TextColor3 = Color3.fromRGB(0, 0, 0)
-mine.TextScaled = true
-mine.TextSize = 17
-mine.TextWrapped = true
-
-closebutton.Name = "Close"
-closebutton.Parent = Frame
-closebutton.BackgroundColor3 = Color3.fromRGB(225, 25, 0)
-closebutton.Font = Enum.Font.SourceSans
-closebutton.Size = UDim2.new(0, 44, 0, 28)
-closebutton.Text = "X"
-closebutton.TextSize = 30
-closebutton.Position =  UDim2.new(0, 0, -0.99000, 27)
-
-SettingsButton.Name = "SettingButton"
-SettingsButton.Parent = Frame
-SettingsButton.BackgroundColor3 = Color3.fromRGB(192, 150, 230)
-SettingsButton.Font = Enum.Font.SourceSans
-SettingsButton.Size = UDim2.new(0, 44, 0, 28)
-SettingsButton.TextColor3 = Color3.fromRGB(20, 20, 20)
-SettingsButton.Text = "⚙"
-SettingsButton.TextSize = 23
-SettingsButton.Position = UDim2.new(0, 45, -0.99000, 27)
-
-
 local function pointerPos(input)
 	if input.UserInputType == Enum.UserInputType.Touch then
 		return Vector2.new(input.Position.X, input.Position.Y)
@@ -324,8 +251,73 @@ local dragging = false
 	WS:GetPropertyChangedSignal("CurrentCamera"):Connect(hookViewportChanged)
 end
 
+attachDrag(Frame, onof)
 
+TextLabel.Parent = Frame
+TextLabel.BackgroundColor3 = Color3.fromRGB(242, 60, 255)
+TextLabel.Position = UDim2.new(0.469327301, 0, 0, 0)
+TextLabel.Size = UDim2.new(0, 101, 0, 28)
+TextLabel.Font = Enum.Font.SourceSans
+TextLabel.Text = "︻デ═一"
+TextLabel.TextColor3 = Color3.fromRGB(0, 0, 0)
+TextLabel.TextScaled = true
+TextLabel.TextSize = 14
+TextLabel.TextWrapped = true
+	
+plus.Name = "plus"
+plus.Parent = Frame
+plus.BackgroundColor3 = Color3.fromRGB(133, 145, 255)
+plus.Position = UDim2.new(0.237, 0, 0, 0)
+plus.Size = UDim2.new(0, 44, 0, 28)
+plus.Font = Enum.Font.SourceSans
+plus.Text = "+"
+plus.TextColor3 = Color3.fromRGB(0, 0, 0)
+plus.TextScaled = true
+plus.TextSize = 17
+plus.TextWrapped = true
 
+speed.Name = "speed"
+speed.Parent = Frame
+speed.BackgroundColor3 = Color3.fromRGB(255, 85, 0)
+speed.Position = UDim2.new(0.474, 0, 0.50500074, 0)
+speed.Size = UDim2.new(0, 44, 0, 28)
+speed.Font = Enum.Font.SourceSans
+speed.Text = "18"
+speed.TextColor3 = Color3.fromRGB(0, 0, 0)
+speed.TextScaled = true
+speed.TextSize = 14
+speed.TextWrapped = true
+
+mine.Name = "mine"
+mine.Parent = Frame
+mine.BackgroundColor3 = Color3.fromRGB(123, 255, 247)
+mine.Position = UDim2.new(0.237, 0, 0.50500074, 0)
+mine.Size = UDim2.new(0, 44, 0, 28)
+mine.Font = Enum.Font.SourceSans
+mine.Text = "-"
+mine.TextColor3 = Color3.fromRGB(0, 0, 0)
+mine.TextScaled = true
+mine.TextSize = 17
+mine.TextWrapped = true
+
+closebutton.Name = "Close"
+closebutton.Parent = Frame
+closebutton.BackgroundColor3 = Color3.fromRGB(225, 25, 0)
+closebutton.Font = Enum.Font.SourceSans
+closebutton.Size = UDim2.new(0, 44, 0, 28)
+closebutton.Text = "X"
+closebutton.TextSize = 30
+closebutton.Position =  UDim2.new(0, 0, -0.99000, 27)
+
+SettingsButton.Name = "SettingButton"
+SettingsButton.Parent = Frame
+SettingsButton.BackgroundColor3 = Color3.fromRGB(192, 150, 230)
+SettingsButton.Font = Enum.Font.SourceSans
+SettingsButton.Size = UDim2.new(0, 44, 0, 28)
+SettingsButton.TextColor3 = Color3.fromRGB(20, 20, 20)
+SettingsButton.Text = "⚙"
+SettingsButton.TextSize = 23
+SettingsButton.Position = UDim2.new(0, 45, -0.99000, 27)
 
 
 local SettingsGui = Instance.new("ScreenGui")
@@ -742,13 +734,6 @@ slot3DownCorner.Parent = slot3DownBtn
 
 
 
-local function updatePlatformStand()
-	local char = Players.LocalPlayer.Character
-	local hum = char and char:FindFirstChildOfClass("Humanoid")
-	if not hum then return end
-
-	hum.PlatformStand = false
-end
 
 
 
@@ -1240,7 +1225,7 @@ onof.MouseButton1Down:Connect(function()
 	if nowe == true then
 		nowe = false
 
-    updatePlatformStand()
+    hum.PlatformStand = nowe
 			
 	stopFlyVisuals() 
 	  tpwalking = false
@@ -1267,7 +1252,7 @@ onof.MouseButton1Down:Connect(function()
 	else 
 		nowe = true
 
-        updatePlatformStand()
+        hum.PlatformStand = nowe
 				
 		startFlyVisuals()
 tpGen = tpGen + 1
@@ -1511,7 +1496,6 @@ Players.LocalPlayer.CharacterAdded:Connect(function(char)
     escapeEnabled = false
     stopEscape()
 	syncEscapeUI(false)
-    updatePlatformStand()
 		
 	
 	stopUpTextVisual()
