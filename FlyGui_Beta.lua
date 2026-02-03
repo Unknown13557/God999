@@ -887,9 +887,10 @@ local function toggleEscape()
 	syncEscapeUI(escapeEnabled)
 
 	if not escapeEnabled then
-		stopEscape()
-	end
-
+	escapeBypassLatched = false
+	stopEscape()
+		
+    end
 end
 
 
@@ -940,7 +941,11 @@ local function startUp()
 	
     upConn = RunService.Heartbeat:Connect(function()
 	if not upEnabled then return end
-
+    if not hrp or not hrp.Parent then
+    	stopUp()
+      return
+	end
+	
 	local targetY = tonumber(yBox.Text)
 	if not targetY then return end
 
