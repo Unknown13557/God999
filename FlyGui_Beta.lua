@@ -17,7 +17,7 @@ local UIS              = UserInputService
 
 local MAX_INPUT_VALUE = 2000000000
 
-
+local nowe = false
 local escapeEnabled = false
 local upEnabled = false
 
@@ -462,7 +462,6 @@ local function startEscape()
 	escapeTween:Play()
 end
 
-updatePlatformStand()
 
 local function stopEscape()
 	if escapeTween then
@@ -476,7 +475,6 @@ local function stopEscape()
 	end
 end
 
-updatePlatformStand()
 
 
 local function startUp()
@@ -515,7 +513,6 @@ local function startUp()
 	upTween:Play()
 end
 
-updatePlatformStand()
 
 
 local function stopUp()
@@ -530,8 +527,6 @@ local function stopUp()
 		
 	end
 end
-
-updatePlatformStand()
 
 
 local slot2 = Slots[2]
@@ -921,7 +916,7 @@ end)
 local magiskk = {}
 local flySpeed = 18
 local speaker = LocalPlayer
-local nowe = false
+
 local noclipConn = nil
 local noclipCache = {}
 
@@ -948,7 +943,7 @@ local function toggleEscape()
 			0.15,
 			true
 		)
-		updatePlatformStand()
+		startEscape() 
 	else
 		toggle.BackgroundColor3 = Color3.fromRGB(88,200,120)
 		flyKnob:TweenPosition(
@@ -959,9 +954,11 @@ local function toggleEscape()
 			true
 		)
 		stopEscape()
-		updatePlatformStand()
+
 	end
 end
+
+updatePlatformStand()
 
 toggle.MouseButton1Click:Connect(toggleEscape)
 flyKnob.MouseButton1Click:Connect(toggleEscape)
@@ -1086,11 +1083,11 @@ up.MouseButton1Click:Connect(function()
 
 	if upEnabled then
 		startUp()
-		startUpTextVisual()
 	else
 		stopUp()
-		stopUpTextVisual()
 	end
+
+	updatePlatformStand()
 end)
 
 
@@ -1409,8 +1406,8 @@ RunService.Heartbeat:Connect(function()
 	if not escapeEnabled then return end
 
 	local hp = getHealthPercent()
-
-	if hp < ESCAPE_HP_LOW then
+		
+if hp < ESCAPE_HP_LOW then
 	if not escapeTween then
 		startEscape()
 		updatePlatformStand()
