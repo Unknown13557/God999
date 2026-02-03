@@ -438,20 +438,42 @@ local function startEscape()
 
 
 	if Settings.BypassTween then
-		if escapeTween then
-			escapeTween:Cancel()
-			escapeTween = nil
+	if escapeTween then
+		escapeTween:Cancel()
+		escapeTween = nil
+	end
+
+	local hum = char:FindFirstChildOfClass("Humanoid")
+	if not hum then return end
+
+	
+	hrp.AssemblyLinearVelocity = Vector3.zero
+	hrp.AssemblyAngularVelocity = Vector3.zero
+
+	
+	local cf = hrp.CFrame
+	hrp.CFrame = CFrame.new(
+		cf.Position.X,
+		targetY,
+		cf.Position.Z
+	) * CFrame.Angles(cf:ToEulerAnglesXYZ())
+
+	
+	hum.PlatformStand = false
+	hum:ChangeState(Enum.HumanoidStateType.Freefall)
+
+	
+	task.spawn(function()
+		while hum.Parent and hum:GetState() == Enum.HumanoidStateType.Freefall do
+			RunService.Heartbeat:Wait()
 		end
 
-		local cf = hrp.CFrame
-		hrp.CFrame = CFrame.new(
-			cf.Position.X,
-			targetY,
-			cf.Position.Z
-		) * CFrame.Angles(cf:ToEulerAnglesXYZ())
+		if hum.Parent then
+			hum:ChangeState(Enum.HumanoidStateType.Running)
+		end
+	end)
 
-		updatePlatformStand()
-		return
+	return
 	end
 
 
