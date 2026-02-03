@@ -67,39 +67,6 @@ local mine            = Instance.new("TextButton")
 local closebutton     = Instance.new("TextButton")
 local SettingsButton = Instance.new("TextButton")
 
-local SettingsGui = Instance.new("ScreenGui")
-SettingsGui.Name = "SettingsGui"
-SettingsGui.Parent = LocalPlayer.PlayerGui
-SettingsGui.IgnoreGuiInset = true
-SettingsGui.DisplayOrder = main.DisplayOrder + 1
-SettingsGui.Enabled = false
-SettingsGui.ResetOnSpawn = false
-
-local SettingsFrame = Instance.new("Frame")
-SettingsFrame.Parent = SettingsGui
-SettingsFrame.Size = UDim2.fromScale(0.46, 0.31)
-SettingsFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-SettingsFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
-SettingsFrame.BorderSizePixel = 2
-SettingsFrame.Active = true
-SettingsFrame.Position = UDim2.fromScale(0.5, 0.5)
-attachDrag(SettingsFrame, nil)
-
-local GridHolder = Instance.new("Frame")
-GridHolder.Parent = SettingsFrame
-GridHolder.Size = UDim2.fromScale(1, 1)
-GridHolder.BackgroundTransparency = 1
-GridHolder.Name = "GridHolder"
-
-task.defer(function()
-	local cam = WS.CurrentCamera
-	if cam then
-		local vp = cam.ViewportSize
-		SettingsFrame.Position = UDim2.fromOffset(vp.X * 0.5, vp.Y * 0.5)
-	end
-end)
-
-
 
 Frame.BackgroundColor3 = Color3.fromRGB(163, 255, 137)
 Frame.BorderColor3 = Color3.fromRGB(103, 221, 213)
@@ -249,6 +216,44 @@ SettingsButton.TextColor3 = Color3.fromRGB(20, 20, 20)
 SettingsButton.Text = "⚙"
 SettingsButton.TextSize = 23
 SettingsButton.Position = UDim2.new(0, 45, -0.99000, 27)
+
+
+local SettingsGui = Instance.new("ScreenGui")
+SettingsGui.Name = "SettingsGui"
+SettingsGui.Parent = LocalPlayer.PlayerGui
+SettingsGui.IgnoreGuiInset = true
+SettingsGui.DisplayOrder = main.DisplayOrder + 1
+SettingsGui.Enabled = false
+SettingsGui.ResetOnSpawn = false
+
+local SettingsFrame = Instance.new("Frame")
+SettingsFrame.Parent = SettingsGui
+SettingsFrame.Size = UDim2.fromScale(0.46, 0.31)
+SettingsFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+SettingsFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+SettingsFrame.BorderSizePixel = 2
+SettingsFrame.Active = true
+SettingsFrame.Position = UDim2.fromScale(0.5, 0.5)
+
+
+local GridHolder = Instance.new("Frame")
+GridHolder.Parent = SettingsFrame
+GridHolder.Size = UDim2.fromScale(1, 1)
+GridHolder.BackgroundTransparency = 1
+GridHolder.Name = "GridHolder"
+
+task.defer(function()
+	local cam = WS.CurrentCamera
+	if cam then
+		local vp = cam.ViewportSize
+		SettingsFrame.Position = UDim2.fromOffset(vp.X * 0.5, vp.Y * 0.5)
+	end
+end)
+
+attachDrag(SettingsFrame, nil)
+
+
+
 
 for i = 1, 6 do
 	local slot = Instance.new("Frame")
@@ -634,6 +639,8 @@ local function updatePlatformStand()
 	local hum = char and char:FindFirstChildOfClass("Humanoid")
 	if not hum then return end
 
+	hum.PlatformStand = nowe
+end
 	if nowe then
 	hum.PlatformStand = true
 else
