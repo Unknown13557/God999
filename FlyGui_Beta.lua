@@ -460,6 +460,9 @@ local function startEscape()
 	)
 
 	escapeTween:Play()
+	escapeTween.Completed:Connect(function()
+	escapeTween = nil
+end)
 end
 
 
@@ -467,11 +470,6 @@ local function stopEscape()
 	if escapeTween then
 		escapeTween:Cancel()
 		escapeTween = nil
-	end
-
-	local char = Players.LocalPlayer.Character
-	local hum = char and char:FindFirstChildOfClass("Humanoid")
-	if hum and not nowe then
 	end
 end
 
@@ -511,6 +509,9 @@ local function startUp()
 	)
 
 	upTween:Play()
+upTween.Completed:Connect(function()
+	upTween = nil
+end)
 end
 
 
@@ -519,12 +520,6 @@ local function stopUp()
 	if upTween then
 		upTween:Cancel()
 		upTween = nil
-	end
-
-	local char = Players.LocalPlayer.Character
-	local hum = char and char:FindFirstChildOfClass("Humanoid")
-	if hum and not nowe then
-		
 	end
 end
 
@@ -964,12 +959,6 @@ end
 
 toggle.MouseButton1Click:Connect(toggleEscape)
 flyKnob.MouseButton1Click:Connect(toggleEscape)
-
-
-
-escapeEnabled = false
-toggle.BackgroundColor3 = Color3.fromRGB(88,200,120)
-flyKnob.Position = UDim2.fromOffset(2, 2)
 
 
 
