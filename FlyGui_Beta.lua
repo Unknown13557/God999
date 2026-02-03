@@ -20,6 +20,8 @@ local MAX_INPUT_VALUE = 2000000000
 local nowe = false
 local escapeEnabled = false
 local escapeDebounce = false
+local escapeLatched = false
+local instantEscaping = false
 local upEnabled = false
 
 local function updatePlatformStand()
@@ -437,8 +439,13 @@ local function startEscape()
 	if not targetY then return end
 
 
-    if Settings.BypassTween then
+	if Settings.BypassTween then
 	
+	if instantEscaping then
+		return
+	end
+
+
 	if escapeTween then
 		escapeTween:Cancel()
 		escapeTween = nil
@@ -447,28 +454,19 @@ local function startEscape()
 
 	local lockedY = targetY
 
-		
+	
 	local cf = hrp.CFrame
 	hrp:PivotTo(
 		CFrame.new(cf.Position.X, lockedY, cf.Position.Z)
 		* CFrame.Angles(cf:ToEulerAnglesXYZ())
 	)
 
-	
-	task.defer(function()
-	
-		escapeEnabled = false
-		syncEscapeUI(false)
-
-		if escapeConn then
-			escapeConn:Disconnect()
-			escapeConn = nil
-		end
-	end)
+	instantEscaping = true
+	escapeLatched = true
 
 	return
 	end
-	
+    
 
 	if escapeTween then
 		escapeTween:Cancel()
@@ -1461,15 +1459,32 @@ RunService.Heartbeat:Connect(function()
 
 	local hp = getHealthPercent()
 
+
 	if hp < ESCAPE_HP_LOW then
-		if not escapeTween then
-			startEscape()
-			updatePlatformStand()
+		if Settings.BypassTween then
+		
+			if not instantEscaping then
+				startEscape()
+			end
+		else
+			
+			if not escapeTween then
+				startEscape()
+				updatePlatformStand()
+			end
 		end
+
+	
 	elseif hp > ESCAPE_HP_HIGH then
-		if escapeTween then
-			stopEscape()
-			updatePlatformStand()
+		if Settings.BypassTween then
+			
+			instantEscaping = false
+			escapeLatched = false
+		else
+			if escapeTween then
+				stopEscape()
+				updatePlatformStand()
+			end
 		end
 	end
 end)
