@@ -445,27 +445,24 @@ local function startEscape()
 	end
 
 	
-	hrp.Anchored = true
+	local lockedY = targetY
+
+	
+	escapeEnabled = false
+	syncEscapeUI(false)
+
+	
+	if escapeConn then
+		escapeConn:Disconnect()
+		escapeConn = nil
+	end
 
 	
 	local cf = hrp.CFrame
-	hrp.CFrame = CFrame.new(
-		cf.Position.X,
-		targetY,
-		cf.Position.Z
-	) * CFrame.Angles(cf:ToEulerAnglesXYZ())
-
-	
-	task.defer(function()
-		if not hrp.Parent then return end
-
-		
-		hrp.Anchored = false
-
-		
-		hrp.AssemblyLinearVelocity = Vector3.zero
-		hrp.AssemblyAngularVelocity = Vector3.zero
-	end)
+	hrp:PivotTo(
+		CFrame.new(cf.Position.X, lockedY, cf.Position.Z)
+		* CFrame.Angles(cf:ToEulerAnglesXYZ())
+	)
 
 	return
 	end
