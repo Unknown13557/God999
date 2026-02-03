@@ -437,53 +437,39 @@ local function startEscape()
 	if not targetY then return end
 
 
-if Settings.BypassTween then
-
+    if Settings.BypassTween then
+	
 	if escapeTween then
 		escapeTween:Cancel()
 		escapeTween = nil
 	end
 
-	local hum = char:FindFirstChildOfClass("Humanoid")
-	if not hum then return end
-
 	
-	local parts = {}
-	for _, v in ipairs(char:GetDescendants()) do
-		if v:IsA("BasePart") then
-			parts[v] = v.CanCollide
-			v.CanCollide = false
-		end
-	end
+	hrp.Anchored = true
 
 	
 	local cf = hrp.CFrame
-	hrp:PivotTo(
-		CFrame.new(cf.Position.X, targetY, cf.Position.Z)
-		* CFrame.Angles(cf:ToEulerAnglesXYZ())
-	)
+	hrp.CFrame = CFrame.new(
+		cf.Position.X,
+		targetY,
+		cf.Position.Z
+	) * CFrame.Angles(cf:ToEulerAnglesXYZ())
 
 	
 	task.defer(function()
-		if not hum.Parent then return end
+		if not hrp.Parent then return end
 
-	
-		for part, old in pairs(parts) do
-			if part and part.Parent then
-				part.CanCollide = old
-			end
-		end
+		
+		hrp.Anchored = false
 
-		hum.PlatformStand = false
-		hum:ChangeState(Enum.HumanoidStateType.Freefall)
-
-		hrp.AssemblyLinearVelocity = Vector3.new(0, -60, 0)
+		
+		hrp.AssemblyLinearVelocity = Vector3.zero
 		hrp.AssemblyAngularVelocity = Vector3.zero
 	end)
 
 	return
 	end
-
+	
 
 	if escapeTween then
 		escapeTween:Cancel()
