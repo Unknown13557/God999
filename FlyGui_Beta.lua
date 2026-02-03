@@ -737,6 +737,8 @@ escape.Size = UDim2.new(0, 44, 0, 28)
 escape.BorderSizePixel = 1
 escape.BorderColor3 = Color3.fromRGB(0, 0, 0)
 
+escape.ClipsDescendants = true
+
 toggle.Name = "toggle"
 toggle.Parent = escape
 toggle.AutoButtonColor = false
@@ -744,6 +746,7 @@ toggle.Text = ""
 toggle.Size = UDim2.fromOffset(40, 20)
 toggle.Position = UDim2.fromOffset(2, 4)
 toggle.ZIndex = 2
+
 toggle.ClipsDescendants = true
 
 local toggleCorner = Instance.new("UICorner")
@@ -775,9 +778,9 @@ flyKnobStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 flyKnobStroke.Parent = flyKnob
 
 flyKnob.Position = UDim2.fromOffset(2, 2)
-toggle.BackgroundColor3 = Color3.fromRGB(88,200,120)
 
 escapeEnabled = false
+escapeFlying = false
 syncEscapeUI(false)
 
 onof.Name = "onof"
