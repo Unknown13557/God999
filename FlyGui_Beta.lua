@@ -928,7 +928,7 @@ local function toggleEscape()
 	escapeEnabled = not escapeEnabled
 
 	if escapeEnabled then
-
+		-- ON
 		toggle.BackgroundColor3 = Color3.fromRGB(120,200,120)
 		flyKnob:TweenPosition(
 			UDim2.fromOffset(22, 2),
@@ -938,7 +938,7 @@ local function toggleEscape()
 			true
 		)
 	else
-		
+		-- OFF
 		toggle.BackgroundColor3 = Color3.fromRGB(88,200,120)
 		flyKnob:TweenPosition(
 			UDim2.fromOffset(2, 2),
@@ -947,25 +947,6 @@ local function toggleEscape()
 			0.15,
 			true
 		)
-		stopEscape()
-	end
-
-	updatePlatformStand()
-end
-
-
-
-local function toggleEscape()
-	if escapeDebounce then return end
-	escapeDebounce = true
-	task.delay(0.15, function()
-		escapeDebounce = false
-	end)
-
-	escapeEnabled = not escapeEnabled
-	syncEscapeUI(escapeEnabled)
-
-	if not escapeEnabled then
 		stopEscape()
 	end
 
