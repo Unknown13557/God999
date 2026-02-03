@@ -432,6 +432,7 @@ local function startEscape()
 	if not char then return end
 
 	local hrp = char:FindFirstChild("HumanoidRootPart")
+	if not hrp then return end
 
 	local targetY, speed = readSlot1Config()
 	if not targetY then return end
@@ -479,6 +480,7 @@ local function startUp()
 	if not char then return end
 
 	local hrp = char:FindFirstChild("HumanoidRootPart")
+	if not hrp then return end
 
 	local targetY, speed = readSlot1Config()
 	if not targetY then return end
@@ -518,7 +520,6 @@ local function stopUp()
 		upTween:Cancel()
 		upTween = nil
 	end
-	updatePlatformStand()
 end
 
 
@@ -958,9 +959,8 @@ local function toggleEscape()
 end
 
 
-
-toggle.MouseButton1Click:Connect(toggleEscape)
-flyKnob.MouseButton1Click:Connect(toggleEscape)
+toggle.Activated:Connect(toggleEscape)
+flyKnob.Activated:Connect(toggleEscape)
 
 
 
@@ -1385,6 +1385,7 @@ Players.LocalPlayer.CharacterAdded:Connect(function(char)
 	tpwalking = false
 
     upEnabled = false
+	stopUp()
     escapeEnabled = false
     stopEscape()
 	syncEscapeUI(false)
@@ -1395,8 +1396,7 @@ Players.LocalPlayer.CharacterAdded:Connect(function(char)
 	stopUpTextVisual()
 	stopFlyVisuals()
 
-    stopUp()		
-	stopEscape()
+    
 	
 	
 	lastClick = 0
