@@ -917,10 +917,6 @@ local noclipCache = {}
 
 
 
-
-local escapeDebounce = false
-
-
 local function syncEscapeUI(state)
 	if state then
 		toggle.BackgroundColor3 = Color3.fromRGB(120,200,120)
