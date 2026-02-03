@@ -456,6 +456,7 @@ layout.Padding = UDim.new(0, 1)
 local yBox = Instance.new("TextBox")
 yBox.Parent = row
 yBox.Text = "5000000"
+yBox.PlaceholderText = "Input Y"
 yBox.Size = UDim2.fromOffset(80, 28)
 yBox.ClearTextOnFocus = false
 yBox.Font = Enum.Font.SourceSansBold
@@ -504,6 +505,7 @@ end)
 local spBox = Instance.new("TextBox")
 spBox.Parent = row
 spBox.Text = "2000"
+slot3Input.PlaceholderText = "Speed"
 spBox.Size = UDim2.fromOffset(75, 28)
 spBox.ClearTextOnFocus = false
 spBox.Font = Enum.Font.SourceSansBold
