@@ -531,10 +531,12 @@ local function syncEscapeUI(state)
 	if not toggle or not flyKnob then return end
 
 	if state then
+	
 		toggle.BackgroundColor3 = Color3.fromRGB(120,200,120)
 		flyKnob.Position = UDim2.fromOffset(22, 2)
 	else
-		toggle.BackgroundColor3 = Color3.fromRGB(88,200,120)
+		
+		toggle.BackgroundColor3 = Color3.fromRGB(242, 60, 255)
 		flyKnob.Position = UDim2.fromOffset(2, 2)
 	end
 end
@@ -773,7 +775,7 @@ toggleStroke.Thickness = 1
 toggleStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 toggleStroke.Parent = toggle
 
-local flyKnob = Instance.new("TextButton")
+local flyKnob = Instance.new("Frame")
 flyKnob.Name = "flyKnob"
 flyKnob.Parent = toggle
 flyKnob.AutoButtonColor = false
@@ -940,9 +942,6 @@ end
 
 
 toggle.Activated:Connect(toggleEscape)
-flyKnob.Activated:Connect(toggleEscape)
-
-
 
 
 local function cacheAndDisablePart(part)
@@ -1067,9 +1066,6 @@ function magiskk.StopVertical()
 	updatePlatformStand()
 end
 
-
-toggle.BackgroundColor3 = Color3.fromRGB(88,200,120)
-flyKnob.Position = UDim2.fromOffset(2, 2)
 
 up.MouseButton1Click:Connect(function()
 	upEnabled = not upEnabled
