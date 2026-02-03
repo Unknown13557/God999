@@ -739,38 +739,6 @@ slot3DownCorner.Parent = slot3DownBtn
 
 
 
-
-
-
-
-
-
-
-
-	
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 local function startEscape()
 	local char = Players.LocalPlayer.Character
 	if not char then return end
@@ -943,49 +911,41 @@ local function startUp()
 	if not hrp then return end
 
 	lockedXZ = Vector3.new(hrp.Position.X, 0, hrp.Position.Z)
+upConn = RunService.Heartbeat:Connect(function(dt)
+	if not upEnabled then return end
 
-	upConn = RunService.Heartbeat:Connect(function(dt)
-		if not upEnabled then return end
+	local char = Players.LocalPlayer.Character
+	if not char then return end
 
-		local char = Players.LocalPlayer.Character
-		if not char then return end
+	local hrp = char:FindFirstChild("HumanoidRootPart")
+	if not hrp then return end
 
-		local hrp = char:FindFirstChild("HumanoidRootPart")
-		if not hrp then return end
+	local targetY = tonumber(yBox.Text)
+	local speed   = tonumber(spBox.Text)
 
-		local targetY = tonumber(yBox.Text)
-		local speed   = tonumber(spBox.Text)
+	if not targetY or not speed or speed <= 0 then return end
 
-		if not targetY or not speed or speed <= 0 then return end
+	local pos = hrp.Position
+	local diff = targetY - pos.Y
 
-		local currentY = hrp.Position.Y
-		local diff = targetY - currentY
+	if math.abs(diff) <= 0.2 then
+		hrp.CFrame =
+			CFrame.new(pos.X, targetY, pos.Z)
+			* hrp.CFrame.Rotation
+		return
+	end
 
-		if math.abs(diff) < 0.05 then
-			hrp.CFrame = CFrame.new(
-				lockedXZ.X,
-				targetY,
-				lockedXZ.Z
-			) * hrp.CFrame.Rotation
-			return
-		end
+	local step = math.sign(diff) * speed * dt
 
-		local step = speed * dt
-		if diff < 0 then
-			step = -step
-		end
+	if math.abs(step) > math.abs(diff) then
+		step = diff
+	end
 
-		if math.abs(step) > math.abs(diff) then
-			step = diff
-		end
-
-		hrp.CFrame = CFrame.new(
-			lockedXZ.X,
-			currentY + step,
-			lockedXZ.Z
-		) * hrp.CFrame.Rotation
-	end)
-end
+	hrp.CFrame =
+		CFrame.new(pos.X, pos.Y + step, pos.Z)
+		* hrp.CFrame.Rotation
+end)
+	
 
 
 local function stopUp()
