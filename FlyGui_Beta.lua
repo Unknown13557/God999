@@ -527,6 +527,9 @@ local function startUp()
 	upTween:Play()
 upTween.Completed:Connect(function()
 	upTween = nil
+	upEnabled = false
+	stopUpTextVisual()
+	updatePlatformStand()
 end)
 end
 
