@@ -634,11 +634,10 @@ local function updatePlatformStand()
 	local hum = char and char:FindFirstChildOfClass("Humanoid")
 	if not hum then return end
 
-	if nowe or escapeTween then
+	if nowe then
 	hum.PlatformStand = true
 else
 	hum.PlatformStand = false
-	end
 end
 
 local function pointerPos(input)
