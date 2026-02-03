@@ -20,6 +20,7 @@ local MAX_INPUT_VALUE = 2000000000
 local nowe = false
 local escapeEnabled = false
 local escapeDebounce = false
+local escapeTween = nil
 
 local upEnabled = false
 local upConn
@@ -39,7 +40,7 @@ else
 end
 
 
-local escapeTween = nil
+
 
 
 local ESCAPE_HP_LOW = 40
@@ -679,7 +680,6 @@ up.MouseButton1Click:Connect(function()
 		stopUp()
 	end
 
-	updatePlatformStand()
 end)
 
 
