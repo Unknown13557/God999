@@ -921,7 +921,7 @@ local noclipCache = {}
 
 local function syncEscapeUI(state)
 	if state then
-		toggle.BackgroundColor3 = Color3.fromRGB(120,200,120)
+		toggle.BackgroundColor3 = Color3.fromRGB(88,200,120)
 		flyKnob:TweenPosition(
 			UDim2.fromOffset(22, 2),
 			Enum.EasingDirection.Out,
@@ -930,7 +930,7 @@ local function syncEscapeUI(state)
 			true
 		)
 	else
-		toggle.BackgroundColor3 = Color3.fromRGB(88,200,120)
+		toggle.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
 		flyKnob:TweenPosition(
 			UDim2.fromOffset(2, 2),
 			Enum.EasingDirection.Out,
@@ -1091,7 +1091,7 @@ function magiskk.StopVertical()
 end
 
 
-toggle.BackgroundColor3 = Color3.fromRGB(88,200,120)
+toggle.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
 flyKnob.Position = UDim2.fromOffset(2, 2)
 
 up.MouseButton1Click:Connect(function()
