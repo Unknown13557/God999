@@ -26,6 +26,8 @@ local upEnabled = false
 local upConn
 local lockedXZ
 
+local escapeBypassLatched = false
+
 local magiskk = {}
 local flySpeed = 18
 local speaker = LocalPlayer
