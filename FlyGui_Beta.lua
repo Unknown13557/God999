@@ -944,9 +944,8 @@ upConn = RunService.Heartbeat:Connect(function(dt)
 	hrp.CFrame =
 		CFrame.new(pos.X, pos.Y + step, pos.Z)
 		* hrp.CFrame.Rotation
-end)
-	
-
+   end)	
+end
 
 local function stopUp()
 	upEnabled = false
