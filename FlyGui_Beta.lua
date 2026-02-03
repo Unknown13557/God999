@@ -26,7 +26,7 @@ local function updatePlatformStand()
 	local hum = char and char:FindFirstChildOfClass("Humanoid")
 	if not hum then return end
 
-	if nowe or upEnabled or escapeEnabled then
+	if nowe or upEnabled or escapeTween then
 		hum.PlatformStand = true
 	else
 		hum.PlatformStand = false
