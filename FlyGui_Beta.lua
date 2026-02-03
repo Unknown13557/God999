@@ -540,6 +540,84 @@ local function startUp()
 	end)
 end
 
+local function syncEscapeUI(state)
+	if state then
+		toggle.BackgroundColor3 = Color3.fromRGB(88,200,120)
+		flyKnob:TweenPosition(
+			UDim2.fromOffset(22, 2),
+			Enum.EasingDirection.Out,
+			Enum.EasingStyle.Quad,
+			0.15,
+			true
+		)
+	else
+		toggle.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+		flyKnob:TweenPosition(
+			UDim2.fromOffset(2, 2),
+			Enum.EasingDirection.Out,
+			Enum.EasingStyle.Quad,
+			0.15,
+			true
+		)
+	end
+end
+
+
+local function toggleEscape()
+	if escapeDebounce then return end
+	escapeDebounce = true
+	task.delay(0.15, function()
+		escapeDebounce = false
+	end)
+
+	escapeEnabled = not escapeEnabled
+	syncEscapeUI(escapeEnabled)
+
+	if not escapeEnabled then
+		stopEscape()
+	end
+
+	updatePlatformStand()
+end
+
+
+toggle.Activated:Connect(toggleEscape)
+flyKnob.Activated:Connect(toggleEscape)
+
+
+local function getHealthPercent()
+	local char = Players.LocalPlayer.Character
+	if not char then return 100 end
+
+	local hum = char:FindFirstChildOfClass("Humanoid")
+	if not hum or hum.MaxHealth <= 0 then
+		return 100
+	end
+
+	return (hum.Health / hum.MaxHealth) * 100
+end
+
+
+RunService.Heartbeat:Connect(function()
+	if not escapeEnabled then return end
+
+	local hp = getHealthPercent()
+
+	if hp < ESCAPE_HP_LOW then
+		if not escapeTween then
+			startEscape()
+			updatePlatformStand()
+		end
+	elseif hp > ESCAPE_HP_HIGH then
+		if escapeTween then
+			stopEscape()
+			updatePlatformStand()
+		end
+	end
+end)
+
+
+
 
 local function stopUp()
 	upEnabled = false
@@ -568,7 +646,41 @@ local function stopUp()
 end
 
 
+local upBG0, upText0 = up.BackgroundColor3, up.TextColor3
+local upRainbowConn
+local upHueTime = 0
+local function startUpTextVisual()
+    up.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    up.TextStrokeTransparency = 1
+    local s = up:FindFirstChild("FlyStroke")
+    if s then s.Enabled = false end
 
+    if upRainbowConn then upRainbowConn:Disconnect() end
+    upRainbowConn = RS.RenderStepped:Connect(function(dt)
+        upHueTime += dt
+        local hue = (upHueTime * 0.25) % 1
+        up.TextColor3 = Color3.fromHSV(hue, 1, 1)
+    end)
+end
+
+local function stopUpTextVisual()
+    if upRainbowConn then upRainbowConn:Disconnect(); upRainbowConn = nil end
+    up.BackgroundColor3 = upBG0
+    up.TextColor3       = upText0
+    up.TextStrokeTransparency = 1
+    local s = up:FindFirstChild("FlyStroke")
+    if s then s.Enabled = false end
+end
+
+up.MouseButton1Click:Connect(function()
+	if not upEnabled then
+		startUp()
+	else
+		stopUp()
+	end
+
+	updatePlatformStand()
+end)
 
 
 local slot2 = Slots[2]
@@ -966,49 +1078,7 @@ local noclipCache = {}
 
 
 
-local function syncEscapeUI(state)
-	if state then
-		toggle.BackgroundColor3 = Color3.fromRGB(88,200,120)
-		flyKnob:TweenPosition(
-			UDim2.fromOffset(22, 2),
-			Enum.EasingDirection.Out,
-			Enum.EasingStyle.Quad,
-			0.15,
-			true
-		)
-	else
-		toggle.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
-		flyKnob:TweenPosition(
-			UDim2.fromOffset(2, 2),
-			Enum.EasingDirection.Out,
-			Enum.EasingStyle.Quad,
-			0.15,
-			true
-		)
-	end
-end
 
-
-local function toggleEscape()
-	if escapeDebounce then return end
-	escapeDebounce = true
-	task.delay(0.15, function()
-		escapeDebounce = false
-	end)
-
-	escapeEnabled = not escapeEnabled
-	syncEscapeUI(escapeEnabled)
-
-	if not escapeEnabled then
-		stopEscape()
-	end
-
-	updatePlatformStand()
-end
-
-
-toggle.Activated:Connect(toggleEscape)
-flyKnob.Activated:Connect(toggleEscape)
 
 
 
@@ -1087,31 +1157,7 @@ local function stopFlyVisuals()
 	onof.TextStrokeTransparency = 1
 end
 
-local upBG0, upText0 = up.BackgroundColor3, up.TextColor3
-local upRainbowConn
-local upHueTime = 0
-local function startUpTextVisual()
-    up.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    up.TextStrokeTransparency = 1
-    local s = up:FindFirstChild("FlyStroke")
-    if s then s.Enabled = false end
 
-    if upRainbowConn then upRainbowConn:Disconnect() end
-    upRainbowConn = RS.RenderStepped:Connect(function(dt)
-        upHueTime += dt
-        local hue = (upHueTime * 0.25) % 1
-        up.TextColor3 = Color3.fromHSV(hue, 1, 1)
-    end)
-end
-
-local function stopUpTextVisual()
-    if upRainbowConn then upRainbowConn:Disconnect(); upRainbowConn = nil end
-    up.BackgroundColor3 = upBG0
-    up.TextColor3       = upText0
-    up.TextStrokeTransparency = 1
-    local s = up:FindFirstChild("FlyStroke")
-    if s then s.Enabled = false end
-end
 
 
 function magiskk.StopVertical()
@@ -1140,20 +1186,6 @@ end
 
 toggle.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
 flyKnob.Position = UDim2.fromOffset(2, 2)
-
-up.MouseButton1Click:Connect(function()
-	upEnabled = not upEnabled
-
-	if upEnabled then
-		startUp()
-		startUpTextVisual()
-	else
-		stopUp()
-		stopUpTextVisual()
-	end
-
-	updatePlatformStand()
-end)
 
 
 local tpwalking = false
@@ -1459,33 +1491,3 @@ Players.LocalPlayer.CharacterAdded:Connect(function(char)
 end)
 
 
-local function getHealthPercent()
-	local char = Players.LocalPlayer.Character
-	if not char then return 100 end
-
-	local hum = char:FindFirstChildOfClass("Humanoid")
-	if not hum or hum.MaxHealth <= 0 then
-		return 100
-	end
-
-	return (hum.Health / hum.MaxHealth) * 100
-end
-
-
-RunService.Heartbeat:Connect(function()
-	if not escapeEnabled then return end
-
-	local hp = getHealthPercent()
-
-	if hp < ESCAPE_HP_LOW then
-		if not escapeTween then
-			startEscape()
-			updatePlatformStand()
-		end
-	elseif hp > ESCAPE_HP_HIGH then
-		if escapeTween then
-			stopEscape()
-			updatePlatformStand()
-		end
-	end
-end)
