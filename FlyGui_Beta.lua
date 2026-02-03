@@ -414,7 +414,7 @@ spBox:GetPropertyChangedSignal("Text"):Connect(function()
 	end
 end)
 
-frame.ClipsDescendants = false
+
 
 local function readSlot1Config()
 	local y = tonumber(yBox.Text)
@@ -462,7 +462,8 @@ local function startEscape()
 	escapeTween:Play()
 	escapeTween.Completed:Connect(function()
 	escapeTween = nil
-end)
+	updatePlatformStand()
+  end)
 end
 
 
@@ -1067,9 +1068,8 @@ end
 
 
 function magiskk.StopVertical()
-
+	
 	upEnabled = false
-	escapeEnabled = false
 
 	if upTween then
 		pcall(function()
@@ -1078,6 +1078,8 @@ function magiskk.StopVertical()
 		upTween = nil
 	end
 
+	stopUpTextVisual()
+
 	if escapeTween then
 		pcall(function()
 			escapeTween:Cancel()
@@ -1085,14 +1087,9 @@ function magiskk.StopVertical()
 		escapeTween = nil
 	end
 
-
-	stopUpTextVisual()
-
-	
-
-
 	updatePlatformStand()
 end
+
 
 toggle.BackgroundColor3 = Color3.fromRGB(88,200,120)
 flyKnob.Position = UDim2.fromOffset(2, 2)
