@@ -743,7 +743,7 @@ toggle.Name = "toggle"
 toggle.Parent = escape
 toggle.AutoButtonColor = false
 toggle.Text = ""
-toggle.BackgroundColor3 = Color3.fromRGB(88, 200, 120)
+
 toggle.Size = UDim2.fromOffset(40, 20)
 toggle.Position = UDim2.fromOffset(2, 4)
 toggle.ZIndex = 2
@@ -779,7 +779,9 @@ flyKnobStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 flyKnobStroke.Parent = flyKnob
 
 flyKnob.Position = UDim2.fromOffset(2, 2)
-toggle.BackgroundColor3 = Color3.fromRGB(88,200,120)
+
+escapeEnabled = false
+syncEscapeUI(false)
 
 onof.Name = "onof"
 onof.Parent = Frame
