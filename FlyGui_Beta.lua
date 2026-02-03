@@ -958,7 +958,6 @@ local function toggleEscape()
 	end
 end
 
-updatePlatformStand()
 
 toggle.MouseButton1Click:Connect(toggleEscape)
 flyKnob.MouseButton1Click:Connect(toggleEscape)
@@ -1377,7 +1376,6 @@ Players.LocalPlayer.CharacterAdded:Connect(function(char)
 	
 	local hum = char:FindFirstChildOfClass("Humanoid")
 	if hum then
-		hum.PlatformStand = false
 		hum.AutoRotate = true
 	end
 
