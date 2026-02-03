@@ -21,7 +21,6 @@ local nowe = false
 local escapeEnabled = false
 local escapeDebounce = false
 local escapeTween = nil
-local escapeBypassLatched = false
 
 local upEnabled = false
 local upConn
@@ -552,7 +551,15 @@ spBox:GetPropertyChangedSignal("Text"):Connect(function()
 	end
 end)
 
+local function readSlot1Config()
+	local y = tonumber(yBox.Text)
+	local sp = tonumber(spBox.Text)
 
+	if not y then return nil, nil end
+	if not sp or sp <= 0 then sp = 1 end
+
+	return y, sp
+end
 
 local upBG0, upText0 = up.BackgroundColor3, up.TextColor3
 local upRainbowConn
@@ -764,15 +771,7 @@ slot3DownCorner.Parent = slot3DownBtn
 
 
 
-local function readSlot1Config()
-	local y = tonumber(yBox.Text)
-	local sp = tonumber(spBox.Text)
 
-	if not y then return nil, nil end
-	if not sp or sp <= 0 then sp = 1 end
-
-	return y, sp
-end
 
 local function startEscape()
 	local char = Players.LocalPlayer.Character
@@ -784,8 +783,7 @@ local function startEscape()
 	local targetY, speed = readSlot1Config()
 	if not targetY then return end
 
-
-if Settings.BypassTween then
+	if Settings.BypassTween then
 		if escapeTween then
 			escapeTween:Cancel()
 			escapeTween = nil
@@ -796,24 +794,21 @@ if Settings.BypassTween then
 			cf.Position.X,
 			targetY,
 			cf.Position.Z
-		) * CFrame.Angles(cf:ToEulerAnglesXYZ())
+		) * cf.Rotation
 
 		return
 	end
-    
 
-	if escapeTween then
-		escapeTween:Cancel()
-	end
+	if escapeTween then return end
 
 	local startCF = hrp.CFrame
 	local targetCF = CFrame.new(
 		startCF.Position.X,
 		targetY,
 		startCF.Position.Z
-	) * CFrame.Angles(startCF:ToEulerAnglesXYZ())
+	) * startCF.Rotation
 
-	local duration = math.abs(targetY - startCF.Position.Y) / speed
+	local duration = math.abs(targetY - startCF.Position.Y) / math.max(speed, 0.01)
 
 	escapeTween = TweenService:Create(
 		hrp,
@@ -822,12 +817,10 @@ if Settings.BypassTween then
 	)
 
 	escapeTween:Play()
-	escapeTween.Completed:Connect(function()
+	escapeTween.Completed:Once(function()
 		escapeTween = nil
 	end)
 end
-
-
 
 local function stopEscape()
 	if escapeTween then
@@ -835,6 +828,8 @@ local function stopEscape()
 		escapeTween = nil
 	end
 end
+
+
 
 
 local function syncEscapeUI(state)
@@ -894,45 +889,6 @@ end
 toggle.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
 flyKnob.Position = UDim2.fromOffset(2, 2)
 
-
-
-
-
-
-local function startUp()
-	if upConn then return end
-
-	upEnabled = true
-	startUpTextVisual()
-
-	local char = Players.LocalPlayer.Character
-	if not char then return end
-
-	local hrp = char:FindFirstChild("HumanoidRootPart")
-	if not hrp then return end
-
-	lockedXZ = Vector3.new(hrp.Position.X, 0, hrp.Position.Z)
-
-	
-    upConn = RunService.Heartbeat:Connect(function()
-	if not upEnabled then return end
-    if not hrp or not hrp.Parent then
-    	stopUp()
-      return
-	end
-	
-	local targetY = tonumber(yBox.Text)
-	if not targetY then return end
-
-	local pos = hrp.Position
-	hrp.CFrame = CFrame.new(
-		lockedXZ.X,
-		targetY,
-		lockedXZ.Z
-	) * hrp.CFrame.Rotation
-end)
-
-
 toggle.Activated:Connect(toggleEscape)
 flyKnob.Activated:Connect(toggleEscape)
 
@@ -956,26 +912,92 @@ RunService.Heartbeat:Connect(function()
 	local hp = getHealthPercent()
 
 	if hp < ESCAPE_HP_LOW then
-	if Settings.BypassTween then
-		if not escapeBypassLatched then
-			escapeBypassLatched = true
-			startEscape()
-		end
-	else
-		if not escapeTween then
-			startEscape()
-		end
-	end
+		local targetY, speed = readSlot1Config()
+		if not targetY then return end
 
-elseif hp > ESCAPE_HP_HIGH then
-	escapeBypassLatched = false
+		local char = Players.LocalPlayer.Character
+		if not char then return end
 
-	if escapeTween then
-		stopEscape()
-	  end
+		local hrp = char:FindFirstChild("HumanoidRootPart")
+		if not hrp then return end
+
+		if Settings.BypassTween then
+			local cf = hrp.CFrame
+			hrp.CFrame = CFrame.new(
+				cf.Position.X,
+				targetY,
+				cf.Position.Z
+			) * cf.Rotation
+
+		else
+				
+			if not escapeTween then
+				local startCF = hrp.CFrame
+				local targetCF = CFrame.new(
+					startCF.Position.X,
+					targetY,
+					startCF.Position.Z
+				) * startCF.Rotation
+
+				local duration = math.abs(targetY - startCF.Position.Y) / math.max(speed, 0.01)
+
+				escapeTween = TweenService:Create(
+					hrp,
+					TweenInfo.new(duration, Enum.EasingStyle.Linear),
+					{ CFrame = targetCF }
+				)
+
+				escapeTween:Play()
+				escapeTween.Completed:Once(function()
+					escapeTween = nil
+				end)
+			end
+		end
+
+	elseif hp > ESCAPE_HP_HIGH then
+		if escapeTween then
+			escapeTween:Cancel()
+			escapeTween = nil
+		end
 	end
 end)
 
+
+
+local function startUp()
+	if upConn then return end
+
+	upEnabled = true
+	startUpTextVisual()
+
+	do
+		local char = Players.LocalPlayer.Character
+		if not char then return end
+
+		local hrp = char:FindFirstChild("HumanoidRootPart")
+		if not hrp then return end
+
+		lockedXZ = Vector3.new(hrp.Position.X, 0, hrp.Position.Z)
+	end
+
+	upConn = RunService.Heartbeat:Connect(function()
+		if not upEnabled then return end
+		local char = Players.LocalPlayer.Character
+		if not char then return end
+
+		local hrp = char:FindFirstChild("HumanoidRootPart")
+		if not hrp then return end
+
+		local targetY = tonumber(yBox.Text)
+		if not targetY then return end
+
+		hrp.CFrame = CFrame.new(
+			lockedXZ.X,
+			targetY,
+			lockedXZ.Z
+		) * hrp.CFrame.Rotation
+	end)
+end
 
 
 
@@ -988,10 +1010,6 @@ local function stopUp()
 		upConn = nil
 	end
 
-	if upTween then
-		upTween:Cancel()
-		upTween = nil
-	end
 
 	lockedXZ = nil
 
