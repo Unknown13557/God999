@@ -17,6 +17,9 @@ local UIS              = UserInputService
 
 local MAX_INPUT_VALUE = 2000000000
 
+local ESCAPE_ON_COLOR  = Color3.fromRGB(120,200,120)
+local ESCAPE_OFF_COLOR = Color3.fromRGB(80,80,80)
+
 local nowe = false
 local escapeEnabled = false
 local escapeDebounce = false
@@ -42,11 +45,6 @@ local upTween = nil
 local ESCAPE_HP_LOW = 40
 local ESCAPE_HP_HIGH = 80
 
-local function getHRP()
-	local char = Players.LocalPlayer.Character
-	if not char then return nil end
-	return char:FindFirstChild("HumanoidRootPart")
-end
 
 
 local Settings = {
@@ -743,7 +741,6 @@ toggle.Name = "toggle"
 toggle.Parent = escape
 toggle.AutoButtonColor = false
 toggle.Text = ""
-toggle.BackgroundColor3 = Color3.fromRGB(88, 200, 120)
 toggle.Size = UDim2.fromOffset(40, 20)
 toggle.Position = UDim2.fromOffset(2, 4)
 toggle.ZIndex = 2
@@ -754,7 +751,6 @@ toggleCorner.CornerRadius = UDim.new(1, 0)
 toggleCorner.Parent = toggle
 
 local toggleStroke = Instance.new("UIStroke")
-toggleStroke.Color = Color3.fromRGB(235, 235, 235)
 toggleStroke.Thickness = 1
 toggleStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 toggleStroke.Parent = toggle
@@ -780,6 +776,9 @@ flyKnobStroke.Parent = flyKnob
 
 flyKnob.Position = UDim2.fromOffset(2, 2)
 toggle.BackgroundColor3 = Color3.fromRGB(88,200,120)
+
+escapeEnabled = false
+syncEscapeUI(false)
 
 onof.Name = "onof"
 onof.Parent = Frame
@@ -921,7 +920,7 @@ local noclipCache = {}
 
 local function syncEscapeUI(state)
 	if state then
-		toggle.BackgroundColor3 = Color3.fromRGB(120,200,120)
+		toggle.BackgroundColor3 = ESCAPE_ON_COLOR
 		flyKnob:TweenPosition(
 			UDim2.fromOffset(22, 2),
 			Enum.EasingDirection.Out,
@@ -930,7 +929,7 @@ local function syncEscapeUI(state)
 			true
 		)
 	else
-		toggle.BackgroundColor3 = Color3.fromRGB(88,200,120)
+		toggle.BackgroundColor3 = ESCAPE_OFF_COLOR
 		flyKnob:TweenPosition(
 			UDim2.fromOffset(2, 2),
 			Enum.EasingDirection.Out,
@@ -1091,8 +1090,7 @@ function magiskk.StopVertical()
 end
 
 
-toggle.BackgroundColor3 = Color3.fromRGB(88,200,120)
-flyKnob.Position = UDim2.fromOffset(2, 2)
+
 
 up.MouseButton1Click:Connect(function()
 	upEnabled = not upEnabled
