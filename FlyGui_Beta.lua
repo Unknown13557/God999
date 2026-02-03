@@ -48,6 +48,9 @@ local function getHRP()
 	return char:FindFirstChild("HumanoidRootPart")
 end
 
+local toggle
+local flyKnob
+
 
 local Settings = {
 	BypassTween       = true
@@ -524,6 +527,21 @@ local function stopUp()
 end
 
 
+local function syncEscapeUI(state)
+	if not toggle or not flyKnob then return end
+
+	if state then
+		toggle.BackgroundColor3 = Color3.fromRGB(120,200,120)
+		flyKnob.Position = UDim2.fromOffset(22, 2)
+	else
+		toggle.BackgroundColor3 = Color3.fromRGB(88,200,120)
+		flyKnob.Position = UDim2.fromOffset(2, 2)
+	end
+end
+
+
+
+
 local slot2 = Slots[2]
 slot2.Label.Text = "Bypass Tween"
 slot2.State = true
@@ -713,10 +731,6 @@ slot3DownBtn.MouseButton1Click:Connect(function()
 end)
 
 
-
-
-
-
 Frame.BackgroundColor3 = Color3.fromRGB(163, 255, 137)
 Frame.BorderColor3 = Color3.fromRGB(103, 221, 213)
 Frame.Position = UDim2.new(0.100320168, 0, 0.379746825, 0)
@@ -899,49 +913,12 @@ end)
 
 
 
-	
-
-		
-	
-
-
-
-
-
-
-
-
-
 local magiskk = {}
 local flySpeed = 18
 local speaker = LocalPlayer
 
 local noclipConn = nil
 local noclipCache = {}
-
-
-
-local function syncEscapeUI(state)
-	if state then
-		toggle.BackgroundColor3 = Color3.fromRGB(120,200,120)
-		flyKnob:TweenPosition(
-			UDim2.fromOffset(22, 2),
-			Enum.EasingDirection.Out,
-			Enum.EasingStyle.Quad,
-			0.15,
-			true
-		)
-	else
-		toggle.BackgroundColor3 = Color3.fromRGB(88,200,120)
-		flyKnob:TweenPosition(
-			UDim2.fromOffset(2, 2),
-			Enum.EasingDirection.Out,
-			Enum.EasingStyle.Quad,
-			0.15,
-			true
-		)
-	end
-end
 
 
 local function toggleEscape()
@@ -964,8 +941,6 @@ end
 
 toggle.Activated:Connect(toggleEscape)
 flyKnob.Activated:Connect(toggleEscape)
-
-
 
 
 
@@ -1430,9 +1405,8 @@ end
 
 
 RunService.Heartbeat:Connect(function()
-	if not escapeEnabled then return end
-
 	local hp = getHealthPercent()
+	if not hp then return end
 
 	if hp < ESCAPE_HP_LOW then
 		if not escapeTween then
