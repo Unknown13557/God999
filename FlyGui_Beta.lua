@@ -517,6 +517,7 @@ local function stopUp()
 		upTween:Cancel()
 		upTween = nil
 	end
+	updatePlatformStand()
 end
 
 
@@ -946,7 +947,6 @@ local function toggleEscape()
 			0.15,
 			true
 		)
-		escapeEnabled = false
 		stopEscape()
 
 	end
