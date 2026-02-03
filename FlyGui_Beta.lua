@@ -1188,9 +1188,7 @@ end
 		local bv = Instance.new("BodyVelocity", torso)
 		bv.velocity = Vector3.new(0,0.1,0)
 		bv.maxForce = Vector3.new(9e9, 9e9, 9e9)
-		if nowe == true then
-			plr.Character.Humanoid.PlatformStand = true
-		end
+		
 			while nowe == true and LocalPlayer.Character
 	and LocalPlayer.Character:FindFirstChild("Humanoid")
 	and LocalPlayer.Character.Humanoid.Health > 0 do
@@ -1223,7 +1221,7 @@ end
 		speed = 0
 		bg:Destroy()
 		bv:Destroy()
-		plr.Character.Humanoid.PlatformStand = false
+	
 		LocalPlayer.Character.Animate.Disabled = false
 		tpwalking = false
 
@@ -1244,9 +1242,7 @@ end
 		local bv = Instance.new("BodyVelocity", UpperTorso)
 		bv.velocity = Vector3.new(0,0.1,0)
 		bv.maxForce = Vector3.new(9e9, 9e9, 9e9)
-		if nowe == true then
-			plr.Character.Humanoid.PlatformStand = true
-		end
+		
 		while nowe == true and LocalPlayer.Character
 	and LocalPlayer.Character:FindFirstChild("Humanoid")
 	and LocalPlayer.Character.Humanoid.Health > 0 do
@@ -1279,7 +1275,7 @@ end
 		speed = 0
 		bg:Destroy()
 		bv:Destroy()
-		plr.Character.Humanoid.PlatformStand = false
+		
 		LocalPlayer.Character.Animate.Disabled = false
 		tpwalking = false
 	end
