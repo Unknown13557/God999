@@ -21,7 +21,7 @@ local nowe = false
 local escapeEnabled = false
 local escapeDebounce = false
 local escapeTween = nil
-
+local escapeActive = false
 local upEnabled = false
 local upConn
 local lockedXZ
@@ -41,8 +41,6 @@ local Slots = {}
 local Settings = {
 	BypassTween       = true
 }
-
-
 
 
 
@@ -907,58 +905,26 @@ end
 
 
 RunService.Heartbeat:Connect(function()
-	if not escapeEnabled then return end
+	if not escapeEnabled then
+		escapeActive = false
+		stopEscape()
+		return
+	end
 
 	local hp = getHealthPercent()
 
 	if hp < ESCAPE_HP_LOW then
-		local targetY, speed = readSlot1Config()
-		if not targetY then return end
-
-		local char = Players.LocalPlayer.Character
-		if not char then return end
-
-		local hrp = char:FindFirstChild("HumanoidRootPart")
-		if not hrp then return end
-
-		if Settings.BypassTween then
-			local cf = hrp.CFrame
-			hrp.CFrame = CFrame.new(
-				cf.Position.X,
-				targetY,
-				cf.Position.Z
-			) * cf.Rotation
-
-		else
-				
-			if not escapeTween then
-				local startCF = hrp.CFrame
-				local targetCF = CFrame.new(
-					startCF.Position.X,
-					targetY,
-					startCF.Position.Z
-				) * startCF.Rotation
-
-				local duration = math.abs(targetY - startCF.Position.Y) / math.max(speed, 0.01)
-
-				escapeTween = TweenService:Create(
-					hrp,
-					TweenInfo.new(duration, Enum.EasingStyle.Linear),
-					{ CFrame = targetCF }
-				)
-
-				escapeTween:Play()
-				escapeTween.Completed:Once(function()
-					escapeTween = nil
-				end)
-			end
-		end
-
+		escapeActive = true
+			
 	elseif hp > ESCAPE_HP_HIGH then
-		if escapeTween then
-			escapeTween:Cancel()
-			escapeTween = nil
+		if escapeActive then
+			stopEscape()
 		end
+		escapeActive = false
+	end
+
+	if escapeActive then
+		startEscape()
 	end
 end)
 
@@ -970,18 +936,17 @@ local function startUp()
 	upEnabled = true
 	startUpTextVisual()
 
-	do
-		local char = Players.LocalPlayer.Character
-		if not char then return end
+	local char = Players.LocalPlayer.Character
+	if not char then return end
 
-		local hrp = char:FindFirstChild("HumanoidRootPart")
-		if not hrp then return end
+	local hrp = char:FindFirstChild("HumanoidRootPart")
+	if not hrp then return end
 
-		lockedXZ = Vector3.new(hrp.Position.X, 0, hrp.Position.Z)
-	end
+	lockedXZ = Vector3.new(hrp.Position.X, 0, hrp.Position.Z)
 
-	upConn = RunService.Heartbeat:Connect(function()
+	upConn = RunService.Heartbeat:Connect(function(dt)
 		if not upEnabled then return end
+
 		local char = Players.LocalPlayer.Character
 		if not char then return end
 
@@ -989,16 +954,38 @@ local function startUp()
 		if not hrp then return end
 
 		local targetY = tonumber(yBox.Text)
-		if not targetY then return end
+		local speed   = tonumber(spBox.Text)
+
+		if not targetY or not speed or speed <= 0 then return end
+
+		local currentY = hrp.Position.Y
+		local diff = targetY - currentY
+
+		if math.abs(diff) < 0.05 then
+			hrp.CFrame = CFrame.new(
+				lockedXZ.X,
+				targetY,
+				lockedXZ.Z
+			) * hrp.CFrame.Rotation
+			return
+		end
+
+		local step = speed * dt
+		if diff < 0 then
+			step = -step
+		end
+
+		if math.abs(step) > math.abs(diff) then
+			step = diff
+		end
 
 		hrp.CFrame = CFrame.new(
 			lockedXZ.X,
-			targetY,
+			currentY + step,
 			lockedXZ.Z
 		) * hrp.CFrame.Rotation
 	end)
 end
-
 
 
 local function stopUp()
@@ -1010,20 +997,8 @@ local function stopUp()
 		upConn = nil
 	end
 
-
 	lockedXZ = nil
-
-	local char = Players.LocalPlayer.Character
-	if char then
-		local hrp = char:FindFirstChild("HumanoidRootPart")
-		if hrp then
-			hrp.AssemblyLinearVelocity = Vector3.zero
-			hrp.AssemblyAngularVelocity = Vector3.zero
-		end
-	end
-end
-
-
+end	
 
 
 up.MouseButton1Click:Connect(function()
