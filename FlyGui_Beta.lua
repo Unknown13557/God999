@@ -17,8 +17,6 @@ local UIS              = UserInputService
 
 local MAX_INPUT_VALUE = 2000000000
 
-local ESCAPE_ON_COLOR  = Color3.fromRGB(120,200,120)
-local ESCAPE_OFF_COLOR = Color3.fromRGB(80,80,80)
 
 local nowe = false
 local escapeEnabled = false
@@ -920,10 +918,18 @@ local noclipConn = nil
 local noclipCache = {}
 
 
+local function toggleEscape()
+	if escapeDebounce then return end
+	escapeDebounce = true
+	task.delay(0.15, function()
+		escapeDebounce = false
+	end)
 
-local function syncEscapeUI(state)
-	if state then
-		toggle.BackgroundColor3 = ESCAPE_ON_COLOR
+	escapeEnabled = not escapeEnabled
+
+	if escapeEnabled then
+
+		toggle.BackgroundColor3 = Color3.fromRGB(120,200,120)
 		flyKnob:TweenPosition(
 			UDim2.fromOffset(22, 2),
 			Enum.EasingDirection.Out,
@@ -932,7 +938,8 @@ local function syncEscapeUI(state)
 			true
 		)
 	else
-		toggle.BackgroundColor3 = ESCAPE_OFF_COLOR
+		
+		toggle.BackgroundColor3 = Color3.fromRGB(88,200,120)
 		flyKnob:TweenPosition(
 			UDim2.fromOffset(2, 2),
 			Enum.EasingDirection.Out,
@@ -940,8 +947,12 @@ local function syncEscapeUI(state)
 			0.15,
 			true
 		)
+		stopEscape()
 	end
+
+	updatePlatformStand()
 end
+
 
 
 local function toggleEscape()
