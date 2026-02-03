@@ -437,7 +437,8 @@ local function startEscape()
 	if not targetY then return end
 
 
-	if Settings.BypassTween then
+if Settings.BypassTween then
+
 	if escapeTween then
 		escapeTween:Cancel()
 		escapeTween = nil
@@ -447,30 +448,37 @@ local function startEscape()
 	if not hum then return end
 
 	
-	hrp.AssemblyLinearVelocity = Vector3.zero
-	hrp.AssemblyAngularVelocity = Vector3.zero
+	local parts = {}
+	for _, v in ipairs(char:GetDescendants()) do
+		if v:IsA("BasePart") then
+			parts[v] = v.CanCollide
+			v.CanCollide = false
+		end
+	end
 
 	
 	local cf = hrp.CFrame
-	hrp.CFrame = CFrame.new(
-		cf.Position.X,
-		targetY,
-		cf.Position.Z
-	) * CFrame.Angles(cf:ToEulerAnglesXYZ())
+	hrp:PivotTo(
+		CFrame.new(cf.Position.X, targetY, cf.Position.Z)
+		* CFrame.Angles(cf:ToEulerAnglesXYZ())
+	)
 
 	
-	hum.PlatformStand = false
-	hum:ChangeState(Enum.HumanoidStateType.Freefall)
+	task.defer(function()
+		if not hum.Parent then return end
 
 	
-	task.spawn(function()
-		while hum.Parent and hum:GetState() == Enum.HumanoidStateType.Freefall do
-			RunService.Heartbeat:Wait()
+		for part, old in pairs(parts) do
+			if part and part.Parent then
+				part.CanCollide = old
+			end
 		end
 
-		if hum.Parent then
-			hum:ChangeState(Enum.HumanoidStateType.Running)
-		end
+		hum.PlatformStand = false
+		hum:ChangeState(Enum.HumanoidStateType.Freefall)
+
+		hrp.AssemblyLinearVelocity = Vector3.new(0, -60, 0)
+		hrp.AssemblyAngularVelocity = Vector3.zero
 	end)
 
 	return
