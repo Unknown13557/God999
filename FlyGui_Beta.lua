@@ -738,6 +738,13 @@ slot3DownCorner.Parent = slot3DownBtn
 
 
 local function forceMoveY(hrp, targetY, speed, dt)
+	hrp.AssemblyLinearVelocity =
+		Vector3.new(
+			hrp.AssemblyLinearVelocity.X,
+			0,
+			hrp.AssemblyLinearVelocity.Z
+		)
+
 	local pos = hrp.Position
 	local diff = targetY - pos.Y
 
@@ -752,7 +759,6 @@ local function forceMoveY(hrp, targetY, speed, dt)
 		CFrame.new(pos.X, pos.Y + diff, pos.Z)
 		* hrp.CFrame.Rotation
 end
-
 
 
 local function startEscape()
