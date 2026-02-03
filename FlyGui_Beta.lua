@@ -25,7 +25,6 @@ local escapeBypassLatched = false
 
 local upEnabled = false
 local upConn
-local upTween
 local lockedXZ
 
 local magiskk = {}
@@ -880,16 +879,7 @@ end
 
 
 function magiskk.StopVertical()
-	
 	upEnabled = false
-
-	if upTween then
-		pcall(function()
-			upTween:Cancel()
-		end)
-		upTween = nil
-	end
-
 	stopUpTextVisual()
 
 	if escapeTween then
@@ -1221,6 +1211,9 @@ end
 local tpwalking = false
 local tpGen = 0
 onof.MouseButton1Down:Connect(function()
+	local char = LocalPlayer.Character
+	local hum = char and char:FindFirstChildOfClass("Humanoid")
+	if not hum then return end
 
 	if nowe == true then
 		nowe = false
