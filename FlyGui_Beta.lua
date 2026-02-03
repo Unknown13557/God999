@@ -21,6 +21,7 @@ local nowe = false
 local escapeEnabled = false
 local escapeDebounce = false
 local escapeTween = nil
+local escapeBypassLatched = false
 
 local upEnabled = false
 local upConn
@@ -42,6 +43,9 @@ local Slots = {}
 local Settings = {
 	BypassTween       = true
 }
+
+
+
 
 
 local main = Instance.new("ScreenGui")
@@ -216,6 +220,112 @@ SettingsButton.TextColor3 = Color3.fromRGB(20, 20, 20)
 SettingsButton.Text = "⚙"
 SettingsButton.TextSize = 23
 SettingsButton.Position = UDim2.new(0, 45, -0.99000, 27)
+
+
+local function pointerPos(input)
+	if input.UserInputType == Enum.UserInputType.Touch then
+		return Vector2.new(input.Position.X, input.Position.Y)
+	end
+
+	if UIS.GetMouseLocation then
+		return UIS:GetMouseLocation()
+	end
+	return Vector2.new(0, 0)
+end
+
+local function over(inst, pos)
+	local p, s = inst.AbsolutePosition, inst.AbsoluteSize
+	return pos.X >= p.X and pos.X <= p.X + s.X and pos.Y >= p.Y and pos.Y <= p.Y + s.Y
+end
+
+local function attachDrag(target, ignoreButton)
+
+local dragging = false
+	local dragStart, startPos
+
+	target.Active = true
+	target.Draggable = false
+
+	local function clampToViewport(x, y)
+		local cam = WS.CurrentCamera
+		if not cam then
+			return UDim2.fromOffset(x, y)
+		end
+
+		local vp = cam.ViewportSize
+		local size = target.AbsoluteSize
+		local anchor = target.AnchorPoint
+
+		local minX = size.X * anchor.X
+		local maxX = vp.X - size.X * (1 - anchor.X)
+		local minY = size.Y * anchor.Y
+		local maxY = vp.Y - size.Y * (1 - anchor.Y)
+
+		x = math.clamp(x, minX, math.max(minX, maxX))
+		y = math.clamp(y, minY, math.max(minY, maxY))
+
+		return UDim2.fromOffset(x, y)
+	end
+
+	target.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1
+			or input.UserInputType == Enum.UserInputType.Touch then
+
+			if ignoreButton and over(ignoreButton, pointerPos(input)) then
+				return
+			end
+
+			dragging = true
+			dragStart = input.Position
+			startPos = target.Position
+
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					dragging = false
+				end
+			end)
+		end
+	end)
+
+	target.InputChanged:Connect(function(input)
+		if not dragging then return end
+		if input.UserInputType == Enum.UserInputType.MouseMovement
+			or input.UserInputType == Enum.UserInputType.Touch then
+
+			local delta = input.Position - dragStart
+			target.Position = clampToViewport(
+				startPos.X.Offset + delta.X,
+				startPos.Y.Offset + delta.Y
+			)
+		end
+	end)
+
+	task.defer(function()
+		local abs = target.AbsolutePosition
+		target.Position = clampToViewport(abs.X, abs.Y)
+	end)
+
+	local function hookViewportChanged()
+		local cam = WS.CurrentCamera
+		if not cam then return end
+
+		cam:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+			if not dragging then
+				local abs = target.AbsolutePosition
+				target.Position = clampToViewport(abs.X, abs.Y)
+			end
+		end)
+	end
+
+	if WS.CurrentCamera then
+		hookViewportChanged()
+	end
+
+	WS:GetPropertyChangedSignal("CurrentCamera"):Connect(hookViewportChanged)
+end
+
+
+
 
 
 local SettingsGui = Instance.new("ScreenGui")
@@ -642,107 +752,11 @@ end
 
 
 
-local function pointerPos(input)
-	if input.UserInputType == Enum.UserInputType.Touch then
-		return Vector2.new(input.Position.X, input.Position.Y)
-	end
 
-	if UIS.GetMouseLocation then
-		return UIS:GetMouseLocation()
-	end
-	return Vector2.new(0, 0)
-end
 
-local function over(inst, pos)
-	local p, s = inst.AbsolutePosition, inst.AbsoluteSize
-	return pos.X >= p.X and pos.X <= p.X + s.X and pos.Y >= p.Y and pos.Y <= p.Y + s.Y
-end
 
-local function attachDrag(target, ignoreButton)
 
-local dragging = false
-	local dragStart, startPos
 
-	target.Active = true
-	target.Draggable = false
-
-	local function clampToViewport(x, y)
-		local cam = WS.CurrentCamera
-		if not cam then
-			return UDim2.fromOffset(x, y)
-		end
-
-		local vp = cam.ViewportSize
-		local size = target.AbsoluteSize
-		local anchor = target.AnchorPoint
-
-		local minX = size.X * anchor.X
-		local maxX = vp.X - size.X * (1 - anchor.X)
-		local minY = size.Y * anchor.Y
-		local maxY = vp.Y - size.Y * (1 - anchor.Y)
-
-		x = math.clamp(x, minX, math.max(minX, maxX))
-		y = math.clamp(y, minY, math.max(minY, maxY))
-
-		return UDim2.fromOffset(x, y)
-	end
-
-	target.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1
-			or input.UserInputType == Enum.UserInputType.Touch then
-
-			if ignoreButton and over(ignoreButton, pointerPos(input)) then
-				return
-			end
-
-			dragging = true
-			dragStart = input.Position
-			startPos = target.Position
-
-			input.Changed:Connect(function()
-				if input.UserInputState == Enum.UserInputState.End then
-					dragging = false
-				end
-			end)
-		end
-	end)
-
-	target.InputChanged:Connect(function(input)
-		if not dragging then return end
-		if input.UserInputType == Enum.UserInputType.MouseMovement
-			or input.UserInputType == Enum.UserInputType.Touch then
-
-			local delta = input.Position - dragStart
-			target.Position = clampToViewport(
-				startPos.X.Offset + delta.X,
-				startPos.Y.Offset + delta.Y
-			)
-		end
-	end)
-
-	task.defer(function()
-		local abs = target.AbsolutePosition
-		target.Position = clampToViewport(abs.X, abs.Y)
-	end)
-
-	local function hookViewportChanged()
-		local cam = WS.CurrentCamera
-		if not cam then return end
-
-		cam:GetPropertyChangedSignal("ViewportSize"):Connect(function()
-			if not dragging then
-				local abs = target.AbsolutePosition
-				target.Position = clampToViewport(abs.X, abs.Y)
-			end
-		end)
-	end
-
-	if WS.CurrentCamera then
-		hookViewportChanged()
-	end
-
-	WS:GetPropertyChangedSignal("CurrentCamera"):Connect(hookViewportChanged)
-end
 
 	
 
@@ -800,7 +814,6 @@ if Settings.BypassTween then
 			cf.Position.Z
 		) * CFrame.Angles(cf:ToEulerAnglesXYZ())
 
-		updatePlatformStand()
 		return
 	end
     
@@ -827,7 +840,6 @@ if Settings.BypassTween then
 	escapeTween:Play()
 	escapeTween.Completed:Connect(function()
 		escapeTween = nil
-		updatePlatformStand()
 	end)
 end
 
@@ -878,7 +890,6 @@ local function toggleEscape()
 		stopEscape()
 	end
 
-	updatePlatformStand()
 end
 
 
@@ -901,8 +912,6 @@ function magiskk.StopVertical()
 		end)
 		escapeTween = nil
 	end
-
-	updatePlatformStand()
 end
 
 
@@ -967,15 +976,23 @@ RunService.Heartbeat:Connect(function()
 	local hp = getHealthPercent()
 
 	if hp < ESCAPE_HP_LOW then
+	if Settings.BypassTween then
+		if not escapeBypassLatched then
+			escapeBypassLatched = true
+			startEscape()
+		end
+	else
 		if not escapeTween then
 			startEscape()
-			updatePlatformStand()
 		end
-	elseif hp > ESCAPE_HP_HIGH then
-		if escapeTween then
-			stopEscape()
-			updatePlatformStand()
-		end
+	end
+
+elseif hp > ESCAPE_HP_HIGH then
+	escapeBypassLatched = false
+
+	if escapeTween then
+		stopEscape()
+	  end
 	end
 end)
 
