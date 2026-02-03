@@ -1096,7 +1096,10 @@ onof.MouseButton1Down:Connect(function()
 
 	if nowe == true then
 		nowe = false
-	stopFlyVisuals()
+
+    updatePlatformStand()
+			
+	stopFlyVisuals() 
 	  tpwalking = false
         tpGen = tpGen + 1
 				
@@ -1120,6 +1123,8 @@ onof.MouseButton1Down:Connect(function()
 		speaker.Character.Humanoid:ChangeState(Enum.HumanoidStateType.RunningNoPhysics)
 	else 
 		nowe = true
+
+        updatePlatformStand()
 				
 		startFlyVisuals()
 tpGen = tpGen + 1
@@ -1359,6 +1364,9 @@ Players.LocalPlayer.CharacterAdded:Connect(function(char)
 	stopUp()
 	stopEscape()
 
+	nowe = false
+	tpwalking = false
+		
 	upEnabled = false
 	escapeEnabled = false
     updatePlatformStand()
@@ -1367,8 +1375,7 @@ Players.LocalPlayer.CharacterAdded:Connect(function(char)
 	stopFlyVisuals()
 
 	
-	nowe = false
-	tpwalking = false
+	
 	lastClick = 0
 
 	task.wait(0.1)
