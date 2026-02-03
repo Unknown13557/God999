@@ -19,13 +19,12 @@ local MAX_INPUT_VALUE = 2000000000
 
 local nowe = false
 local escapeEnabled = false
-local escapeDebounce = false
 local escapeTween = nil
 local escapeActive = false
 local upEnabled = false
 local upConn
-local lockedXZ
-
+local upTween = nil
+local escapeDebounce = false
 local escapeBypassLatched = false
 
 local magiskk = {}
@@ -901,77 +900,73 @@ end)
 
 
 local function startUp()
-	if upConn then return end
-
+	if upEnabled then return end
 	upEnabled = true
 	startUpTextVisual()
 
 	local char = Players.LocalPlayer.Character
 	if not char then return end
-
 	local hrp = char:FindFirstChild("HumanoidRootPart")
 	if not hrp then return end
 
-	lockedXZ = Vector3.new(hrp.Position.X, 0, hrp.Position.Z)
-upConn = RunService.Heartbeat:Connect(function(dt)
-	if not upEnabled then return end
+	local function runUp()
+		if not upEnabled then return end
 
-	local char = Players.LocalPlayer.Character
-	if not char then return end
+		local targetY, speed = readSlot1Config()
+		if not targetY then return end
 
-	local hrp = char:FindFirstChild("HumanoidRootPart")
-	if not hrp then return end
+		if upTween then
+			upTween:Cancel()
+			upTween = nil
+		end
 
-	local targetY = tonumber(yBox.Text)
-	local speed   = tonumber(spBox.Text)
+		local startCF = hrp.CFrame
+		local targetCF = CFrame.new(
+			startCF.Position.X,
+			targetY,
+			startCF.Position.Z
+		) * startCF.Rotation
 
-	if not targetY or not speed or speed <= 0 then return end
+		local duration = math.abs(targetY - startCF.Position.Y) / math.max(speed, 0.01)
 
-	local pos = hrp.Position
-	local diff = targetY - pos.Y
+		upTween = TweenService:Create(
+			hrp,
+			TweenInfo.new(duration, Enum.EasingStyle.Linear),
+			{ CFrame = targetCF }
+		)
 
-	if math.abs(diff) <= 0.2 then
-		hrp.CFrame =
-			CFrame.new(pos.X, targetY, pos.Z)
-			* hrp.CFrame.Rotation
-		return
+		upTween:Play()
+		upTween.Completed:Once(function()
+			upTween = nil
+			-- 🔁 nếu vẫn bật → giật tiếp
+			if upEnabled then
+				task.defer(runUp)
+			end
+		end)
 	end
 
-	local step = math.sign(diff) * speed * dt
-
-	if math.abs(step) > math.abs(diff) then
-		step = diff
-	end
-
-	hrp.CFrame =
-		CFrame.new(pos.X, pos.Y + step, pos.Z)
-		* hrp.CFrame.Rotation
-   end)	
+	runUp()
 end
 
 local function stopUp()
 	upEnabled = false
 	stopUpTextVisual()
 
-	if upConn then
-		upConn:Disconnect()
-		upConn = nil
+	if upTween then
+		upTween:Cancel()
+		upTween = nil
 	end
+end
 
-	lockedXZ = nil
-end	
 
 
 up.MouseButton1Click:Connect(function()
-	if not upEnabled then
-		startUp()
-	else
+	if upEnabled then
 		stopUp()
+	else
+		startUp()
 	end
-
 end)
-
-
 
 
 
