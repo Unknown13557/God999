@@ -31,16 +31,15 @@ local function updatePlatformStand()
 	local hum = char and char:FindFirstChildOfClass("Humanoid")
 	if not hum then return end
 
-	if nowe or upEnabled or escapeTween then
-		hum.PlatformStand = true
-	else
-		hum.PlatformStand = false
+	if nowe or escapeTween then
+	hum.PlatformStand = true
+else
+	hum.PlatformStand = false
 	end
 end
 
 
 local escapeTween = nil
-local upTween = nil
 
 
 local ESCAPE_HP_LOW = 40
@@ -474,7 +473,7 @@ if Settings.BypassTween then
 
 	escapeTween = TweenService:Create(
 		hrp,
-		TweenI.new(duration, Enum.EasingStyle.Linear),
+		TweenInfo.new(duration, Enum.EasingStyle.Linear),
 		{ CFrame = targetCF }
 	)
 
