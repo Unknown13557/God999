@@ -323,7 +323,7 @@ layout.Padding = UDim.new(0, 1)
 
 local yBox = Instance.new("TextBox")
 yBox.Parent = row
-yBox.Text = "2000000000"
+yBox.Text = "5000000"
 yBox.Size = UDim2.fromOffset(80, 28)
 yBox.ClearTextOnFocus = false
 yBox.Font = Enum.Font.SourceSansBold
