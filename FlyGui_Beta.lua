@@ -766,7 +766,6 @@ flyKnob.AutoButtonColor = false
 flyKnob.Text = ""
 flyKnob.BackgroundColor3 = Color3.fromRGB(235, 235, 235)
 flyKnob.Size = UDim2.fromOffset(16, 16)
-flyKnob.Position = UDim2.fromOffset(22, 2)
 flyKnob.ZIndex = 3
 
 local flyKnobCorner = Instance.new("UICorner")
@@ -778,6 +777,9 @@ flyKnobStroke.Color = Color3.fromRGB(235, 235, 235)
 flyKnobStroke.Thickness = 1
 flyKnobStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 flyKnobStroke.Parent = flyKnob
+
+flyKnob.Position = UDim2.fromOffset(2, 2)
+toggle.BackgroundColor3 = Color3.fromRGB(88,200,120)
 
 onof.Name = "onof"
 onof.Parent = Frame
@@ -1086,14 +1088,14 @@ function magiskk.StopVertical()
 
 	stopUpTextVisual()
 
-	local escapeSlot = Slots and Slots[ESCAPE_SLOT_INDEX]
-	if escapeSlot and escapeSlot.Pill then
-		syncSlotUI(escapeSlot, false)
-	end
+	
 
 
 	updatePlatformStand()
 end
+
+toggle.BackgroundColor3 = Color3.fromRGB(88,200,120)
+flyKnob.Position = UDim2.fromOffset(2, 2)
 
 
 up.MouseButton1Click:Connect(function()
