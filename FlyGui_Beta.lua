@@ -19,6 +19,7 @@ local MAX_INPUT_VALUE = 2000000000
 
 local nowe = false
 local escapeEnabled = false
+local escapeDebounce = false
 local upEnabled = false
 
 local function updatePlatformStand()
@@ -920,19 +921,11 @@ local noclipCache = {}
 local escapeDebounce = false
 
 
-local function toggleEscape()
-	if escapeDebounce then return end
-	escapeDebounce = true
-	task.delay(0.15, function()
-		escapeDebounce = false
-	end)
-
-	escapeEnabled = not escapeEnabled
-
-	if escapeEnabled then
+local function syncEscapeUI(state)
+	if state then
 		toggle.BackgroundColor3 = Color3.fromRGB(120,200,120)
 		flyKnob:TweenPosition(
-			UDim2.fromOffset(22,2),
+			UDim2.fromOffset(22, 2),
 			Enum.EasingDirection.Out,
 			Enum.EasingStyle.Quad,
 			0.15,
@@ -941,12 +934,27 @@ local function toggleEscape()
 	else
 		toggle.BackgroundColor3 = Color3.fromRGB(88,200,120)
 		flyKnob:TweenPosition(
-			UDim2.fromOffset(2,2),
+			UDim2.fromOffset(2, 2),
 			Enum.EasingDirection.Out,
 			Enum.EasingStyle.Quad,
 			0.15,
 			true
 		)
+	end
+end
+
+
+local function toggleEscape()
+	if escapeDebounce then return end
+	escapeDebounce = true
+	task.delay(0.15, function()
+		escapeDebounce = false
+	end)
+
+	escapeEnabled = not escapeEnabled
+	syncEscapeUI(escapeEnabled)
+
+	if not escapeEnabled then
 		stopEscape()
 	end
 
@@ -1379,10 +1387,14 @@ Players.LocalPlayer.CharacterAdded:Connect(function(char)
 
 	nowe = false
 	tpwalking = false
-		
-	upEnabled = false
-	escapeEnabled = false
+
+    upEnabled = false
+    escapeEnabled = false
+    stopEscape()
+	syncEscapeUI(false)
     updatePlatformStand()
+
+		
 	
 	stopUpTextVisual()
 	stopFlyVisuals()
@@ -1427,14 +1439,11 @@ RunService.Heartbeat:Connect(function()
 
 	local hp = getHealthPercent()
 
-	
 	if hp < ESCAPE_HP_LOW then
 		if not escapeTween then
 			startEscape()
 			updatePlatformStand()
 		end
-
-	
 	elseif hp > ESCAPE_HP_HIGH then
 		if escapeTween then
 			stopEscape()
