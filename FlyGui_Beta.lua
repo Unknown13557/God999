@@ -919,6 +919,7 @@ local noclipCache = {}
 
 local escapeDebounce = false
 
+
 local function toggleEscape()
 	if escapeDebounce then return end
 	escapeDebounce = true
@@ -937,7 +938,6 @@ local function toggleEscape()
 			0.15,
 			true
 		)
-		startEscape() 
 	else
 		toggle.BackgroundColor3 = Color3.fromRGB(88,200,120)
 		flyKnob:TweenPosition(
@@ -948,11 +948,10 @@ local function toggleEscape()
 			true
 		)
 		stopEscape()
-
 	end
+
 	updatePlatformStand()
 end
-
 
 
 
@@ -1094,14 +1093,15 @@ end
 toggle.BackgroundColor3 = Color3.fromRGB(88,200,120)
 flyKnob.Position = UDim2.fromOffset(2, 2)
 
-
 up.MouseButton1Click:Connect(function()
 	upEnabled = not upEnabled
 
 	if upEnabled then
 		startUp()
+		startUpTextVisual()
 	else
 		stopUp()
+		stopUpTextVisual()
 	end
 
 	updatePlatformStand()
@@ -1439,11 +1439,6 @@ RunService.Heartbeat:Connect(function()
 		if escapeTween then
 			stopEscape()
 			updatePlatformStand()
-
-			
-			escapeEnabled = false
-			toggle.BackgroundColor3 = Color3.fromRGB(88,200,120)
-			flyKnob.Position = UDim2.fromOffset(2, 2)
 		end
 	end
 end)
