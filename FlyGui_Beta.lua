@@ -20,7 +20,11 @@ local MAX_INPUT_VALUE = 2000000000
 local nowe = false
 local escapeEnabled = false
 local escapeDebounce = false
+
 local upEnabled = false
+local upConn
+local upTween
+local lockedXZ
 
 local function updatePlatformStand()
 	local char = Players.LocalPlayer.Character
@@ -491,55 +495,81 @@ local function stopEscape()
 end
 
 
-
 local function startUp()
+	if upConn then return end
+
+	upEnabled = true
+	startUpTextVisual()
+
 	local char = Players.LocalPlayer.Character
 	if not char then return end
 
 	local hrp = char:FindFirstChild("HumanoidRootPart")
 	if not hrp then return end
 
-	local targetY, speed = readSlot1Config()
-	if not targetY then return end
+	lockedXZ = Vector3.new(hrp.Position.X, 0, hrp.Position.Z)
 
+	upConn = RunService.Heartbeat:Connect(function()
+		if not upEnabled then return end
 
-	if upTween then
-		upTween:Cancel()
-	end
+		local targetY, speed = readSlot1Config()
+		if not targetY or not speed then return end
 
-	local startCF = hrp.CFrame
-	local targetCF = CFrame.new(
-		startCF.Position.X,
-		targetY,
-		startCF.Position.Z
-	) * CFrame.Angles(
-		startCF:ToEulerAnglesXYZ()
-	)
+		if upTween then
+			upTween:Cancel()
+			upTween = nil
+		end
 
-	local duration = math.abs(targetY - startCF.Position.Y) / speed
+		local pos = hrp.Position
 
-	upTween = TweenService:Create(
-		hrp,
-		TweenInfo.new(duration, Enum.EasingStyle.Linear),
-		{ CFrame = targetCF }
-	)
+		local targetCF = CFrame.new(
+			lockedXZ.X,
+			targetY,
+			lockedXZ.Z
+		) * hrp.CFrame.Rotation
 
-	upTween:Play()
-upTween.Completed:Connect(function()
-	upTween = nil
-	upEnabled = false
-	stopUpTextVisual()
-end)
+		local dist = math.abs(pos.Y - targetY)
+		local duration = math.max(dist / speed, 0.03)
+
+		upTween = TweenService:Create(
+			hrp,
+			TweenInfo.new(duration, Enum.EasingStyle.Linear),
+			{ CFrame = targetCF }
+		)
+
+		upTween:Play()
+	end)
 end
 
 
-
 local function stopUp()
+	upEnabled = false
+	stopUpTextVisual()
+
+	if upConn then
+		upConn:Disconnect()
+		upConn = nil
+	end
+
 	if upTween then
 		upTween:Cancel()
 		upTween = nil
 	end
+
+	lockedXZ = nil
+
+	local char = Players.LocalPlayer.Character
+	if char then
+		local hrp = char:FindFirstChild("HumanoidRootPart")
+		if hrp then
+			hrp.AssemblyLinearVelocity = Vector3.zero
+			hrp.AssemblyAngularVelocity = Vector3.zero
+		end
+	end
 end
+
+
+
 
 
 local slot2 = Slots[2]
