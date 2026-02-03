@@ -956,7 +956,10 @@ local function toggleEscape()
 		stopEscape()
 
 	end
+	updatePlatformStand()
 end
+
+
 
 
 toggle.MouseButton1Click:Connect(toggleEscape)
@@ -1073,7 +1076,34 @@ end
 
 
 function magiskk.StopVertical()
-    stopUpTextVisual()
+
+	upEnabled = false
+	escapeEnabled = false
+
+	if upTween then
+		pcall(function()
+			upTween:Cancel()
+		end)
+		upTween = nil
+	end
+
+	if escapeTween then
+		pcall(function()
+			escapeTween:Cancel()
+		end)
+		escapeTween = nil
+	end
+
+
+	stopUpTextVisual()
+
+	local escapeSlot = Slots and Slots[ESCAPE_SLOT_INDEX]
+	if escapeSlot and escapeSlot.Pill then
+		syncSlotUI(escapeSlot, false)
+	end
+
+
+	updatePlatformStand()
 end
 
 
@@ -1357,8 +1387,7 @@ end)
 
 Players.LocalPlayer.CharacterAdded:Connect(function(char)
 	
-	stopUp()
-	stopEscape()
+	
 
 	nowe = false
 	tpwalking = false
@@ -1370,6 +1399,8 @@ Players.LocalPlayer.CharacterAdded:Connect(function(char)
 	stopUpTextVisual()
 	stopFlyVisuals()
 
+    stopUp()		
+	stopEscape()
 	
 	
 	lastClick = 0
@@ -1413,8 +1444,11 @@ if hp < ESCAPE_HP_LOW then
 		startEscape()
 		updatePlatformStand()
 	end
-elseif hp > ESCAPE_HP_HIGH then
-	stopEscape()
-	updatePlatformStand()
+else
+		if hp > ESCAPE_HP_HIGH then
+	if escapeTween then
+		stopEscape()
+		updatePlatformStand()
 	end
+		end
 end)
