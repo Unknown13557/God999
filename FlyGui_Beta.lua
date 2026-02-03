@@ -426,7 +426,6 @@ local function readSlot1Config()
 	return y, sp
 end
 
-
 local function startEscape()
 	local char = Players.LocalPlayer.Character
 	if not char then return end
@@ -438,6 +437,24 @@ local function startEscape()
 	if not targetY then return end
 
 
+	if Settings.BypassTween then
+		if escapeTween then
+			escapeTween:Cancel()
+			escapeTween = nil
+		end
+
+		local cf = hrp.CFrame
+		hrp.CFrame = CFrame.new(
+			cf.Position.X,
+			targetY,
+			cf.Position.Z
+		) * CFrame.Angles(cf:ToEulerAnglesXYZ())
+
+		updatePlatformStand()
+		return
+	end
+
+
 	if escapeTween then
 		escapeTween:Cancel()
 	end
@@ -447,9 +464,7 @@ local function startEscape()
 		startCF.Position.X,
 		targetY,
 		startCF.Position.Z
-	) * CFrame.Angles(
-		startCF:ToEulerAnglesXYZ()
-	)
+	) * CFrame.Angles(startCF:ToEulerAnglesXYZ())
 
 	local duration = math.abs(targetY - startCF.Position.Y) / speed
 
@@ -461,10 +476,11 @@ local function startEscape()
 
 	escapeTween:Play()
 	escapeTween.Completed:Connect(function()
-	escapeTween = nil
-	updatePlatformStand()
-  end)
+		escapeTween = nil
+		updatePlatformStand()
+	end)
 end
+
 
 
 local function stopEscape()
