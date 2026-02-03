@@ -444,25 +444,27 @@ local function startEscape()
 		escapeTween = nil
 	end
 
-	
+
 	local lockedY = targetY
 
-	
-	escapeEnabled = false
-	syncEscapeUI(false)
-
-	
-	if escapeConn then
-		escapeConn:Disconnect()
-		escapeConn = nil
-	end
-
-	
+		
 	local cf = hrp.CFrame
 	hrp:PivotTo(
 		CFrame.new(cf.Position.X, lockedY, cf.Position.Z)
 		* CFrame.Angles(cf:ToEulerAnglesXYZ())
 	)
+
+	
+	task.defer(function()
+	
+		escapeEnabled = false
+		syncEscapeUI(false)
+
+		if escapeConn then
+			escapeConn:Disconnect()
+			escapeConn = nil
+		end
+	end)
 
 	return
 	end
@@ -483,7 +485,7 @@ local function startEscape()
 
 	escapeTween = TweenService:Create(
 		hrp,
-		TweenInfo.new(duration, Enum.EasingStyle.Linear),
+		TweenI.new(duration, Enum.EasingStyle.Linear),
 		{ CFrame = targetCF }
 	)
 
