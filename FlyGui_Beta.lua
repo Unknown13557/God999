@@ -19,13 +19,9 @@ local MAX_INPUT_VALUE = 2000000000
 
 local nowe = false
 local escapeEnabled = false
-local escapeTween = nil
 local escapeActive = false
 local upEnabled = false
 local upConn
-local upTween = nil
-local escapeDebounce = false
-local escapeBypassLatched = false
 
 local magiskk = {}
 local flySpeed = 18
@@ -740,6 +736,25 @@ slot3DownCorner.Parent = slot3DownBtn
 
 
 
+
+local function forceMoveY(hrp, targetY, speed, dt)
+	local pos = hrp.Position
+	local diff = targetY - pos.Y
+
+	local maxStep = speed * dt
+	if diff > maxStep then
+		diff = maxStep
+	elseif diff < -maxStep then
+		diff = -maxStep
+	end
+
+	hrp.CFrame =
+		CFrame.new(pos.X, pos.Y + diff, pos.Z)
+		* hrp.CFrame.Rotation
+end
+
+
+
 local function startEscape()
 	local char = Players.LocalPlayer.Character
 	if not char then return end
@@ -748,12 +763,13 @@ local function startEscape()
 	if not hrp then return end
 
 	local targetY, speed = readSlot1Config()
-	if not targetY then return end
+	if not targetY or not speed then return end
 
+	
 	if Settings.BypassTween then
-		if escapeTween then
-			escapeTween:Cancel()
-			escapeTween = nil
+		if escapeMoveConn then
+			escapeMoveConn:Disconnect()
+			escapeMoveConn = nil
 		end
 
 		local cf = hrp.CFrame
@@ -762,37 +778,31 @@ local function startEscape()
 			targetY,
 			cf.Position.Z
 		) * cf.Rotation
-
 		return
 	end
 
-	if escapeTween then return end
+	if escapeMoveConn then return end
 
-	local startCF = hrp.CFrame
-	local targetCF = CFrame.new(
-		startCF.Position.X,
-		targetY,
-		startCF.Position.Z
-	) * startCF.Rotation
+	escapeMoveConn = RunService.Heartbeat:Connect(function(dt)
+		if not escapeEnabled or not escapeActive or Settings.BypassTween then
+			return
+		end
 
-	local duration = math.abs(targetY - startCF.Position.Y) / math.max(speed, 0.01)
+		if not hrp.Parent then
+			return
+		end
 
-	escapeTween = TweenService:Create(
-		hrp,
-		TweenInfo.new(duration, Enum.EasingStyle.Linear),
-		{ CFrame = targetCF }
-	)
+		local ty, sp = readSlot1Config()
+		if not ty or not sp then return end
 
-	escapeTween:Play()
-	escapeTween.Completed:Once(function()
-		escapeTween = nil
+		forceMoveY(hrp, ty, sp, dt)
 	end)
 end
 
 local function stopEscape()
-	if escapeTween then
-		escapeTween:Cancel()
-		escapeTween = nil
+	if escapeMoveConn then
+		escapeMoveConn:Disconnect()
+		escapeMoveConn = nil
 	end
 end
 
@@ -898,63 +908,41 @@ RunService.Heartbeat:Connect(function()
 end)
 
 
+local upMoveConn = nil
 
 local function startUp()
 	if upEnabled then return end
 	upEnabled = true
 	startUpTextVisual()
 
-	local char = Players.LocalPlayer.Character
-	if not char then return end
-	local hrp = char:FindFirstChild("HumanoidRootPart")
-	if not hrp then return end
-
-	local function runUp()
-		if not upEnabled then return end
-
-		local targetY, speed = readSlot1Config()
-		if not targetY then return end
-
-		if upTween then
-			upTween:Cancel()
-			upTween = nil
-		end
-
-		local startCF = hrp.CFrame
-		local targetCF = CFrame.new(
-			startCF.Position.X,
-			targetY,
-			startCF.Position.Z
-		) * startCF.Rotation
-
-		local duration = math.abs(targetY - startCF.Position.Y) / math.max(speed, 0.01)
-
-		upTween = TweenService:Create(
-			hrp,
-			TweenInfo.new(duration, Enum.EasingStyle.Linear),
-			{ CFrame = targetCF }
-		)
-
-		upTween:Play()
-		upTween.Completed:Once(function()
-			upTween = nil
-			-- 🔁 nếu vẫn bật → giật tiếp
-			if upEnabled then
-				task.defer(runUp)
-			end
-		end)
+	if upMoveConn then
+		upMoveConn:Disconnect()
 	end
 
-	runUp()
+	upMoveConn = RunService.Heartbeat:Connect(function(dt)
+		if not upEnabled then return end
+
+		local char = Players.LocalPlayer.Character
+		if not char then return end
+		local hrp = char:FindFirstChild("HumanoidRootPart")
+		if not hrp then return end
+
+		local targetY = tonumber(yBox.Text)
+		local speed   = tonumber(spBox.Text)
+		if not targetY or not speed then return end
+
+		forceMoveY(hrp, targetY, speed, dt)
+	end)
 end
+
 
 local function stopUp()
 	upEnabled = false
 	stopUpTextVisual()
 
-	if upTween then
-		upTween:Cancel()
-		upTween = nil
+	if upMoveConn then
+		upMoveConn:Disconnect()
+		upMoveConn = nil
 	end
 end
 
