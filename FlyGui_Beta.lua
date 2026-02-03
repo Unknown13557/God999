@@ -1397,7 +1397,6 @@ Players.LocalPlayer.CharacterAdded:Connect(function(char)
 	stopUp()
     escapeEnabled = false
     stopEscape()
-	syncEscapeUI(false)
     updatePlatformStand()
 
 		
