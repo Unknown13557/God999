@@ -632,20 +632,15 @@ slot3DownCorner.Parent = slot3DownBtn
 
 
 
-
-
 local function updatePlatformStand()
 	local char = Players.LocalPlayer.Character
 	local hum = char and char:FindFirstChildOfClass("Humanoid")
 	if not hum then return end
 
-	hum.PlatformStand = nowe
-end
-	if nowe then
-	hum.PlatformStand = true
-else
 	hum.PlatformStand = false
 end
+
+
 
 local function pointerPos(input)
 	if input.UserInputType == Enum.UserInputType.Touch then
@@ -933,38 +928,20 @@ local function startUp()
 
 	lockedXZ = Vector3.new(hrp.Position.X, 0, hrp.Position.Z)
 
-	upConn = RunService.Heartbeat:Connect(function()
-		if not upEnabled then return end
+	
+    upConn = RunService.Heartbeat:Connect(function()
+	if not upEnabled then return end
 
-		local targetY, speed = readSlot1Config()
-		if not targetY or not speed then return end
+	local targetY = tonumber(yBox.Text)
+	if not targetY then return end
 
-		if upTween then
-			upTween:Cancel()
-			upTween = nil
-		end
-
-		local pos = hrp.Position
-
-		local targetCF = CFrame.new(
-			lockedXZ.X,
-			targetY,
-			lockedXZ.Z
-		) * hrp.CFrame.Rotation
-
-		local dist = math.abs(pos.Y - targetY)
-		local duration = math.max(dist / speed, 0.03)
-
-		upTween = TweenService:Create(
-			hrp,
-			TweenInfo.new(duration, Enum.EasingStyle.Linear),
-			{ CFrame = targetCF }
-		)
-
-		upTween:Play()
-	end)
-end
-
+	local pos = hrp.Position
+	hrp.CFrame = CFrame.new(
+		lockedXZ.X,
+		targetY,
+		lockedXZ.Z
+	) * hrp.CFrame.Rotation
+end)
 
 
 toggle.Activated:Connect(toggleEscape)
