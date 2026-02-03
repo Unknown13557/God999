@@ -1380,20 +1380,18 @@ Players.LocalPlayer.CharacterAdded:Connect(function(char)
 
 	nowe = false
 	tpwalking = false
-
+    stopNoclip()
+	
     upEnabled = false
 	stopUp()
     escapeEnabled = false
     stopEscape()
 	syncEscapeUI(false)
     updatePlatformStand()
-
 		
 	
 	stopUpTextVisual()
-	stopFlyVisuals()
-
-    
+	stopFlyVisuals()    
 	
 	
 	lastClick = 0
