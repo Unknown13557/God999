@@ -779,7 +779,8 @@ flyKnobStroke.Parent = flyKnob
 flyKnob.Position = UDim2.fromOffset(2, 2)
 toggle.BackgroundColor3 = Color3.fromRGB(88,200,120)
 
-
+escapeEnabled = false
+syncEscapeUI(false)
 
 onof.Name = "onof"
 onof.Parent = Frame
@@ -918,6 +919,16 @@ local noclipConn = nil
 local noclipCache = {}
 
 
+local function syncEscapeUI(state)
+	if state then
+		toggle.BackgroundColor3 = Color3.fromRGB(120,200,120)
+		flyKnob.Position = UDim2.fromOffset(22, 2)
+	else
+		toggle.BackgroundColor3 = Color3.fromRGB(88,200,120)
+		flyKnob.Position = UDim2.fromOffset(2, 2)
+	end
+end
+
 local function toggleEscape()
 	if escapeDebounce then return end
 	escapeDebounce = true
@@ -927,31 +938,14 @@ local function toggleEscape()
 
 	escapeEnabled = not escapeEnabled
 
-	if escapeEnabled then
-		-- ON
-		toggle.BackgroundColor3 = Color3.fromRGB(120,200,120)
-		flyKnob:TweenPosition(
-			UDim2.fromOffset(22, 2),
-			Enum.EasingDirection.Out,
-			Enum.EasingStyle.Quad,
-			0.15,
-			true
-		)
-	else
-		-- OFF
-		toggle.BackgroundColor3 = Color3.fromRGB(88,200,120)
-		flyKnob:TweenPosition(
-			UDim2.fromOffset(2, 2),
-			Enum.EasingDirection.Out,
-			Enum.EasingStyle.Quad,
-			0.15,
-			true
-		)
+	if not escapeEnabled then
 		stopEscape()
 	end
 
+	syncEscapeUI(escapeEnabled)
 	updatePlatformStand()
 end
+
 
 
 toggle.Activated:Connect(toggleEscape)
@@ -1423,12 +1417,14 @@ RunService.Heartbeat:Connect(function()
 	if not escapeEnabled then return end
 
 	local hp = getHealthPercent()
+	if not hp then return end
 
 	if hp < ESCAPE_HP_LOW then
 		if not escapeTween then
 			startEscape()
 			updatePlatformStand()
 		end
+
 	elseif hp > ESCAPE_HP_HIGH then
 		if escapeTween then
 			stopEscape()
