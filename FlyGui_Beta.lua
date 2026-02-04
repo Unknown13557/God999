@@ -739,6 +739,136 @@ slot3DownCorner.Parent = slot3DownBtn
 
 
 
+
+-- =====================================================
+-- SLOT 5 : WAYPOINT (SINGLE DISPLAY BOX)
+-- =====================================================
+
+local slot5 = Slots[5]
+slot5.Label.Text = "Waypoint"
+slot5.State = false
+slot5.Frame.ClipsDescendants = true
+
+-- ===== Layout =====
+local row5 = Instance.new("Frame")
+row5.Parent = slot5.Frame
+row5.Size = UDim2.new(1, -12, 1, -8)
+row5.Position = UDim2.fromOffset(6, 4)
+row5.BackgroundTransparency = 1
+row5.ZIndex = 20
+
+local layout5 = Instance.new("UIListLayout")
+layout5.Parent = row5
+layout5.FillDirection = Enum.FillDirection.Horizontal
+layout5.VerticalAlignment = Enum.VerticalAlignment.Center
+layout5.Padding = UDim.new(0, 6)
+
+-- ===== Waypoint display box (NON-interactive) =====
+local wpBox = Instance.new("TextBox")
+wpBox.Parent = row5
+wpBox.Size = UDim2.fromOffset(140, 28)
+wpBox.Text = "Position"                 -- ✅ mặc định
+wpBox.ClearTextOnFocus = false
+wpBox.TextEditable = false              -- 🔒 không nhập
+wpBox.Active = false                    -- 🔒 không nhận input
+wpBox.Selectable = false                -- 🔒 không focus
+wpBox.Font = Enum.Font.SourceSansBold
+wpBox.TextSize = 14
+wpBox.TextXAlignment = Enum.TextXAlignment.Center
+wpBox.TextColor3 = Color3.fromRGB(200,200,200)
+wpBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
+wpBox.BorderSizePixel = 0
+wpBox.ZIndex = 21
+
+Instance.new("UICorner", wpBox).CornerRadius = UDim.new(0,6)
+
+-- ===== Save Button =====
+local saveBtn = Instance.new("TextButton")
+saveBtn.Parent = row5
+saveBtn.Size = UDim2.fromOffset(55, 28)
+saveBtn.Text = "Save"
+saveBtn.Font = Enum.Font.SourceSansBold
+saveBtn.TextSize = 14
+saveBtn.TextColor3 = Color3.fromRGB(0,0,0)
+saveBtn.BackgroundColor3 = Color3.fromRGB(120,200,120)
+saveBtn.BorderSizePixel = 0
+saveBtn.ZIndex = 21
+
+Instance.new("UICorner", saveBtn).CornerRadius = UDim.new(0,6)
+
+-- ===== Waypoint Data =====
+local waypointCF = nil
+
+local function formatPos(v)
+	return string.format(
+		"%d , %d , %d",
+		math.floor(v.X),
+		math.floor(v.Y),
+		math.floor(v.Z)
+	)
+end
+
+-- ===== Save current position =====
+saveBtn.MouseButton1Click:Connect(function()
+	local char = LocalPlayer.Character
+	local hrp = char and char:FindFirstChild("HumanoidRootPart")
+	if not hrp then return end
+
+	waypointCF = hrp.CFrame
+	wpBox.Text = formatPos(hrp.Position)
+end)
+
+-- ===== Teleport function =====
+local function teleportToWaypoint()
+	if not waypointCF then return end
+
+	local char = LocalPlayer.Character
+	local hrp = char and char:FindFirstChild("HumanoidRootPart")
+	if not hrp then return end
+
+	hrp.AssemblyLinearVelocity = Vector3.zero
+	hrp.AssemblyAngularVelocity = Vector3.zero
+	hrp.CFrame = waypointCF
+end
+
+-- ===== Pill ON / OFF =====
+slot5.Pill.MouseButton1Click:Connect(function()
+	slot5.State = not slot5.State
+
+	if slot5.State then
+		slot5.Pill.BackgroundColor3 = Color3.fromRGB(120,200,120)
+		slot5.SlotKnob:TweenPosition(
+			UDim2.fromOffset(20,2),
+			Enum.EasingDirection.Out,
+			Enum.EasingStyle.Quad,
+			0.15,
+			true
+		)
+
+		teleportToWaypoint()
+	else
+		slot5.Pill.BackgroundColor3 = Color3.fromRGB(80,80,80)
+		slot5.SlotKnob:TweenPosition(
+			UDim2.fromOffset(2,2),
+			Enum.EasingDirection.Out,
+			Enum.EasingStyle.Quad,
+			0.15,
+			true
+		)
+	end
+end)
+
+
+
+
+
+
+
+
+
+
+
+
 local function forceMoveY(hrp, targetY, speed, dt)
 	hrp.AssemblyLinearVelocity =
 		Vector3.new(
