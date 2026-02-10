@@ -11,7 +11,7 @@ gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
 local label = Instance.new("TextLabel")
 label.Parent = gui
-label.Size = UDim2.fromOffset(260, 70)
+label.Size = UDim2.fromOffset(200, 70)
 label.Position = UDim2.fromOffset(20, 20)
 label.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 label.BackgroundTransparency = 0.15
