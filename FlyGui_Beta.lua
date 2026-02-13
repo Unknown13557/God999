@@ -3013,9 +3013,96 @@ slot13.Pill.MouseButton1Click:Connect(function()
 end)
 
 
+local slot14 = Slots[14]
+slot14.Label.Text = "TP Backstab"
+slot14.State = false
+slot14.Frame.ClipsDescendants = true
+
+local row14 = Instance.new("Frame")
+row14.Parent = slot14.Frame
+row14.Size = UDim2.new(1, -12, 1, -8)
+row14.Position = UDim2.fromOffset(140, 4)
+row14.BackgroundTransparency = 1
+row14.ZIndex = 20
+
+local layout14 = Instance.new("UIListLayout")
+layout14.Parent = row14
+layout14.FillDirection = Enum.FillDirection.Horizontal
+layout14.VerticalAlignment = Enum.VerticalAlignment.Center
+layout14.Padding = UDim.new(0, 6)
 
 
 
+local backstabRadiusBox = Instance.new("TextBox")
+backstabRadiusBox.Parent = row14
+backstabRadiusBox.Size = UDim2.fromOffset(50, 28)
+backstabRadiusBox.Text = "4"
+backstabRadiusBox.ClearTextOnFocus = false
+backstabRadiusBox.Font = Enum.Font.SourceSansBold
+backstabRadiusBox.TextSize = 14
+backstabRadiusBox.TextColor3 = Color3.fromRGB(200,200,200)
+backstabRadiusBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
+backstabRadiusBox.BorderSizePixel = 0
+Instance.new("UICorner", backstabRadiusBox).CornerRadius = UDim.new(0,6)
+
+local MIN_BACK_RADIUS = 2
+local MAX_BACK_RADIUS = 15
+
+local function readBackstabRadius()
+	local num = tonumber(backstabRadiusBox.Text)
+	if not num then return MIN_BACK_RADIUS end
+	return math.clamp(math.floor(num), MIN_BACK_RADIUS, MAX_BACK_RADIUS)
+end
+
+backstabRadiusBox:GetPropertyChangedSignal("Text"):Connect(function()
+	local filtered = backstabRadiusBox.Text:gsub("%D","")
+	if filtered == "" then
+		backstabRadiusBox.Text = ""
+		return
+	end
+
+	local num = math.clamp(
+		tonumber(filtered),
+		MIN_BACK_RADIUS,
+		MAX_BACK_RADIUS
+	)
+
+	backstabRadiusBox.Text = tostring(num)
+end)
+
+
+slot14.Pill.MouseButton1Click:Connect(function()
+
+	slot14.State = not slot14.State
+
+	if slot14.State then
+
+		slot14.Pill.BackgroundColor3 = Color3.fromRGB(120,200,120)
+		slot14.SlotKnob:TweenPosition(
+			UDim2.fromOffset(20,2),
+			Enum.EasingDirection.Out,
+			Enum.EasingStyle.Quad,
+			0.15,
+			true
+		)
+
+		startBackstab()
+
+	else
+
+		slot14.Pill.BackgroundColor3 = Color3.fromRGB(80,80,80)
+		slot14.SlotKnob:TweenPosition(
+			UDim2.fromOffset(2,2),
+			Enum.EasingDirection.Out,
+			Enum.EasingStyle.Quad,
+			0.15,
+			true
+		)
+
+		stopBackstab()
+
+	end
+end)
 
 
 
