@@ -3011,7 +3011,7 @@ local JumpForce = Slots[7]
 JumpForce.Label.Text = "Jump Force"
 JumpForce.Frame.ClipsDescendants = true
 
-local jumpValue = 200
+local jumpValue = 100
 
 --------------------------------------------------
 -- UI
@@ -3085,7 +3085,7 @@ end)
 BindSlot(JumpForce,{
 	Name = "JumpForce",
 	Type = "HeartbeatParallel",
-	Default = true,
+	Default = false,
 
 	Callback = function(dt,char,hum,hrp)
 
@@ -4987,15 +4987,15 @@ if restoreCollision then
 end
 
 -- reset slot6 UI
-if Slots and Slots[6] then
-	Slots[6].State = false
+if Slots and Slots[8] then
+	Slots[8].State = false
 
-	if Slots[6].Pill then
-		Slots[6].Pill.BackgroundColor3 = Color3.fromRGB(80,80,80)
+	if Slots[8].Pill then
+		Slots[8].Pill.BackgroundColor3 = Color3.fromRGB(80,80,80)
 	end
 
-	if Slots[6].SlotKnob then
-		Slots[6].SlotKnob.Position = UDim2.fromOffset(2,2)
+	if Slots[8].SlotKnob then
+		Slots[8].SlotKnob.Position = UDim2.fromOffset(2,2)
 	end
 end
 
