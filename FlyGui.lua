@@ -1073,13 +1073,13 @@ onof.MouseButton1Down:Connect(function()
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown,true)
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Flying,true)
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Freefall,true)
-	   speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp,true)
+	    speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp,true)
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping,true)
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Landed,true)
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Physics,true)
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.PlatformStanding,true)
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll,true)
-	   speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Running,true)
+	    speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Running,true)
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.RunningNoPhysics,true)
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated,true)
 		speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.StrafingNoPhysics,true)
@@ -3009,7 +3009,7 @@ end)
 -- SLOTp5 - JUMP FORCE
 --------------------------------------------------
 
-local JumpForce = Slots[5]
+local JumpForce = Slots[7]
 JumpForce.Label.Text = "Jump Force"
 JumpForce.Frame.ClipsDescendants = true
 
@@ -3116,7 +3116,7 @@ local jumpHeld = false
 
 pcall(function()
 
-local InfinityJump = Slots[6]
+local InfinityJump = Slots[13]
 InfinityJump.Label.Text = "Infinity Jump"
 InfinityJump.Frame.ClipsDescendants = true
 
@@ -3772,7 +3772,7 @@ layoutTeleportBackstab.Padding = UDim.new(0,1)
 local radiusBackstabBox = Instance.new("TextBox")
 radiusBackstabBox.Parent = rowTeleportBackstab
 radiusBackstabBox.Size = UDim2.fromOffset(40,28)
-radiusBackstabBox.Text = "990"
+radiusBackstabBox.Text = "100"
 radiusBackstabBox.PlaceholderText = "Radius"
 radiusBackstabBox.ClearTextOnFocus = false
 radiusBackstabBox.Font = Enum.Font.SourceSansBold
@@ -3921,7 +3921,7 @@ end)
 
 pcall(function()
 
-local Waypoint = Slots[7]
+local Waypoint = Slots[5]
 Waypoint.Label.Text = "Waypoint"
 Waypoint.Frame.ClipsDescendants = true
 
@@ -4344,7 +4344,7 @@ end)
 
 
 
-local SpectatorPlayer = Slots[13]
+local SpectatorPlayer = Slots[6]
 SpectatorPlayer.Label.Text = "Spectator Player"
 SpectatorPlayer.Frame.ClipsDescendants = true
 
