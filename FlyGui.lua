@@ -2427,7 +2427,7 @@ InstantTeleportY.Frame.ClipsDescendants = true
 -- CONFIG
 --------------------------------------------------
 
-local MIN_INSTANT_TP_Y = 30
+local MIN_INSTANT_TP_Y = 200
 local MAX_INSTANT_TP_Y = 20000000
 
 --------------------------------------------------
