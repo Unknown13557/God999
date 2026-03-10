@@ -3703,7 +3703,7 @@ layoutTeleportBackstab.Padding = UDim.new(0,1)
 local radiusBackstabBox = Instance.new("TextBox")
 radiusBackstabBox.Parent = rowTeleportBackstab
 radiusBackstabBox.Size = UDim2.fromOffset(40,28)
-radiusBackstabBox.Text = "990"
+radiusBackstabBox.Text = "500"
 radiusBackstabBox.PlaceholderText = "Radius"
 radiusBackstabBox.ClearTextOnFocus = false
 radiusBackstabBox.Font = Enum.Font.SourceSansBold
@@ -3721,7 +3721,7 @@ Instance.new("UICorner",radiusBackstabBox).CornerRadius = UDim.new(0,6)
 local MIN_BACKSTAB_RADIUS = 1
 local MAX_BACKSTAB_RADIUS = 10000
 
-local backstabRadius = 990
+local backstabRadius = 500
 
 radiusBackstabBox:GetPropertyChangedSignal("Text"):Connect(function()
 
@@ -4146,8 +4146,6 @@ end)
 
 
 
-
-
 local AntiEscape = Slots[6]
 AntiEscape.Label.Text = "Anti Escape"
 AntiEscape.Frame.ClipsDescendants = true
@@ -4157,6 +4155,15 @@ AntiEscape.Frame.ClipsDescendants = true
 --------------------------------------------------
 
 local dynamicFloor = nil
+local dynamicCeiling = nil
+
+local CEILING_OFFSET = 300
+local FLOOR_OFFSET = -100
+
+local HP_DISABLE = 45
+local HP_ENABLE = 75
+
+local ceilingLockEnabled = true
 
 --------------------------------------------------
 -- START
@@ -4167,12 +4174,20 @@ local function startDynamicHeight()
 	if dynamicFloor then return end
 
 	dynamicFloor = Instance.new("Part")
-	dynamicFloor.Size = Vector3.new(1, 1, 1)
+	dynamicFloor.Size = Vector3.new(1,1,1)
 	dynamicFloor.Anchored = true
 	dynamicFloor.CanCollide = true
 	dynamicFloor.Transparency = 1
 	dynamicFloor.Name = "DynamicFloor"
 	dynamicFloor.Parent = workspace
+
+	dynamicCeiling = Instance.new("Part")
+	dynamicCeiling.Size = Vector3.new(1,1,1)
+	dynamicCeiling.Anchored = true
+	dynamicCeiling.CanCollide = true
+	dynamicCeiling.Transparency = 1
+	dynamicCeiling.Name = "DynamicCeiling"
+	dynamicCeiling.Parent = workspace
 
 end
 
@@ -4186,6 +4201,27 @@ local function stopDynamicHeight()
 		dynamicFloor:Destroy()
 		dynamicFloor = nil
 	end
+
+	if dynamicCeiling then
+		dynamicCeiling:Destroy()
+		dynamicCeiling = nil
+	end
+
+end
+
+--------------------------------------------------
+-- HP HELPER
+--------------------------------------------------
+
+local function getHPPercent()
+
+	local char = LocalPlayer.Character
+	if not char then return 100 end
+
+	local hum = char:FindFirstChildOfClass("Humanoid")
+	if not hum or hum.MaxHealth <= 0 then return 100 end
+
+	return (hum.Health / hum.MaxHealth) * 100
 
 end
 
@@ -4215,36 +4251,87 @@ local function updateDynamicHeight()
 	local targetChar = selectedPlayer.Character
 	if not targetChar then return end
 
-	local targetHRP =
-	targetChar:FindFirstChild("HumanoidRootPart")
-
+	local targetHRP = targetChar:FindFirstChild("HumanoidRootPart")
 	if not targetHRP then return end
 
 	local targetY = targetHRP.Position.Y
 	local pos = myHRP.Position
 
 	--------------------------------------------------
+	-- FLOOR (targetY - 20)
+	--------------------------------------------------
+
+	local floorY = targetY + FLOOR_OFFSET
 
 	dynamicFloor.CFrame =
 	CFrame.new(
 		pos.X,
-		targetY - 0.5,
+		floorY,
 		pos.Z
 	)
 
-	if pos.Y < targetY - 0.1 then
-    -- Giới hạn vị trí Y sao cho không thấp hơn targetY + 10 studs
-    local newY = math.max(targetY + 10, pos.Y)
+	if pos.Y < floorY then
 
-    -- Lấy vận tốc hiện tại
-    local vel = myHRP.AssemblyLinearVelocity
+		local newY = math.max(floorY + 10, pos.Y)
+		local vel = myHRP.AssemblyLinearVelocity
 
-    -- Cập nhật vận tốc theo hướng X, Z, giữ Y = 0
-    myHRP.AssemblyLinearVelocity = Vector3.new(vel.X, 0, vel.Z)
+		myHRP.AssemblyLinearVelocity =
+		Vector3.new(vel.X,0,vel.Z)
 
-    -- Cập nhật vị trí, đảm bảo Y luôn >= targetY + 10
-    myHRP.CFrame = CFrame.new(pos.X, newY, pos.Z) * myHRP.CFrame.Rotation
-end
+		myHRP.CFrame =
+		CFrame.new(pos.X,newY,pos.Z) *
+		myHRP.CFrame.Rotation
+
+	end
+
+	--------------------------------------------------
+	-- CEILING
+	--------------------------------------------------
+
+	if dynamicCeiling then
+
+		local ceilingY = targetY + CEILING_OFFSET
+		local hp = getHPPercent()
+
+		dynamicCeiling.CFrame =
+		CFrame.new(
+			pos.X,
+			ceilingY,
+			pos.Z
+		)
+
+		if hp < HP_DISABLE then
+			ceilingLockEnabled = false
+		end
+
+		if hp > HP_ENABLE then
+			ceilingLockEnabled = true
+		end
+
+		if ceilingLockEnabled then
+
+			if pos.Y > ceilingY - 0.1 then
+
+				local newY = math.min(ceilingY - 10, pos.Y)
+				local vel = myHRP.AssemblyLinearVelocity
+
+				myHRP.AssemblyLinearVelocity =
+				Vector3.new(vel.X,0,vel.Z)
+
+				myHRP.CFrame =
+				CFrame.new(pos.X,newY,pos.Z) *
+				CFrame.fromMatrix(
+					Vector3.zero,
+					myHRP.CFrame.XVector,
+					myHRP.CFrame.YVector,
+					myHRP.CFrame.ZVector
+				)
+
+			end
+
+		end
+
+	end
 
 end
 
@@ -4274,6 +4361,9 @@ UpdateController:On("ForceDisable",function(name)
 end)
 
 
+
+
+		
 
 local SpectatorPlayer = Slots[7]
 SpectatorPlayer.Label.Text = "Spectator Player"
