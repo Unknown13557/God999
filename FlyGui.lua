@@ -2086,7 +2086,7 @@ local ForceField = Slots[2]
 ForceField.Label.Text = "Force Field"
 ForceField.Frame.ClipsDescendants = true
 
-local auraRadius = 1000
+local auraRadius = 2500
 local SCAN_OFFSET = 400
 local SAMPLE_POINTS = 64
 
