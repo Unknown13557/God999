@@ -3913,8 +3913,8 @@ Instance.new("UICorner",saveBtn).CornerRadius = UDim.new(0,6)
 -- CONSTANT
 --------------------------------------------------
 
-local MIN_INPUT_TARGET_VALUE = -100000000
-local MAX_INPUT_TARGET_VALUE = 100000000
+local MIN_INPUT_TARGET_VALUE = -2100000000
+local MAX_INPUT_TARGET_VALUE = 2100000000
 
 local waypointCF = nil
 
@@ -4158,7 +4158,7 @@ local dynamicFloor = nil
 local dynamicCeiling = nil
 
 local CEILING_OFFSET = 300
-local FLOOR_OFFSET = -100
+local FLOOR_OFFSET = -5
 
 local HP_DISABLE = 45
 local HP_ENABLE = 75
