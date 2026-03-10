@@ -2749,7 +2749,7 @@ end)
 
 
 
-local HitboxExpand = Slots[6]
+local HitboxExpand = Slots[12]
 HitboxExpand.Label.Text = "Hitbox Expand"
 HitboxExpand.Frame.ClipsDescendants = true
 
@@ -3304,7 +3304,7 @@ end)
 
 
 
-local PlayerList= Slots[9]
+local PlayerList= Slots[5]
 PlayerList.Label.Text = "Player List"
 PlayerList.State = false
 PlayerList.Frame.ClipsDescendants = false
@@ -3852,7 +3852,7 @@ end)
 
 pcall(function()
 
-local Waypoint = Slots[5]
+local Waypoint = Slots[9]
 Waypoint.Label.Text = "Waypoint"
 Waypoint.Frame.ClipsDescendants = true
 
@@ -4148,7 +4148,7 @@ end)
 
 
 
-local AntiEscape = Slots[12]
+local AntiEscape = Slots[6]
 AntiEscape.Label.Text = "Anti Escape"
 AntiEscape.Frame.ClipsDescendants = true
 
