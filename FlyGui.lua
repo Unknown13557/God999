@@ -2269,7 +2269,7 @@ end
 local function findEscape(hrp, enemies)
 
     local origin = hrp.Position
-    local escapeDistance = 400
+    local escapeDistance = 300
 
     local bestPos
     local bestScore = -math.huge
