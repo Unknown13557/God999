@@ -4987,15 +4987,15 @@ if restoreCollision then
 end
 
 -- reset slot6 UI
-if Slots and Slots[8] then
-	Slots[8].State = false
+if Slots and Slots[13] then
+	Slots[13].State = false
 
-	if Slots[8].Pill then
-		Slots[8].Pill.BackgroundColor3 = Color3.fromRGB(80,80,80)
+	if Slots[13].Pill then
+		Slots[13].Pill.BackgroundColor3 = Color3.fromRGB(80,80,80)
 	end
 
-	if Slots[8].SlotKnob then
-		Slots[8].SlotKnob.Position = UDim2.fromOffset(2,2)
+	if Slots[13].SlotKnob then
+		Slots[13].SlotKnob.Position = UDim2.fromOffset(2,2)
 	end
 end
 
