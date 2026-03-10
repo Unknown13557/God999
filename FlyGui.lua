@@ -4646,8 +4646,8 @@ local function createBillboard()
     label.Size = UDim2.new(1,0,1,0)    
     label.BackgroundTransparency = 1    
     label.RichText = true    
-    label.Font = Enum.Font.Legacy
-    label.TextSize = 18   
+    label.Font = Enum.Font.SourceSansBold
+    label.TextSize = 20   
     label.TextStrokeTransparency = 0    
     label.TextStrokeColor3 = Color3.fromRGB(10,10,10)    
     
