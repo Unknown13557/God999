@@ -2086,9 +2086,9 @@ local ForceField = Slots[2]
 ForceField.Label.Text = "Force Field"
 ForceField.Frame.ClipsDescendants = true
 
-local auraRadius = 300
+local auraRadius = 1000
 local SCAN_OFFSET = 400
-local SAMPLE_POINTS = 96
+local SAMPLE_POINTS = 64
 
 local layers = 7
 local auraParts = {}
@@ -2131,7 +2131,7 @@ auraForceFieldBox:GetPropertyChangedSignal("Text"):Connect(function()
         return
     end
 
-    local num = math.clamp(tonumber(filtered),1,3000)
+    local num = math.clamp(tonumber(filtered),1,10000)
     auraForceFieldBox.Text = tostring(num)
     auraRadius = num
 
