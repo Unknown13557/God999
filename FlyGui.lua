@@ -4641,13 +4641,13 @@ local function createBillboard()
     billboard.AlwaysOnTop = true    
     
     local label = Instance.new("TextLabel")    
-    label.Name = "Label"    
+    label.Name = "Loading..."    
     label.Parent = billboard    
     label.Size = UDim2.new(1,0,1,0)    
     label.BackgroundTransparency = 1    
     label.RichText = true    
-    label.Font = Enum.Font.SourceSansBold
-    label.TextSize = 20   
+    label.Font = Enum.Font.SourceSansBold    
+    label.TextSize = 20    
     label.TextStrokeTransparency = 0    
     label.TextStrokeColor3 = Color3.fromRGB(10,10,10)    
     
