@@ -3007,7 +3007,7 @@ end)
 
 
 
-local JumpForce = Slots[7]
+local JumpForce = Slots[13]
 JumpForce.Label.Text = "Jump Force"
 JumpForce.Frame.ClipsDescendants = true
 
@@ -4275,7 +4275,7 @@ end)
 
 
 
-local SpectatorPlayer = Slots[13]
+local SpectatorPlayer = Slots[7]
 SpectatorPlayer.Label.Text = "Spectator Player"
 SpectatorPlayer.Frame.ClipsDescendants = true
 
