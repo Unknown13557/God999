@@ -3007,7 +3007,7 @@ end)
 
 
 
-local JumpForce = Slots[13]
+local JumpForce = Slots[8]
 JumpForce.Label.Text = "Jump Force"
 JumpForce.Frame.ClipsDescendants = true
 
@@ -3108,7 +3108,7 @@ BindSlot(JumpForce,{
 
 pcall(function()
 
-local Noclip = Slots[8]
+local Noclip = Slots[13]
 Noclip.Label.Text = "Noclip"
 Noclip.Frame.ClipsDescendants = true
 
