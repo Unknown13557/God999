@@ -6180,24 +6180,16 @@ end)
 
 
 
-LocalPlayer.CharacterRemoving:Connect(function()
-
-	if flyNoclipConn then
-		flyNoclipConn:Disconnect()
-		flyNoclipConn = nil
-	end
-
-end)
-
-LocalPlayer.CharacterAdded:Connect(function(char)
-
-	local HRP = char:WaitForChild("HumanoidRootPart",5)
-	if not HRP then return end
-
-	RunService.Heartbeat:Wait()
+local function resetFlySystem()
 
 	nowe = false
 	tpwalking = false
+
+	stopFlyVisuals()
+
+	upEnabled = false
+	stopUp()
+	stopUpTextVisual()
 
 	flyHasNoclipPriority = false
 
@@ -6207,13 +6199,27 @@ LocalPlayer.CharacterAdded:Connect(function(char)
 	end
 
 	updateSharedNoclip()
-	stopFlyVisuals()
-
-	upEnabled = false
-	stopUp()
-	stopUpTextVisual()
 
 	lastClick = 0
+
+end
+
+
+LocalPlayer.CharacterRemoving:Connect(function()
+
+	resetFlySystem()
+
+end)
+
+
+LocalPlayer.CharacterAdded:Connect(function(char)
+
+	local HRP = char:WaitForChild("HumanoidRootPart",5)
+	if not HRP then return end
+
+	RunService.Heartbeat:Wait()
+
+	resetFlySystem()
 
 	task.wait(0.1)
 
