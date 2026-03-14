@@ -2808,7 +2808,7 @@ UpdateController:On("ForceDisable",function(name)
 end)
 
 
-local JumpForce = Slots[8]
+local JumpForce = Slots[13]
 JumpForce.Label.Text = "Jump Force"
 JumpForce.Frame.ClipsDescendants = true
 
@@ -4046,7 +4046,7 @@ end)
 pcall(function()
 
 
-local TeleportPlayerInstant = Slots[13]
+local TeleportPlayerInstant = Slots[8]
 TeleportPlayerInstant.Label.Text = "TP Player Instant "
 TeleportPlayerInstant.Label.TextColor3 = Color3.fromRGB(230,50,50)
 TeleportPlayerInstant.Frame.ClipsDescendants = true
