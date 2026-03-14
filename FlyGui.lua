@@ -1575,7 +1575,6 @@ pcall(function()
 
 local ESCAPE_HP_LOW = 40
 local ESCAPE_HP_HIGH = 80
-
 local MAX_SAFE_Y = 500000000
 
 local escapeEnabled = false
@@ -1583,7 +1582,7 @@ local escapeActive = false
 local escapeDebounce = false
 
 local escapeConn = nil
-local escapeStep = false
+local escapeStep = 1
 
 local function readEscapeConfig()
 	local y = tonumber(yTeleportBox.Text)
@@ -1614,16 +1613,15 @@ local function stopEscape()
 
 end
 
-local function getRandomY(yBase)
-	local m = math.random(2,30)
+local function getXZOffset()
 
-	local y = yBase * m
+	local signX = math.random(0,1) == 0 and -1 or 1
+	local signZ = math.random(0,1) == 0 and -1 or 1
 
-	if y > MAX_SAFE_Y then
-		y = MAX_SAFE_Y
-	end
+	local offsetX = signX * math.random(100,200)
+	local offsetZ = signZ * math.random(100,200)
 
-	return y
+	return offsetX,offsetZ
 
 end
 
@@ -1654,22 +1652,33 @@ local function startEscape()
 
 		local pos = hrp.Position
 
-		escapeStep = not escapeStep
-
 		hrp.AssemblyLinearVelocity = Vector3.zero
 		hrp.AssemblyAngularVelocity = Vector3.zero
 
-		if escapeStep then
+		if escapeStep == 1 then
 
-			hrp.CFrame =
-			CFrame.new(pos.X, yBase, pos.Z)
+			hrp.CFrame = CFrame.new(pos.X,yBase,pos.Z)
+			escapeStep = 2
+
+		elseif escapeStep == 2 then
+
+			local m = math.random(2,30)
+			local yRandom = math.min(yBase * m,MAX_SAFE_Y)
+
+			hrp.CFrame = CFrame.new(pos.X,yRandom,pos.Z)
+			escapeStep = 3
 
 		else
 
-			local yRandom = getRandomY(yBase)
+			local offX,offZ = getXZOffset()
 
-			hrp.CFrame =
-			CFrame.new(pos.X, yRandom, pos.Z)
+			hrp.CFrame = CFrame.new(
+				pos.X + offX,
+				yBase,
+				pos.Z + offZ
+			)
+
+			escapeStep = 1
 
 		end
 
@@ -1784,6 +1793,7 @@ end
 
 end)
 
+	
 
 
 local HP_DISABLE = 45
@@ -1986,7 +1996,7 @@ ForceField.Label.TextColor3 = Color3.fromRGB(230,50,50)
 ForceField.Frame.ClipsDescendants = true
 
 local auraRadius = 1000
-local SCAN_OFFSET = 400
+local SCAN_OFFSET = 200
 local SAMPLE_POINTS = 32
 
 local layers = 5
@@ -2163,7 +2173,7 @@ end
 local function findEscape(hrp, enemies)
 
     local origin = hrp.Position
-    local escapeDistance = 300
+    local escapeDistance = 200
 
     local bestPos
     local bestScore = -math.huge
