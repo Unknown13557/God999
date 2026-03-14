@@ -1331,7 +1331,7 @@ layoutTeleportY.VerticalAlignment = Enum.VerticalAlignment.Center
 layoutTeleportY.Padding = UDim.new(0,4)
 
 local MIN_INPUT_TARGET_VALUE = -100000
-local MAX_INPUT_TARGET_VALUE = 50000000
+local MAX_INPUT_TARGET_VALUE = 500000000
 
 local MIN_SPEED_VALUE = 1
 local MAX_SPEED_VALUE = 10000
@@ -1339,7 +1339,7 @@ local MAX_SPEED_VALUE = 10000
 yTeleportBox = Instance.new("TextBox")
 yTeleportBox.Parent = rowTeleportY
 yTeleportBox.Size = UDim2.fromOffset(97,28)
-yTeleportBox.Text = "5000000"
+yTeleportBox.Text = "1000000"
 yTeleportBox.PlaceholderText = "Y"
 yTeleportBox.ClearTextOnFocus = false
 yTeleportBox.Font = Enum.Font.SourceSansBold
@@ -1569,13 +1569,14 @@ end)
 
 end)
 
-
 local destroyEscapeSystem
 
 pcall(function()
 
 local ESCAPE_HP_LOW = 40
 local ESCAPE_HP_HIGH = 80
+
+local MAX_SAFE_Y = 500000000
 
 local escapeEnabled = false
 local escapeActive = false
@@ -1613,6 +1614,21 @@ local function stopEscape()
 
 end
 
+local function getRandomY(yBase)
+
+	local multipliers = {2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30}
+	local m = multipliers[math.random(1,#multipliers)]
+
+	local y = yBase * m
+
+	if y > MAX_SAFE_Y then
+		y = MAX_SAFE_Y
+	end
+
+	return y
+
+end
+
 local function startEscape()
 
 	if escapeConn then return end
@@ -1646,9 +1662,17 @@ local function startEscape()
 		hrp.AssemblyAngularVelocity = Vector3.zero
 
 		if escapeStep then
-			hrp.CFrame = CFrame.new(pos.X, yBase, pos.Z)
+
+			hrp.CFrame =
+			CFrame.new(pos.X, yBase, pos.Z)
+
 		else
-			hrp.CFrame = CFrame.new(pos.X, yBase * 3, pos.Z)
+
+			local yRandom = getRandomY(yBase)
+
+			hrp.CFrame =
+			CFrame.new(pos.X, yRandom, pos.Z)
+
 		end
 
 	end)
@@ -1764,7 +1788,6 @@ end)
 
 
 
-
 local HP_DISABLE = 45
 local HP_ENABLE = 75
 
@@ -1803,12 +1826,6 @@ local function updateHPState(state)
 	return state
 
 end
-
-
-
-
-
-
 
 local VirtualFoundation = Slots[1]
 VirtualFoundation.Label.Text = "Virtual Floor"
