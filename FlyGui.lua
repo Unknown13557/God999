@@ -1570,8 +1570,6 @@ end)
 end)
 
 
-
-
 local destroyEscapeSystem
 
 pcall(function()
@@ -1583,168 +1581,154 @@ local escapeEnabled = false
 local escapeActive = false
 local escapeDebounce = false
 
-local EscapeVirtualFloor = nil
-local escapeMoveConn = nil
+local escapeConn = nil
+local escapeStep = false
 
 local function readEscapeConfig()
-local y = tonumber(yTeleportBox.Text)
-if not y then return nil end
-return y
-end
-
-local function createFloor()
-if EscapeVirtualFloor then return end
-
-local lockedY = readEscapeConfig()  
-if lockedY then  
-    EscapeVirtualFloor = Instance.new("Part")  
-    EscapeVirtualFloor.Name = "EscapeFloor"  
-    EscapeVirtualFloor.Size = Vector3.new(2, 1, 2)  
-    EscapeVirtualFloor.Anchored = true  
-    EscapeVirtualFloor.CanCollide = true  
-    EscapeVirtualFloor.Transparency = 1  
-    EscapeVirtualFloor.Position = Vector3.new(0, lockedY, 0)
-    EscapeVirtualFloor.Parent = workspace  
-end
-
-end
-
-local function destroyFloor()
-if EscapeVirtualFloor then
-EscapeVirtualFloor:Destroy()
-EscapeVirtualFloor = nil
-end
+	local y = tonumber(yTeleportBox.Text)
+	if not y then return nil end
+	return y
 end
 
 local function getHealthPercent()
-local char = Players.LocalPlayer.Character
-if not char then return 100 end
 
-local hum = char:FindFirstChildOfClass("Humanoid")  
-if not hum or hum.MaxHealth <= 0 then  
-    return 100  
-end  
+	local char = Players.LocalPlayer.Character
+	if not char then return 100 end
 
-return (hum.Health / hum.MaxHealth) * 100
+	local hum = char:FindFirstChildOfClass("Humanoid")
+	if not hum or hum.MaxHealth <= 0 then
+		return 100
+	end
+
+	return (hum.Health / hum.MaxHealth) * 100
 
 end
 
-escapeMoveConn = RunService.Heartbeat:Connect(function()
+local function stopEscape()
 
-if not escapeEnabled then return end  
+	if escapeConn then
+		escapeConn:Disconnect()
+		escapeConn = nil
+	end
 
-local char = Players.LocalPlayer.Character  
-if not char then return end  
-
-local hrp = char:FindFirstChild("HumanoidRootPart")  
-if not hrp then return end  
-
-local lockedY = readEscapeConfig()  
-if not lockedY then return end  
-
-local hp = getHealthPercent()  
-
-if hp < ESCAPE_HP_LOW then  
-    if not escapeActive then  
-        escapeActive = true  
-        createFloor()  
-    end  
-end  
-
-if hp > ESCAPE_HP_HIGH then  
-    if escapeActive then  
-        escapeActive = false  
-        destroyFloor()  
-    end  
-end  
-
-if not escapeActive then return end  
-
-if EscapeVirtualFloor then  
-    local pos = hrp.Position  
-
-    EscapeVirtualFloor.CFrame =  
-        CFrame.new(pos.X, lockedY - (EscapeVirtualFloor.Size.Y / 2), pos.Z)  
-
-    if pos.Y < lockedY then  
-        local newY = lockedY + 10
-        hrp.AssemblyLinearVelocity =  
-            Vector3.new(  
-                hrp.AssemblyLinearVelocity.X,  
-                0,  
-                hrp.AssemblyLinearVelocity.Z  
-            )  
-  
-        hrp.CFrame =  
-            CFrame.new(pos.X, newY, pos.Z) *  
-            CFrame.fromMatrix(  
-                Vector3.zero,  
-                hrp.CFrame.XVector,  
-                hrp.CFrame.YVector,  
-                hrp.CFrame.ZVector  
-            )  
-    end  
 end
+
+local function startEscape()
+
+	if escapeConn then return end
+
+	escapeConn = RunService.RenderStepped:Connect(function()
+
+		if not escapeEnabled then return end
+
+		local char = Players.LocalPlayer.Character
+		if not char then return end
+
+		local hrp = char:FindFirstChild("HumanoidRootPart")
+		if not hrp then return end
+
+		local yBase = readEscapeConfig()
+		if not yBase then return end
+
+		local hp = getHealthPercent()
+
+		if hp > ESCAPE_HP_HIGH then
+			escapeActive = false
+			stopEscape()
+			return
+		end
+
+		local pos = hrp.Position
+
+		escapeStep = not escapeStep
+
+		hrp.AssemblyLinearVelocity = Vector3.zero
+		hrp.AssemblyAngularVelocity = Vector3.zero
+
+		if escapeStep then
+			hrp.CFrame = CFrame.new(pos.X, yBase, pos.Z)
+		else
+			hrp.CFrame = CFrame.new(pos.X, yBase * 3, pos.Z)
+		end
+
+	end)
+
+end
+
+RunService.Heartbeat:Connect(function()
+
+	if not escapeEnabled then return end
+
+	local hp = getHealthPercent()
+
+	if hp < ESCAPE_HP_LOW then
+
+		if not escapeActive then
+			escapeActive = true
+			startEscape()
+		end
+
+	end
 
 end)
 
 local function syncEscapeUI(state)
 
-if state then  
+	if state then
 
-	toggle.BackgroundColor3 = Color3.fromRGB(88,200,120)  
+		toggle.BackgroundColor3 = Color3.fromRGB(88,200,120)
 
-	flyKnob:TweenPosition(  
-		UDim2.fromOffset(22,2),  
-		Enum.EasingDirection.Out,  
-		Enum.EasingStyle.Quad,  
-		0.15,  
-		true  
-	)  
+		flyKnob:TweenPosition(
+			UDim2.fromOffset(22,2),
+			Enum.EasingDirection.Out,
+			Enum.EasingStyle.Quad,
+			0.15,
+			true
+		)
 
-else  
+	else
 
-	toggle.BackgroundColor3 = Color3.fromRGB(220,50,50)  
+		toggle.BackgroundColor3 = Color3.fromRGB(220,50,50)
 
-	flyKnob:TweenPosition(  
-		UDim2.fromOffset(2,2),  
-		Enum.EasingDirection.Out,  
-		Enum.EasingStyle.Quad,  
-		0.15,  
-		true  
-	)  
+		flyKnob:TweenPosition(
+			UDim2.fromOffset(2,2),
+			Enum.EasingDirection.Out,
+			Enum.EasingStyle.Quad,
+			0.15,
+			true
+		)
 
-end
+	end
 
 end
 
 local function toggleEscape()
 
-if escapeDebounce then return end  
-escapeDebounce = true  
+	if escapeDebounce then return end
+	escapeDebounce = true
 
-task.delay(0.15,function()  
-	escapeDebounce = false  
-end)  
+	task.delay(0.15,function()
+		escapeDebounce = false
+	end)
 
-escapeEnabled = not escapeEnabled  
-syncEscapeUI(escapeEnabled)  
+	escapeEnabled = not escapeEnabled
+	syncEscapeUI(escapeEnabled)
 
-if not escapeEnabled then  
+	if not escapeEnabled then
 
-	escapeActive = false  
-	destroyFloor()  
+		escapeActive = false
+		stopEscape()
 
-else  
+	else
 
-	local hp = getHealthPercent()  
+		local hp = getHealthPercent()
 
-	if hp < ESCAPE_HP_LOW then  
-		escapeActive = true  
-		createFloor()  
-	end  
+		if hp < ESCAPE_HP_LOW then
+			escapeActive = true
+			startEscape()
+		end
 
-end
+	end
 
 end
 
@@ -1756,34 +1740,29 @@ syncEscapeUI(false)
 
 Players.LocalPlayer.CharacterAdded:Connect(function()
 
-task.defer(function()  
+	stopEscape()
 
-	if escapeActive then  
-		createFloor()  
-	end  
-
-end)
+	if escapeActive then
+		startEscape()
+	end
 
 end)
 
 destroyEscapeSystem = function()
 
-escapeEnabled = false  
-escapeActive = false  
+	escapeEnabled = false
+	escapeActive = false
 
-if escapeMoveConn then  
-    escapeMoveConn:Disconnect()  
-    escapeMoveConn = nil  
-end  
-
-if EscapeVirtualFloor then  
-    EscapeVirtualFloor:Destroy()  
-    EscapeVirtualFloor = nil  
-end
+	if escapeConn then
+		escapeConn:Disconnect()
+		escapeConn = nil
+	end
 
 end
 
 end)
+
+
 
 
 local HP_DISABLE = 45
@@ -5211,9 +5190,11 @@ end
 	end
 
 
+
 if destroyEscapeSystem then
-    destroyEscapeSystem()
-end
+	destroyEscapeSystem()
+	destroyEscapeSystem = nil
+	end
 
 if _G.StopTPInstantLoop then
 	pcall(_G.StopTPInstantLoop)
