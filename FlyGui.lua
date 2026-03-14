@@ -947,7 +947,7 @@ end
 
 local Slots = {}
 
-for i = 1, 18 do
+for i = 1, 19 do
 
 	local slot = Instance.new("Frame")
 	slot.Name = "Slot"..i
@@ -4837,11 +4837,129 @@ _G.StopESPPlayerLoop = function()
     end    
 end
 
+pcall(function()
 
+local EscapeForce = Slots[17]
+EscapeForce.Label.Text = "Force Escape"
+EscapeForce.Label.TextColor3 = Color3.fromRGB(230,50,50)
+EscapeForce.Frame.ClipsDescendants = true
+
+local forceConn = nil
+local forceStep = 1
+
+local function stopForce()
+
+	if forceConn then
+		forceConn:Disconnect()
+		forceConn = nil
+	end
+
+end
+
+local function startForce()
+
+	if forceConn then return end
+
+	forceConn = RunService.RenderStepped:Connect(function()
+
+		if not EscapeForce.State then
+			stopForce()
+			return
+		end
+
+		if not escapeEnabled then
+			return
+		end
+
+		if not escapeConn then
+			return
+		end
+
+		local char = Players.LocalPlayer.Character
+		if not char then return end
+
+		local hrp = char:FindFirstChild("HumanoidRootPart")
+		if not hrp then return end
+
+		local yBase = tonumber(yTeleportBox.Text)
+		if not yBase then return end
+
+		local pos = hrp.Position
+
+		hrp.AssemblyLinearVelocity = Vector3.zero
+		hrp.AssemblyAngularVelocity = Vector3.zero
+
+		if forceStep == 1 then
+
+			hrp.CFrame = CFrame.new(pos.X,yBase,pos.Z)
+			forceStep = 2
+
+		elseif forceStep == 2 then
+
+			local m = math.random(2,30)
+			local yRandom = math.min(yBase*m,2000000000)
+
+			hrp.CFrame = CFrame.new(pos.X,yRandom,pos.Z)
+			forceStep = 3
+
+		else
+
+			local signX = math.random(0,1)==0 and -1 or 1
+			local signZ = math.random(0,1)==0 and -1 or 1
+
+			local offX = signX * math.random(100,200)
+			local offZ = signZ * math.random(100,200)
+
+			hrp.CFrame = CFrame.new(
+				pos.X + offX,
+				yBase,
+				pos.Z + offZ
+			)
+
+			forceStep = 1
+
+		end
+
+	end)
+
+end
+
+BindSlot(EscapeForce,{
+
+	Name = "ForceEscape",
+	Type = "Toggle",
+	Default = false,
+
+	OnToggle = function(state)
+
+		if state then
+			startForce()
+		else
+			stopForce()
+		end
+
+	end
+})
+
+UpdateController:On("ForceDisable",function(name)
+
+	if name == "ForceEscape" then
+
+		stopForce()
+
+		if EscapeForce then
+			EscapeForce.State = false
+		end
+
+	end
+
+end)
+
+end)
 
 pcall(function()
 
-local System = Slots[17]
+local System = Slots[18]
 System.Label.Text = "System"
 System.State = false
 System.Frame.ClipsDescendants = true
@@ -4979,8 +5097,7 @@ end)
 
 pcall(function()
 
-
-local Server = Slots[18]
+local Server = Slots[19]
 Server.Label.Text = "Server"
 Server.State = false
 Server.Frame.ClipsDescendants = true
